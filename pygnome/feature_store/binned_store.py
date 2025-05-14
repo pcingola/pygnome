@@ -33,6 +33,9 @@ class BinnedGenomicStore(ChromosomeFeatureStore):
     def _get_bin_ids(self, start: int, end: int) -> set[int]:
         """Get all bin IDs that this range spans."""
         start_bin = start // self.bin_size
+        # Special case for zero-length features
+        if start == end:
+            return {start_bin}
         end_bin = (end - 1) // self.bin_size
         return set(range(start_bin, end_bin + 1))
     
@@ -108,7 +111,8 @@ class BinnedGenomicStore(ChromosomeFeatureStore):
         feature_indices = set()
         for bin_id in bin_ids:
             indices = self._get_bin_indices(bin_id)
-            feature_indices.update(indices)
+            if indices is not None:
+                feature_indices.update(indices)
         
         # Filter features that actually overlap
         result = []

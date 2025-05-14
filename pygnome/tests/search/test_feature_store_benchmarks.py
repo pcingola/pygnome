@@ -139,6 +139,7 @@ class TestFeatureStoreBenchmarks(unittest.TestCase):
             queries = self.generate_position_queries(self.query_counts)
             # Test on different store types
             for name, store_type in self.store_types.items():
+                print(f"Testing possition query for {count} features, {name}...")
                 store = GenomicFeatureStore(store_type=store_type)
                 store_reference = GenomicFeatureStore(store_type=StoreType.BRUTE_FORCE)
                 
@@ -167,13 +168,14 @@ class TestFeatureStoreBenchmarks(unittest.TestCase):
                     self.assertEqual(ref_ids, result_ids, f"Total features found differs for {chrom}:{pos} between {name} and reference")
 
 
-    def test_range_query_benchmark(self):
+    def test_interval_query_benchmark(self):
         """Benchmark range query performance."""
         for count in self.feature_counts:
             features = self.generate_features(count)
             queries = self.generate_range_queries(self.query_counts)
             
             for name, store_type in self.store_types.items():
+                print(f"Testing interval query for {count} features, {name}...")
                 store = GenomicFeatureStore(store_type=store_type)
                 store_reference = GenomicFeatureStore(store_type=StoreType.BRUTE_FORCE)
 
@@ -194,8 +196,8 @@ class TestFeatureStoreBenchmarks(unittest.TestCase):
                 end_time = time.time()
                 elapsed = end_time - start_time
                 
-                # # Assert that query completes within threshold time (if enabled)
-                # self.assertLessEqual(elapsed, self.max_query_time[count], f"{name} range query time exceeded threshold for {count} features")
+                # Assert that query completes within threshold time (if enabled)
+                self.assertLessEqual(elapsed, self.max_query_time[count], f"{name} range query time exceeded threshold for {count} features")
             
                 # Verify store return values
                 for chrom, start, end, result_ids in all_results:
@@ -231,8 +233,9 @@ class TestFeatureStoreBenchmarks(unittest.TestCase):
                 start_time = time.time()
                 all_results = []                
                 for chrom, pos in queries:
-                    result = store.get_nearest(chrom, pos)
-                    all_results.append((chrom, pos, result.id if result else None))
+                    result: GenomicFeature = store.get_nearest(chrom, pos)
+                    dist = result.distance(pos) if result else None
+                    all_results.append((chrom, pos, dist, result))
                 end_time = time.time()
                 elapsed = end_time - start_time
                 
@@ -240,10 +243,10 @@ class TestFeatureStoreBenchmarks(unittest.TestCase):
                 self.assertLessEqual(elapsed, self.max_query_time[count], f"{name} nearest query time exceeded threshold for {count} features")
 
                 # Verify store return values
-                for chrom, pos, result_id in all_results:
+                for chrom, pos, dist, result in all_results:
                     ref_result = store_reference.get_nearest(chrom, pos)
-                    ref_id = ref_result.id if ref_result else None
-                    self.assertEqual(ref_id, result_id, f"Features found differs for {chrom}:{pos} between {name} and reference")
+                    dist_ref = ref_result.distance(pos) if ref_result else None
+                    self.assertEqual(dist_ref, dist, f"Features found differs for {chrom}:{pos} between {name} and reference\n\tExpected: {ref_result}, dist: {dist_ref}\n\tFound   : {result}, dist: {dist}")
 
 
 if __name__ == "__main__":

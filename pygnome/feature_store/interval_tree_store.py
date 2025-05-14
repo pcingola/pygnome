@@ -126,7 +126,11 @@ class IntervalTree:
     def _check_overlapping_intervals(self, node: IntervalNode, start: int, end: int, result: set[int]) -> None:
         """Check if any intervals in the node overlap with the given range."""
         for interval_start, interval_end, idx in node.intervals:
-            if interval_start < end and interval_end > start:
+            # Special case for zero-length features
+            if interval_start == interval_end and start <= interval_start < end:
+                result.add(idx)
+            # Normal case
+            elif interval_start < end and interval_end > start:
                 result.add(idx)
     
     def overlap(self, start: int, end: int) -> set[int]:
@@ -167,8 +171,11 @@ class IntervalTree:
         """Check if any intervals in the node contain the position."""
         for interval_start, interval_end, idx in node.intervals:
             # For position queries, we use half-open intervals [start, end)
-            # Special case: include intervals where position equals end-1
-            if interval_start <= position < interval_end:
+            # Special case for zero-length features
+            if interval_start == interval_end and position == interval_start:
+                result.add(idx)
+            # Normal case
+            elif interval_start <= position < interval_end:
                 result.add(idx)
     
     def _query_at_position(self, node: IntervalNode | None, position: int, result: set[int]) -> None:

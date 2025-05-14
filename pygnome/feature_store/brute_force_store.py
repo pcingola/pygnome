@@ -31,9 +31,7 @@ class BruteForceFeatureStore(ChromosomeFeatureStore):
         min_distance = max_distance
         
         for feature in self.features:
-            dist_start = abs(feature.start - position)
-            dist_end = abs(feature.end - position)
-            distance = min(dist_start, dist_end)
+            distance = feature.distance(position)
             if distance < min_distance:
                 min_distance = distance
                 nearest_feature = feature

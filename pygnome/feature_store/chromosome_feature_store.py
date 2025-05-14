@@ -66,9 +66,15 @@ class ChromosomeFeatureStore(ABC):
             features = self.get_by_interval(position - window, position + window)
             if features:
                 # Find the feature with the smallest distance to the position
-                return min(features, key=lambda f: min(abs(f.start - position), abs(f.end - position)))
-            window *= 2
-        
+                closest_feature = features[0]
+                min_distance = closest_feature.distance(position)
+                for feature in features:
+                    distance = feature.distance(position)
+                    if distance < min_distance:
+                        min_distance = distance
+                        closest_feature = feature
+                return closest_feature
+            window *= 2        
         return None
     
     def index_build_start(self) -> int:

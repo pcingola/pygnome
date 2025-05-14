@@ -36,10 +36,16 @@ class GenomicFeature(BaseModel):
     
     def intersects_point(self, position: int) -> bool:
         """Check if the feature intersects with a specific point."""
+        # Special case for zero-length features
+        if self.start == self.end:
+            return position == self.start
         return self.start <= position < self.end
 
     def intersects_interval(self, start: int, end: int) -> bool:
         """Check if the feature intersects with a specific interval."""
+        # Special case for zero-length features
+        if self.start == self.end:
+            return start <= self.start < end
         return not (self.end <= start or self.start >= end)
     
     def intersects(self, other: 'GenomicFeature') -> bool:
@@ -48,4 +54,13 @@ class GenomicFeature(BaseModel):
     
     def contains(self, other: 'GenomicFeature') -> bool:
         """Check if the feature contains another feature."""
-        return self.start <= other.start and self.end >= other.end
+        return self.start <= other.start and other.end < self.end 
+
+    def distance(self, position: int) -> int:
+        """Calculate the distance from a point to the feature."""
+        if position < self.start:
+            return self.start - position
+        elif position >= self.end:
+            return (position - self.end) + 1
+        else:
+            return 0
