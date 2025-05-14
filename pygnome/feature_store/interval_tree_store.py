@@ -7,6 +7,8 @@ from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStor
 from pygnome.genomics.genomic_feature import GenomicFeature
 
 
+MAX_INTERVALS_IN_LEAF = 8
+
 @dataclass
 class IntervalNode:
     """
@@ -15,7 +17,7 @@ class IntervalNode:
     Each node contains a center point and intervals that overlap with that center point.
     """
     center: int
-    # Intervals containing the center point (start, end, index)
+    # Intervals containing the center point (start, end, index), or 'leaf node
     intervals: list[tuple[int, int, int]] = field(default_factory=list)
     # Child nodes
     left: 'IntervalNode | None' = None
@@ -24,6 +26,18 @@ class IntervalNode:
     def __str__(self) -> str:
         """String representation of the node."""
         return f"IntervalNode(center={self.center}, intervals={len(self.intervals)})"
+
+    def is_center(self, start:int, end: int) -> bool:
+        """Check if the interval [start, end) intersects the node's center."""
+        return start <= self.center < end
+
+    def is_left(self, start:int, end: int) -> bool:
+        """Check if the interval [start, end) is completely to the left."""
+        return end <= self.center
+
+    def is_right(self, start:int, end: int) -> bool:
+        """Check if the interval [start, end) is completely to the right."""
+        return self.center < start
 
 
 class IntervalTree:
@@ -48,7 +62,6 @@ class IntervalTree:
         """Build the interval tree from the added intervals."""
         if not self.intervals:
             return
-        
         self.root = self._build_tree(self.intervals)
     
     def _build_tree(self, intervals: list[tuple[int, int, int]]) -> IntervalNode | None:
@@ -57,11 +70,11 @@ class IntervalTree:
             return None
         
         # Base case: if only one interval, create a leaf node
-        if len(intervals) == 1:
+        if len(intervals) <= MAX_INTERVALS_IN_LEAF:
             start, end, idx = intervals[0]
             center = (start + end) // 2
             node = IntervalNode(center=center)
-            node.intervals.append(intervals[0])
+            node.intervals.extend(intervals)
             return node
         
         # Find the center point (median of all endpoints)
@@ -71,7 +84,12 @@ class IntervalTree:
             all_points.append(end)
         
         all_points.sort()
-        center = all_points[len(all_points) // 2]
+        if len(all_points) % 2 == 0:
+            # If even number of points, take the average median
+            center = (all_points[len(all_points) // 2 - 1] + all_points[len(all_points) // 2]) // 2
+        else:
+            # If odd number of points, take the median
+            center = all_points[len(all_points) // 2]
         
         # Create the node for this center
         node = IntervalNode(center=center)
@@ -82,67 +100,58 @@ class IntervalTree:
         
         for interval in intervals:
             start, end, idx = interval
-            
-            # If interval contains the center point, add to intervals
-            if start <= center < end:
+            if node.is_center(start, end):
+                # If interval contains the center point, add to intervals
                 node.intervals.append(interval)
-            
-            # If interval is completely to the left of center
-            elif end <= center:
-                left_intervals.append(interval)
-            
-            # If interval is completely to the right of center
-            elif start >= center:
+            elif node.is_left(start, end):
+                # If interval is completely to the left of center
+                left_intervals.append(interval)        
+            elif node.is_right(start, end):
+                # If interval is completely to the right of center
                 right_intervals.append(interval)
-        
-        # No need to sort intervals - we'll check them all during queries
+            else:
+                # This case should not happen due to the way we split intervals
+                raise ValueError(f"Interval {interval} does not fit in left/right categories.")
         
         # Recursively build left and right subtrees
         # Only recurse if we're making progress (intervals are being divided)
-        if left_intervals and len(left_intervals) < len(intervals):
+        if left_intervals:
             node.left = self._build_tree(left_intervals)
         
-        if right_intervals and len(right_intervals) < len(intervals):
+        if right_intervals:
             node.right = self._build_tree(right_intervals)
         
         return node
+    
+    def _check_overlapping_intervals(self, node: IntervalNode, start: int, end: int, result: set[int]) -> None:
+        """Check if any intervals in the node overlap with the given range."""
+        for interval_start, interval_end, idx in node.intervals:
+            if interval_start < end and interval_end > start:
+                result.add(idx)
     
     def overlap(self, start: int, end: int) -> set[int]:
         """Find all intervals that overlap with the given range."""
         if not self.root:
             return set()
-        
         result = set()
         self._query_overlap(self.root, start, end, result)
         return result
-    
-    def _check_overlapping_intervals(self, node: IntervalNode, start: int, end: int, result: set[int]) -> None:
-        """Check if any intervals in the node overlap with the given range."""
-        for interval_start, interval_end, idx in node.intervals:
-            if interval_start < end and interval_end >= start:
-                result.add(idx)
     
     def _query_overlap(self, node: IntervalNode | None, start: int, end: int, result: set[int]) -> None:
         """Recursively query for overlapping intervals."""
         if not node:
             return
-        
         # Check intervals at this node
         self._check_overlapping_intervals(node, start, end, result)
-        
-        # Check if the query range is completely to the left of the center
-        if end <= node.center:
-            # Only need to check the left subtree
+
+        if node.is_left(start, end):
+            # Query interval is completely to the left of the center
             self._query_overlap(node.left, start, end, result)
-        
-        # Check if the query range is completely to the right of the center
-        elif start >= node.center:
-            # Only need to check the right subtree
+        elif node.is_right(start, end):
+            # Query interval is completely to the right of the center
             self._query_overlap(node.right, start, end, result)
-        
-        # Query range contains the center point
         else:
-            # Check both subtrees
+            # Query range contains the center point: Check both subtrees
             self._query_overlap(node.left, start, end, result)
             self._query_overlap(node.right, start, end, result)
     
@@ -150,7 +159,6 @@ class IntervalTree:
         """Find all intervals that contain the given position."""
         if not self.root:
             return set()
-        
         result = set()
         self._query_at_position(self.root, position, result)
         return result
@@ -160,7 +168,7 @@ class IntervalTree:
         for interval_start, interval_end, idx in node.intervals:
             # For position queries, we use half-open intervals [start, end)
             # Special case: include intervals where position equals end-1
-            if interval_start <= position < interval_end or position == interval_end - 1:
+            if interval_start <= position < interval_end:
                 result.add(idx)
     
     def _query_at_position(self, node: IntervalNode | None, position: int, result: set[int]) -> None:
@@ -171,19 +179,14 @@ class IntervalTree:
         # Check intervals at this node
         self._check_node_intervals(node, position, result)
         
-        # Check if the position is to the left of the center
         if position < node.center:
-            # Only need to check the left subtree
-            self._query_at_position(node.left, position, result)
-        
-        # Check if the position is to the right of the center
+            # If the position is to the left of the center: Only need to check the left subtree
+            self._query_at_position(node.left, position, result)    
         elif position > node.center:
-            # Only need to check the right subtree
-            self._query_at_position(node.right, position, result)
-        
-        # Position is exactly at the center
+            # Check if the position is to the right of the center: Only need to check the right subtree
+            self._query_at_position(node.right, position, result)    
         else:
-            # Check both subtrees (position could be at the boundary)
+            # Position is exactly at the center: Check both subtrees (position could be at the boundary)
             self._query_at_position(node.left, position, result)
             self._query_at_position(node.right, position, result)
 
@@ -200,7 +203,8 @@ class IntervalTreeStore(ChromosomeFeatureStore):
         """Add a feature to the interval tree."""
         super().add(feature)
         # Store the index in the features list
-        self.interval_tree.add(feature.start, feature.end, len(self.features) - 1)
+        feature_idx = len(self.features) - 1
+        self.interval_tree.add(feature.start, feature.end, feature_idx)
         # Mark tree as needing rebuild
         self.tree_built = False
     
@@ -229,6 +233,6 @@ class IntervalTreeStore(ChromosomeFeatureStore):
         # Handle invalid ranges
         if end <= start:
             return []
-        
+        # Get indices from interval tree
         indices = self.interval_tree.overlap(start, end)
         return [self.features[idx] for idx in indices]

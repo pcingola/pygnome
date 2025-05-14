@@ -41,6 +41,17 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
             
         self.bin_size = bin_size
 
+    def __enter__(self):
+        """Enter the context manager when adding features"""
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Exit the context manager after adding features, ensures all indeces are built"""
+        # No special cleanup needed for this store
+        for chrom in self.chromosomes.values():
+            chrom.index_build_end()
+        return False
+
     def _get_or_create_chrom_store(self, chrom: str) -> ChromosomeFeatureStore:
         """Get or create a chromosome store."""
         if chrom not in self.chromosomes:
@@ -89,6 +100,9 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
         """Get all chromosome names in the store."""
         return list(self.chromosomes.keys())
     
+    def __getitem__(self, chrom):
+        return self.chromosomes.get(chrom)
+    
     def get_feature_count(self, chrom: str = None) -> int:
         """
         Get the number of features in the store.
@@ -104,6 +118,10 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
         # Count across all chromosomes
         return sum(len(store.features) for store in self.chromosomes.values())
 
+    def __iterator__(self):
+        """Iterate over all features in the store."""
+        return iter(self.chromosomes.values())
+    
     def __str__(self) -> str:
         """Return a string representation of the feature store."""
         chrom_counts = [f"{chrom}: {len(store.features)}" 
@@ -113,13 +131,3 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
                 f"features={self.get_feature_count()}, "
                 f"{', '.join(chrom_counts)})")
     
-    def __enter__(self):
-        """Enter the context manager when adding features"""
-        return self
-    
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Exit the context manager after adding features, ensures all indeces are built"""
-        # No special cleanup needed for this store
-        for chrom in self.chromosomes.values():
-            chrom.index_build_end()
-        return False

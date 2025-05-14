@@ -31,3 +31,12 @@ class GenomicFeatureStoreProtocol(Protocol):
     def get_nearest(self, chrom: str, position: int, max_distance: int = MAX_DISTANCE) -> GenomicFeature | None:
         """Get the nearest feature to the given position."""
         ...
+
+    def __getitem__(self, chrom: str) -> 'ChromosomeFeatureStore':
+        """Get a chromosome store by name."""
+        ...
+
+    def __iterator__(self):
+        """Iterate over all chromosome stores."""
+        ...
+

@@ -1,4 +1,5 @@
 from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore
+from pygnome.feature_store.genomic_feature_store_protocol import MAX_DISTANCE
 from pygnome.genomics.genomic_feature import GenomicFeature
 
 
@@ -23,3 +24,19 @@ class BruteForceFeatureStore(ChromosomeFeatureStore):
     def get_by_interval(self, start: int, end: int) -> list[GenomicFeature]:
         """Get all features that overlap with the given range."""
         return [f for f in self.features if f.intersects_interval(start, end)]
+
+    def get_nearest(self, position: int, max_distance: int = MAX_DISTANCE) -> GenomicFeature | None:
+        """Get the nearest feature to a specific position."""
+        nearest_feature = None
+        min_distance = max_distance
+        
+        for feature in self.features:
+            dist_start = abs(feature.start - position)
+            dist_end = abs(feature.end - position)
+            distance = min(dist_start, dist_end)
+            if distance < min_distance:
+                min_distance = distance
+                nearest_feature = feature
+        
+        return nearest_feature
+        

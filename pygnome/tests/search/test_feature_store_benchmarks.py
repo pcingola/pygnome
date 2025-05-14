@@ -4,23 +4,19 @@ import unittest
 import time
 import numpy as np
 
+from pygnome.feature_store.binned_store import BinnedGenomicStore
+from pygnome.feature_store.genomic_feature_store import GenomicFeatureStore, StoreType
+from pygnome.feature_store.interval_tree_store import IntervalTreeStore
 from pygnome.genomics import GenomicFeature, Strand
-from pygnome.genomics.feature_store import (
-    GenomicFeatureStoreImpl, StoreType
-)
 
 
 class TestFeatureStoreBenchmarks(unittest.TestCase):
     """Benchmark tests for genomic feature store implementations."""
     
     def setUp(self):
-        """Set up benchmark parameters."""
-        # Skip benchmarks by default
-        if not hasattr(self, 'run_benchmarks'):
-            self.skipTest("Benchmarks disabled")
-        
+        """Set up benchmark parameters."""        
         # Parameters
-        self.feature_counts = [1000, 10000]  # Reduced for faster tests
+        self.feature_counts = [1000, 10_000, 100_000]  # Reduced for faster tests
         self.query_counts = 100
         self.chromosomes = ["chr1", "chr2", "chr3", "chr4", "chr5"]
         self.max_position = 1_000_000
@@ -29,7 +25,19 @@ class TestFeatureStoreBenchmarks(unittest.TestCase):
         self.store_types = {
             "Interval Tree": StoreType.INTERVAL_TREE,
             "Binned": StoreType.BINNED,
-            "Position Hash": StoreType.POSITION_HASH
+        }
+        
+        # Performance thresholds (in seconds)
+        # These are generous thresholds that can be adjusted based on hardware
+        self.max_insertion_time = {
+            1000: 0.01,    # 1 second for 1000 features
+            10000: 0.1,  # 10 seconds for 10000 features
+            100000: 1.0,  # 10 seconds for 10000 features
+        }
+        self.max_query_time = {
+            1000: 0.01,    # 1 second for querying 1000 features
+            10000: 0.1,   # 5 seconds for querying 10000 features
+            100000: 1.0,   # 5 seconds for querying 10000 features
         }
     
     def generate_features(self, count):
@@ -60,14 +68,7 @@ class TestFeatureStoreBenchmarks(unittest.TestCase):
             chrom = np.random.choice(self.chromosomes)
             
             # Create the feature
-            feature = GenomicFeature(
-                id=f"feature_{i}",
-                chrom=chrom,
-                start=start,
-                end=end,
-                strand=Strand.POSITIVE if np.random.random() > 0.5 else Strand.NEGATIVE
-            )
-            
+            feature = GenomicFeature(id=f"feature_{i}", chrom=chrom, start=start, end=end, strand=Strand.POSITIVE if np.random.random() > 0.5 else Strand.NEGATIVE)            
             features.append(feature)
         
         return features
@@ -101,118 +102,153 @@ class TestFeatureStoreBenchmarks(unittest.TestCase):
     
     def test_insertion_benchmark(self):
         """Benchmark feature insertion performance."""
-        print("\n=== Insertion Performance ===")
-        
         for count in self.feature_counts:
-            print(f"\nGenerating {count} features...")
             features = self.generate_features(count)
-            
+            # Test on different store types
             for name, store_type in self.store_types.items():
-                print(f"Testing {name} with {count} features...")
-                store = GenomicFeatureStoreImpl(store_type=store_type)
+                print(f"Testing insertion for {count} features, {name}...")
+                store = GenomicFeatureStore(store_type=store_type)
                 
-                # Measure insertion time
+                # Add fetures, measure insertion time
                 start_time = time.time()
-                for feature in features:
-                    store.add_feature(feature)
+                with store:
+                    for feature in features:
+                        store.add(feature)
                 end_time = time.time()
-                
                 elapsed = end_time - start_time
-                print(f"{name}: {elapsed:.4f} seconds")
-    
+                
+                # Assert that insertion completes within threshold time (if enabled)
+                self.assertLessEqual(elapsed, self.max_insertion_time[count], f"{name} insertion time exceeded threshold for {count} features. Elapsed: {elapsed:.4f} seconds")
+            
+                # Check that the store has all the features
+                for chrom in self.chromosomes:
+                    expected_ids = {f.id for f in features if f.chrom == chrom}
+                    ids = {f.id for f in store[chrom].get_features()}
+                    self.assertEqual(ids, expected_ids, f"{name} did not store all features correctly for {count} features in chromosome '{chrom}'")
+                    # Query all features in the store
+                    end = max(f.end for f in features if f.chrom == chrom)
+                    results = store[chrom].get_by_interval(0, end + 1)
+                    result_ids = {f.id for f in results}
+                    print(f"LEN: {chrom}, {len(expected_ids)} / {len(result_ids)}")
+                    self.assertEqual(result_ids, expected_ids, f"{name} did not return all features correctly for {count} features in chromosome '{chrom}' on query [0, {end + 1}]")
+
+
     def test_position_query_benchmark(self):
         """Benchmark position query performance."""
-        print("\n=== Position Query Performance ===")
-        
         for count in self.feature_counts:
-            print(f"\nGenerating {count} features...")
             features = self.generate_features(count)
             queries = self.generate_position_queries(self.query_counts)
-            
+            # Test on different store types
             for name, store_type in self.store_types.items():
-                print(f"Testing {name} with {count} features...")
-                store = GenomicFeatureStoreImpl(store_type=store_type)
+                store = GenomicFeatureStore(store_type=store_type)
+                store_reference = GenomicFeatureStore(store_type=StoreType.BRUTE_FORCE)
                 
                 # Add features
-                for feature in features:
-                    store.add_feature(feature)
+                with store, store_reference:
+                    for feature in features:
+                        store.add(feature)
+                        store_reference.add(feature)
                 
                 # Measure query time
                 start_time = time.time()
-                total_results = 0
+                all_results = []
                 for chrom, pos in queries:
                     results = store.get_by_position(chrom, pos)
-                    total_results += len(results)
+                    result_ids = {f.id for f in results}
+                    all_results.append((chrom, pos, result_ids))
                 end_time = time.time()
-                
                 elapsed = end_time - start_time
-                print(f"{name}: {elapsed:.4f} seconds, found {total_results} features")
-    
+                
+                # Assert that query completes within threshold time (if enabled)
+                self.assertLessEqual(elapsed, self.max_query_time[count], f"{name} position query time exceeded threshold for {count} features")
+            
+                # Verify store return values
+                for chrom, pos, result_ids in all_results:
+                    ref_ids = {f.id for f in store_reference.get_by_position(chrom, pos)}
+                    self.assertEqual(ref_ids, result_ids, f"Total features found differs for {chrom}:{pos} between {name} and reference")
+
+
     def test_range_query_benchmark(self):
         """Benchmark range query performance."""
-        print("\n=== Range Query Performance ===")
-        
         for count in self.feature_counts:
-            print(f"\nGenerating {count} features...")
             features = self.generate_features(count)
             queries = self.generate_range_queries(self.query_counts)
             
             for name, store_type in self.store_types.items():
-                print(f"Testing {name} with {count} features...")
-                store = GenomicFeatureStoreImpl(store_type=store_type)
-                
+                store = GenomicFeatureStore(store_type=store_type)
+                store_reference = GenomicFeatureStore(store_type=StoreType.BRUTE_FORCE)
+
                 # Add features
-                for feature in features:
-                    store.add_feature(feature)
+                with store, store_reference:
+                    for feature in features:
+                        store.add(feature)
+                        store_reference.add(feature)
                 
                 # Measure query time
                 start_time = time.time()
                 total_results = 0
+                all_results = []
                 for chrom, start, end in queries:
                     results = store.get_by_interval(chrom, start, end)
+                    if end == 733876:
+                        print(f"RESULT: {start}-{end}, {results}")
                     total_results += len(results)
+                    all_results.append((chrom, start, end, {f.id for f in results} if results else set()))
                 end_time = time.time()
-                
                 elapsed = end_time - start_time
-                print(f"{name}: {elapsed:.4f} seconds, found {total_results} features")
-    
+                
+                # # Assert that query completes within threshold time (if enabled)
+                # self.assertLessEqual(elapsed, self.max_query_time[count], f"{name} range query time exceeded threshold for {count} features")
+            
+                # Verify store return values
+                for chrom, start, end, result_ids in all_results:
+                    ref_ids = {f.id for f in store_reference.get_by_interval(chrom, start, end)}
+                    diff_ids = ref_ids - result_ids if len(ref_ids) > len(result_ids) else result_ids - ref_ids
+                    diff = [f for f in features if f.id in diff_ids]
+                    self.assertEqual(ref_ids, result_ids, f"\nTotal features found differs for {chrom}:{start}-{end} between {name} and reference\n"
+                                     + f"\tExpected ({len(ref_ids)}): {ref_ids}\n"
+                                     + f"\tFound    ({len(result_ids)}): {result_ids}\n" 
+                                     + f"\tDifferent IDs: {diff_ids}\n\tDiff features: {diff}"
+                                     )
+
+
     def test_nearest_query_benchmark(self):
         """Benchmark nearest feature query performance."""
-        print("\n=== Nearest Feature Query Performance ===")
-        
         for count in self.feature_counts:
-            print(f"\nGenerating {count} features...")
             features = self.generate_features(count)
             queries = self.generate_position_queries(self.query_counts)
-            
+            print(f"Testing nearest query for {count} features, {len(queries)} queries...")
+            # Test on different store types
             for name, store_type in self.store_types.items():
                 print(f"Testing {name} with {count} features...")
-                store = GenomicFeatureStoreImpl(store_type=store_type)
+                store = GenomicFeatureStore(store_type=store_type)
+                store_reference = GenomicFeatureStore(store_type=StoreType.BRUTE_FORCE)
                 
                 # Add features
-                for feature in features:
-                    store.add_feature(feature)
+                with store, store_reference:
+                    for feature in features:
+                        store.add(feature)
+                        store_reference.add(feature)
                 
                 # Measure query time
                 start_time = time.time()
-                found_count = 0
+                all_results = []                
                 for chrom, pos in queries:
                     result = store.get_nearest(chrom, pos)
-                    if result is not None:
-                        found_count += 1
+                    all_results.append((chrom, pos, result.id if result else None))
+                    print(f"Querying {chrom}:{pos} -> Result: {all_results[-1]}")
                 end_time = time.time()
-                
                 elapsed = end_time - start_time
-                print(f"{name}: {elapsed:.4f} seconds, found {found_count} features")
+                
+                # Assert that query completes within threshold time (if enabled)
+                self.assertLessEqual(elapsed, self.max_query_time[count], f"{name} nearest query time exceeded threshold for {count} features")
+
+                # Verify store return values
+                for chrom, pos, result_id in all_results:
+                    ref_result = store_reference.get_nearest(chrom, pos)
+                    ref_id = ref_result.id if ref_result else None
+                    self.assertEqual(ref_id, result_id, f"Features found differs for {chrom}:{pos} between {name} and reference")
 
 
 if __name__ == "__main__":
-    # To run benchmarks:
-    # test = TestFeatureStoreBenchmarks()
-    # test.run_benchmarks = True
-    # test.setUp()
-    # test.test_insertion_benchmark()
-    # test.test_position_query_benchmark()
-    # test.test_range_query_benchmark()
-    # test.test_nearest_query_benchmark()
     unittest.main()

@@ -3,11 +3,10 @@
 import unittest
 import numpy as np
 
+from pygnome.feature_store.binned_store import BinnedGenomicStore
+from pygnome.feature_store.genomic_feature_store import GenomicFeatureStore, StoreType
+from pygnome.feature_store.interval_tree_store import IntervalTreeStore
 from pygnome.genomics import GenomicFeature, Strand
-from pygnome.genomics.feature_store import (
-    BinnedGenomicStore, GenomicFeatureStoreImpl, 
-    IntervalTreeStore, PositionHashStore, StoreType
-)
 
 
 class TestFeatureStoreComprehensive(unittest.TestCase):
@@ -26,52 +25,20 @@ class TestFeatureStoreComprehensive(unittest.TestCase):
             for i in range(10):
                 start = i * 1000
                 end = start + 500
-                self.features.append(
-                    GenomicFeature(
-                        id=f"{chrom}_basic_{i}",
-                        chrom=chrom,
-                        start=start,
-                        end=end,
-                        strand=Strand.POSITIVE
-                    )
-                )
+                self.features.append(GenomicFeature(id=f"{chrom}_basic_{i}", chrom=chrom, start=start, end=end, strand=Strand.POSITIVE))
         
         # 2. Overlapping features
         for i in range(5):
             start = i * 200
             end = start + 300  # Ensures overlap with next feature
-            self.features.append(
-                GenomicFeature(
-                    id=f"overlap_{i}",
-                    chrom="chr1",
-                    start=start,
-                    end=end,
-                    strand=Strand.POSITIVE
-                )
-            )
+            self.features.append(GenomicFeature(id=f"overlap_{i}", chrom="chr1", start=start, end=end, strand=Strand.POSITIVE))
         
         # 3. Adjacent features (end of one = start of next)
         for i in range(5):
             start = i * 1000
             end = start + 999
-            self.features.append(
-                GenomicFeature(
-                    id=f"adjacent_{i}_a",
-                    chrom="chr2",
-                    start=start,
-                    end=end,
-                    strand=Strand.POSITIVE
-                )
-            )
-            self.features.append(
-                GenomicFeature(
-                    id=f"adjacent_{i}_b",
-                    chrom="chr2",
-                    start=end + 1,
-                    end=end + 1000,
-                    strand=Strand.POSITIVE
-                )
-            )
+            self.features.append(GenomicFeature(id=f"adjacent_{i}_a", chrom="chr2", start=start, end=end, strand=Strand.POSITIVE))
+            self.features.append(GenomicFeature(id=f"adjacent_{i}_b", chrom="chr2", start=end + 1, end=end + 1000, strand=Strand.POSITIVE))
         
         # 4. Nested features (one completely inside another)
         for i in range(3):
@@ -80,82 +47,43 @@ class TestFeatureStoreComprehensive(unittest.TestCase):
             inner_start = outer_start + 500
             inner_end = outer_end - 500
             
-            self.features.append(
-                GenomicFeature(
-                    id=f"outer_{i}",
-                    chrom="chr3",
-                    start=outer_start,
-                    end=outer_end,
-                    strand=Strand.POSITIVE
-                )
-            )
-            self.features.append(
-                GenomicFeature(
-                    id=f"inner_{i}",
-                    chrom="chr3",
-                    start=inner_start,
-                    end=inner_end,
-                    strand=Strand.POSITIVE
-                )
-            )
+            self.features.append(GenomicFeature(id=f"outer_{i}", chrom="chr3", start=outer_start, end=outer_end, strand=Strand.POSITIVE))
+            self.features.append(GenomicFeature(id=f"inner_{i}",chrom="chr3",start=inner_start,end=inner_end,strand=Strand.POSITIVE))
         
         # 5. Zero-length features (start = end)
         for i in range(5):
             pos = i * 1000
-            self.features.append(
-                GenomicFeature(
-                    id=f"zero_length_{i}",
-                    chrom="chrX",
-                    start=pos,
-                    end=pos,
-                    strand=Strand.POSITIVE
-                )
-            )
+            self.features.append(GenomicFeature(id=f"zero_length_{i}", chrom="chrX", start=pos, end=pos, strand=Strand.POSITIVE))
         
         # 6. Very large features
         for i in range(2):
             start = i * 1000000
             end = start + 500000
-            self.features.append(
-                GenomicFeature(
-                    id=f"large_{i}",
-                    chrom="chrY",
-                    start=start,
-                    end=end,
-                    strand=Strand.POSITIVE
-                )
-            )
-        
-        # Create stores with all features
-        self.interval_store = IntervalTreeStore()
-        self.binned_store = BinnedGenomicStore(bin_size=1000)
-        self.position_store = PositionHashStore()
-        
-        for feature in self.features:
-            self.interval_store.add_feature(feature)
-            self.binned_store.add_feature(feature)
-            self.position_store.add_feature(feature)
+            self.features.append(GenomicFeature(id=f"large_{i}", chrom="chrY", start=start, end=end, strand=Strand.POSITIVE))
         
         # Create main stores
         self.stores = {
-            StoreType.INTERVAL_TREE: GenomicFeatureStoreImpl(store_type=StoreType.INTERVAL_TREE),
-            StoreType.BINNED: GenomicFeatureStoreImpl(store_type=StoreType.BINNED),
-            StoreType.POSITION_HASH: GenomicFeatureStoreImpl(store_type=StoreType.POSITION_HASH)
+            StoreType.BRUTE_FORCE: GenomicFeatureStore(store_type=StoreType.BRUTE_FORCE),
+            StoreType.INTERVAL_TREE: GenomicFeatureStore(store_type=StoreType.INTERVAL_TREE),
+            StoreType.BINNED: GenomicFeatureStore(store_type=StoreType.BINNED),
         }
-        
-        for feature in self.features:
-            for store in self.stores.values():
-                store.add_feature(feature)
+        self.stores_list = list(self.stores.values())
+
+        # Add features to stores        
+        for store in self.stores_list:
+            with store:
+                for feature in self.features:
+                        store.add(feature)
     
     def test_empty_queries(self):
         """Test queries that should return empty results."""
         # Test position query on non-existent position
-        for store in [self.interval_store, self.binned_store, self.position_store]:
+        for store in self.stores_list:
             features = store.get_by_position(99999999)
             self.assertEqual(len(features), 0, f"Expected empty result for {store.__class__.__name__}")
         
         # Test range query on non-existent range
-        for store in [self.interval_store, self.binned_store, self.position_store]:
+        for store in self.stores_list:
             features = store.get_by_interval(99999999, 99999999 + 1000)
             self.assertEqual(len(features), 0, f"Expected empty result for {store.__class__.__name__}")
         
@@ -172,7 +100,7 @@ class TestFeatureStoreComprehensive(unittest.TestCase):
     def test_overlapping_features(self):
         """Test queries with overlapping features."""
         # Position 250 should overlap with overlap_0 and overlap_1
-        for store in [self.interval_store, self.binned_store, self.position_store]:
+        for store in self.stores_list:
             features = store.get_by_position(250)
             self.assertEqual(len(features), 2, f"Expected 2 overlapping features for {store.__class__.__name__}")
             ids = {f.id for f in features}
@@ -180,7 +108,7 @@ class TestFeatureStoreComprehensive(unittest.TestCase):
             self.assertIn("overlap_1", ids)
         
         # Range 150-350 should overlap with overlap_0, overlap_1, and overlap_2
-        for store in [self.interval_store, self.binned_store, self.position_store]:
+        for store in self.stores_list:
             features = store.get_by_interval(150, 350)
             self.assertEqual(len(features), 3, f"Expected 3 overlapping features for {store.__class__.__name__}")
             ids = {f.id for f in features}
@@ -316,17 +244,9 @@ class TestFeatureStoreComprehensive(unittest.TestCase):
         # Create new features
         new_features = []
         for i in range(10):
-            new_features.append(
-                GenomicFeature(
-                    id=f"batch_{i}",
-                    chrom="chr4",
-                    start=i * 100,
-                    end=i * 100 + 50,
-                    strand=Strand.POSITIVE
-                )
-            )
+            new_features.append(GenomicFeature(id=f"batch_{i}", chrom="chr4", start=i * 100, end=i * 100 + 50, strand=Strand.POSITIVE))
         
-        # Test batch add for GenomicFeatureStoreImpl
+        # Test batch add for GenomicFeatureStore
         for store_type, store in self.stores.items():
             # Add features in batch
             store.add_features(new_features)

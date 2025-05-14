@@ -49,6 +49,15 @@ class ChromosomeFeatureStore(ABC):
         """Get all features that overlap with the given range."""
         pass
     
+    def get_features(self) -> list[GenomicFeature]:
+        """Get all features."""
+        return self.features
+
+    def __getitem__(self, index: int) -> list[GenomicFeature]:
+        """Get all features at a specific index."""
+        return self.features[index]
+
+
     def get_nearest(self, position: int, max_distance: int = MAX_DISTANCE) -> GenomicFeature | None:
         """Get the nearest feature to the given position."""
         # Start with a small window and expand until we find features
