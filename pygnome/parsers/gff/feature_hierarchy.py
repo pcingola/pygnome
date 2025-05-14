@@ -94,14 +94,19 @@ class FeatureHierarchy:
         """
         descendants = []
         visited = set()
+        added_record_ids = set()
         
         def _traverse(pid, depth=0):
-            if pid in visited or (max_depth is not None and depth > max_depth):
+            if pid in visited or (max_depth is not None and depth >= max_depth):
                 return
                 
             visited.add(pid)
             children = self.get_children(pid)
-            descendants.extend(children)
+            for child in children:
+                child_id = child.get_attribute('ID')
+                if child_id and child_id not in added_record_ids:
+                    descendants.append(child)
+                    added_record_ids.add(child_id)
             
             for child in children:
                 child_id = child.get_attribute('ID')
@@ -126,7 +131,7 @@ class FeatureHierarchy:
         visited = set()
         
         def _traverse(cid, depth=0):
-            if cid in visited or (max_depth is not None and depth > max_depth):
+            if cid in visited or (max_depth is not None and depth >= max_depth):
                 return
                 
             visited.add(cid)

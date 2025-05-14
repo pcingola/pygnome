@@ -4,7 +4,7 @@ Tests for the GFF3 parser.
 
 import unittest
 from pathlib import Path
-from pygnome.parsers.gff3_parser import Gff3Parser
+from pygnome.parsers.gff.gff3_parser import Gff3Parser
 from pygnome.genomics.strand import Strand
 
 

@@ -5,7 +5,7 @@ Tests for FASTQ parser.
 import unittest
 from pathlib import Path
 
-from pygnome.parsers.fastq_parser import FastqParser, FastqRecord
+from pygnome.parsers.fasta.fastq_parser import FastqParser, FastqRecord
 from pygnome.sequences.dna_string import DnaString
 from pygnome.sequences.rna_string import RnaString
 
@@ -15,7 +15,7 @@ class TestFastqParser(unittest.TestCase):
     
     def setUp(self):
         """Set up test data."""
-        self.test_file = Path("tests/data/sequences/test.fastq")
+        self.test_file = Path("pygnome/tests/data/sequences/test.fastq")
     
     def test_parse(self):
         """Test parsing a FASTQ file."""
@@ -38,7 +38,7 @@ class TestFastqParser(unittest.TestCase):
         # Check third record
         self.assertEqual(records[2].identifier, "read3")
         self.assertEqual(records[2].description, "Test read with ambiguous nucleotides")
-        self.assertEqual(records[2].sequence, "ACGTNRYSWKMBDHV")
+        self.assertEqual(records[2].sequence, "ACGTNRYSWKMBDHVN")
         self.assertEqual(records[2].quality, "IIIIHHHHGGGGFFFF")
     
     def test_context_manager(self):
@@ -56,7 +56,7 @@ class TestFastqParser(unittest.TestCase):
         self.assertEqual(len(sequences), 3)
         self.assertEqual(sequences["read1"], ("ACGTACGTACGTACGT", "IIIIIIIIIIIIIIII"))
         self.assertEqual(sequences["read2"], ("AAAACCCCGGGGTTTT", "HHHHIIIIJJJJKKKK"))
-        self.assertEqual(sequences["read3"], ("ACGTNRYSWKMBDHV", "IIIIHHHHGGGGFFFF"))
+        self.assertEqual(sequences["read3"], ("ACGTNRYSWKMBDHVN", "IIIIHHHHGGGGFFFF"))
     
     def test_parse_first(self):
         """Test parsing only the first record."""

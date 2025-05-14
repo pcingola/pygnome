@@ -68,21 +68,21 @@ class TestFeatureStoreEdgeCases(unittest.TestCase):
         # Test queries at extreme positions
         for store in [interval_store, binned_store, position_store]:
             # Query at position 0
-            features = store.get_features_at_position(0)
+            features = store.get_by_position(0)
             self.assertEqual(len(features), 1)
             self.assertEqual(features[0].id, "zero_pos")
             
             # Query at large position
-            features = store.get_features_at_position(1_000_000_500)
+            features = store.get_by_position(1_000_000_500)
             self.assertEqual(len(features), 1)
             self.assertEqual(features[0].id, "large_coord")
             
             # Range query at extreme positions
-            features = store.get_features_in_range(0, 50)
+            features = store.get_by_interval(0, 50)
             self.assertEqual(len(features), 1)
             self.assertEqual(features[0].id, "zero_pos")
             
-            features = store.get_features_in_range(1_000_000_500, 1_000_000_600)
+            features = store.get_by_interval(1_000_000_500, 1_000_000_600)
             self.assertEqual(len(features), 1)
             self.assertEqual(features[0].id, "large_coord")
     
@@ -137,15 +137,15 @@ class TestFeatureStoreEdgeCases(unittest.TestCase):
         positions = [1_000_000, 5_000_000, 11_000_000]
         for pos in positions:
             for store in [interval_store, binned_store, position_store]:
-                features = store.get_features_at_position(pos)
-                self.assertEqual(len(features), 1, 
+                features = store.get_by_position(pos)
+                self.assertEqual(len(features), 1,
                                 f"Expected 1 feature at position {pos} for {store.__class__.__name__}")
                 self.assertEqual(features[0].id, "huge")
         
         # Test position query just outside the range
         for store in [interval_store, binned_store, position_store]:
-            features = store.get_features_at_position(11_000_001)
-            self.assertEqual(len(features), 0, 
+            features = store.get_by_position(11_000_001)
+            self.assertEqual(len(features), 0,
                             f"Expected 0 features at position 11,000,001 for {store.__class__.__name__}")
     
     def test_many_features_same_position(self):
@@ -176,8 +176,8 @@ class TestFeatureStoreEdgeCases(unittest.TestCase):
         
         # Test position query at the common position
         for store in [interval_store, binned_store, position_store]:
-            result = store.get_features_at_position(1000)
-            self.assertEqual(len(result), 100, 
+            result = store.get_by_position(1000)
+            self.assertEqual(len(result), 100,
                             f"Expected 100 features at position 1000 for {store.__class__.__name__}")
             
             # Verify all features are present
@@ -243,13 +243,13 @@ class TestFeatureStoreEdgeCases(unittest.TestCase):
         #     store.add_feature(feature)
         # 
         # # Verify features exist
-        # self.assertEqual(len(store.get_features_at_position("chr1", 150)), 1)
-        # 
+        # self.assertEqual(len(store.get_by_position("chr1", 150)), 1)
+        #
         # # Remove a feature
         # store.remove_feature("feature_1")
-        # 
+        #
         # # Verify it's gone
-        # self.assertEqual(len(store.get_features_at_position("chr1", 150)), 0)
+        # self.assertEqual(len(store.get_by_position("chr1", 150)), 0)
         pass
 
 

@@ -151,12 +151,12 @@ class TestFeatureStoreComprehensive(unittest.TestCase):
         """Test queries that should return empty results."""
         # Test position query on non-existent position
         for store in [self.interval_store, self.binned_store, self.position_store]:
-            features = store.get_features_at_position(99999999)
+            features = store.get_by_position(99999999)
             self.assertEqual(len(features), 0, f"Expected empty result for {store.__class__.__name__}")
         
         # Test range query on non-existent range
         for store in [self.interval_store, self.binned_store, self.position_store]:
-            features = store.get_features_in_range(99999999, 99999999 + 1000)
+            features = store.get_by_interval(99999999, 99999999 + 1000)
             self.assertEqual(len(features), 0, f"Expected empty result for {store.__class__.__name__}")
         
         # Test position query on non-existent chromosome
@@ -173,7 +173,7 @@ class TestFeatureStoreComprehensive(unittest.TestCase):
         """Test queries with overlapping features."""
         # Position 250 should overlap with overlap_0 and overlap_1
         for store in [self.interval_store, self.binned_store, self.position_store]:
-            features = store.get_features_at_position(250)
+            features = store.get_by_position(250)
             self.assertEqual(len(features), 2, f"Expected 2 overlapping features for {store.__class__.__name__}")
             ids = {f.id for f in features}
             self.assertIn("overlap_0", ids)
@@ -181,7 +181,7 @@ class TestFeatureStoreComprehensive(unittest.TestCase):
         
         # Range 150-350 should overlap with overlap_0, overlap_1, and overlap_2
         for store in [self.interval_store, self.binned_store, self.position_store]:
-            features = store.get_features_in_range(150, 350)
+            features = store.get_by_interval(150, 350)
             self.assertEqual(len(features), 3, f"Expected 3 overlapping features for {store.__class__.__name__}")
             ids = {f.id for f in features}
             self.assertIn("overlap_0", ids)

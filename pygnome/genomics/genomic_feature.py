@@ -33,3 +33,19 @@ class GenomicFeature(BaseModel):
     def length(self) -> int:
         """Return the length of the feature (end - start)."""
         return self.end - self.start
+    
+    def intersects_point(self, position: int) -> bool:
+        """Check if the feature intersects with a specific point."""
+        return self.start <= position < self.end
+
+    def intersects_interval(self, start: int, end: int) -> bool:
+        """Check if the feature intersects with a specific interval."""
+        return not (self.end <= start or self.start >= end)
+    
+    def intersects(self, other: 'GenomicFeature') -> bool:
+        """Check if the feature intersects with another feature."""
+        return self.intersects_interval(other.start, other.end)
+    
+    def contains(self, other: 'GenomicFeature') -> bool:
+        """Check if the feature contains another feature."""
+        return self.start <= other.start and self.end >= other.end

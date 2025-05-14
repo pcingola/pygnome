@@ -104,8 +104,8 @@ class TestRecord(unittest.TestCase):
         self.assertIn("95.6", record_str)
         self.assertIn("+", record_str)
         self.assertIn("0", record_str)
-        self.assertIn("ID=gene1", record_str) or self.assertIn("ID=gene1;", record_str)
-        self.assertIn("Name=BRCA1", record_str) or self.assertIn("Name=BRCA1;", record_str)
+        self.assertTrue("ID=gene1" in record_str)
+        self.assertTrue("Name=BRCA1" in record_str)
 
 
 if __name__ == "__main__":

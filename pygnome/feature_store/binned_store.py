@@ -1,9 +1,7 @@
-"""Binned implementation for genomic feature storage."""
-
 import numpy as np
 
-from ..genomic_feature import GenomicFeature
-from .base import ChromosomeFeatureStore
+from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore
+from pygnome.genomics.genomic_feature import GenomicFeature
 
 
 class BinnedGenomicStore(ChromosomeFeatureStore):
@@ -35,7 +33,7 @@ class BinnedGenomicStore(ChromosomeFeatureStore):
     def _get_bin_ids(self, start: int, end: int) -> set[int]:
         """Get all bin IDs that this range spans."""
         start_bin = start // self.bin_size
-        end_bin = end // self.bin_size
+        end_bin = (end - 1) // self.bin_size
         return set(range(start_bin, end_bin + 1))
     
     def _add_to_bin(self, bin_id: int, feature_idx: int) -> None:
@@ -72,31 +70,18 @@ class BinnedGenomicStore(ChromosomeFeatureStore):
             # Clear buffer
             self._bin_buffers[bin_id] = []
     
-    def _ensure_all_arrays(self) -> None:
-        """Convert all buffers to arrays."""
-        for bin_id in list(self._bin_buffers.keys()):
-            if self._bin_buffers[bin_id]:
-                self._convert_buffer_to_array(bin_id)
-    
-    def add_feature(self, feature: GenomicFeature) -> None:
+    def add(self, feature: GenomicFeature) -> None:
         """Add a feature to the binned store."""
-        super().add_feature(feature)
+        super().add(feature)
         feature_idx = len(self.features) - 1
         
         # Add to all bins this feature spans
         for bin_id in self._get_bin_ids(feature.start, feature.end):
             self._add_to_bin(bin_id, feature_idx)
     
-    def _get_bin_indices(self, bin_id: int) -> np.ndarray:
+    def _get_bin_indices(self, bin_id: int) -> np.ndarray | None:
         """Get all feature indices for a bin."""
-        # Convert buffer if needed
-        if bin_id in self._bin_buffers and self._bin_buffers[bin_id]:
-            self._convert_buffer_to_array(bin_id)
-        
-        # Return array or empty array
-        if bin_id in self.bins:
-            return self.bins[bin_id]
-        return np.array([], dtype=np.int32)
+        return self.bins.get(bin_id)
     
     def get_by_position(self, position: int) -> list[GenomicFeature]:
         """Get all features at a specific position."""
@@ -104,23 +89,20 @@ class BinnedGenomicStore(ChromosomeFeatureStore):
         
         # Get indices from this bin
         indices = self._get_bin_indices(bin_id)
-        if len(indices) == 0:
+        if indices is None:
             return []
         
         # Filter features that contain the position
         result = []
         for idx in indices:
-            feature = self.features[idx]
-            if feature.start <= position <= feature.end:
+            feature: GenomicFeature = self.features[idx]
+            if feature.intersects_point(position):
                 result.append(feature)
         return result
     
     def get_by_interval(self, start: int, end: int) -> list[GenomicFeature]:
         """Get all features that overlap with the given range."""
         bin_ids = self._get_bin_ids(start, end)
-        
-        # Ensure all buffers are converted to arrays
-        self._ensure_all_arrays()
         
         # Get unique feature indices from all relevant bins
         feature_indices = set()
@@ -135,3 +117,11 @@ class BinnedGenomicStore(ChromosomeFeatureStore):
             if feature.start <= end and feature.end >= start:
                 result.append(feature)
         return result
+    
+    def index_build_end(self) -> int:
+        """Finalize the index build process."""
+        super().index_build_end()
+        # Convert all remaining buffers to arrays
+        for bin_id in list(self._bin_buffers.keys()):
+            if self._bin_buffers[bin_id]:
+                self._convert_buffer_to_array(bin_id)

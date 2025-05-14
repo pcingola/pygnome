@@ -40,7 +40,7 @@ class Record:
             self.score = None
             
         # Convert phase to int if not None or '.'
-        if self.phase and self.phase != '.':
+        if self.phase == 0 or (self.phase and self.phase != '.'):
             self.phase = int(self.phase)
         else:
             self.phase = None

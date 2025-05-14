@@ -3,22 +3,28 @@
 import re
 from .chromosome import Chromosome
 from .chromosome_category import ChromosomeCategory
+from .codon_table import CodonTableType
 from .gene import Gene
 
 
 class Genome:
     """A genome containing chromosomes and genes."""
     
-    def __init__(self, name: str, species: str | None = None):
+    def __init__(self, name: str, species: str | None = None,
+                codon_table_type: CodonTableType = CodonTableType.STANDARD):
         """Initialize a genome."""
         self.name = name
         self.species = species
+        self.codon_table_type = codon_table_type
         self.chromosomes: dict[str, Chromosome] = {}
         self.genes: dict[str, Gene] = {}
         
     def add_chromosome(self, chromosome: Chromosome) -> None:
         """Add a chromosome to the genome."""
         self.chromosomes[chromosome.name] = chromosome
+        
+        # Set the genome reference in the chromosome
+        chromosome.genome = self
         
         # Add all genes from the chromosome to the genome's gene index
         for gene_id, gene in chromosome.genes.items():
@@ -43,7 +49,8 @@ class Genome:
     def __str__(self) -> str:
         """Return a string representation of the genome."""
         species_str = f", {self.species}" if self.species else ""
-        return f"Genome({self.name}{species_str}, {len(self.chromosomes)} chromosomes, {len(self.genes)} genes)"
+        codon_table_str = f", {self.codon_table_type}"
+        return f"Genome({self.name}{species_str}{codon_table_str}, {len(self.chromosomes)} chromosomes, {len(self.genes)} genes)"
     
     def __iter__(self):
         """Iterate over chromosomes in standard order (1-22, X, Y, M, others)."""

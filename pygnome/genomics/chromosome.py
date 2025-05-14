@@ -1,6 +1,6 @@
 """Chromosome class for genomic annotations."""
 
-from typing import List
+from typing import Any, Dict, List, Optional, Union
 
 from ..sequences.dna_string import DnaString
 from .gene import Gene
@@ -9,13 +9,14 @@ from .gene import Gene
 class Chromosome:
     """A chromosome containing genes and optionally a DNA sequence."""
     
-    def __init__(self, name: str, length: int | None = None, 
+    def __init__(self, name: str, length: int | None = None,
                  sequence: DnaString | None = None):
         """Initialize a chromosome."""
         self.name = name
         self._length = length
         self.sequence = sequence
         self.genes: dict[str, Gene] = {}
+        self.genome: Any = None  # Reference to Genome
         
     @property
     def length(self) -> int | None:
@@ -32,7 +33,15 @@ class Chromosome:
             raise ValueError(f"Gene {gene.id} has chromosome {gene.chrom}, "
                             f"expected {self.name}")
         self.genes[gene.id] = gene
-    
+        
+        # Set the chromosome reference in the gene
+        gene.chromosome = self
+
+    def add_genes(self, genes: list[Gene]) -> None:
+        """Add multiple genes to the chromosome."""
+        for gene in genes:
+            self.add_gene(gene)
+
     def get_gene(self, gene_id: str) -> Gene | None:
         """Get a gene by ID."""
         return self.genes.get(gene_id)
@@ -60,3 +69,9 @@ class Chromosome:
     def __iter__(self):
         """Iterate over genes sorted by start position."""
         return iter(sorted(self.genes.values(), key=lambda x: x.start))
+
+# This will be called after all models are defined
+# to resolve forward references
+def update_forward_refs():
+    from .genome import Genome
+    Chromosome.model_rebuild()

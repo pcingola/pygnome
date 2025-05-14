@@ -2,23 +2,25 @@
 
 from enum import Enum
 
-from ..genomic_feature import GenomicFeature
-from .base import ChromosomeFeatureStore, FeatureStore
-from .binned_store import BinnedGenomicStore
-from .interval_tree_store import IntervalTreeStore
-from .position_hash_store import PositionHashStore
+from pygnome.feature_store.binned_store import BinnedGenomicStore
+from pygnome.feature_store.brute_force_store import BruteForceFeatureStore
+from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore
+from pygnome.feature_store.genomic_feature_store_protocol import MAX_DISTANCE, GenomicFeatureStoreProtocol
+from pygnome.feature_store.interval_tree_store import IntervalTreeStore
+from pygnome.genomics.genomic_feature import GenomicFeature
+
 
 
 class StoreType(str, Enum):
     """Types of genomic feature stores."""
     INTERVAL_TREE = "interval_tree"
     BINNED = "binned"
-    POSITION_HASH = "position_hash"
+    BRUTE_FORCE = "brute_force"
 
 
-class GenomicFeatureStoreImpl(FeatureStore):
+class GenomicFeatureStore(GenomicFeatureStoreProtocol):
     """Implementation of the genomic feature store."""
-    
+
     def __init__(self, store_type: StoreType | str = StoreType.INTERVAL_TREE, bin_size: int = 100000):
         """
         Initialize the genomic feature store.
@@ -38,43 +40,44 @@ class GenomicFeatureStoreImpl(FeatureStore):
             self.store_type = store_type
             
         self.bin_size = bin_size
-    
+
     def _get_or_create_chrom_store(self, chrom: str) -> ChromosomeFeatureStore:
         """Get or create a chromosome store."""
         if chrom not in self.chromosomes:
-            if self.store_type == StoreType.INTERVAL_TREE:
-                self.chromosomes[chrom] = IntervalTreeStore()
-            elif self.store_type == StoreType.BINNED:
-                self.chromosomes[chrom] = BinnedGenomicStore(self.bin_size)
-            elif self.store_type == StoreType.POSITION_HASH:
-                self.chromosomes[chrom] = PositionHashStore()
-            else:
-                raise ValueError(f"Unknown store type: {self.store_type}")
+            match self.store_type:
+                case StoreType.INTERVAL_TREE:
+                    self.chromosomes[chrom] = IntervalTreeStore()
+                case StoreType.BINNED:
+                    self.chromosomes[chrom] = BinnedGenomicStore(self.bin_size)
+                case StoreType.BRUTE_FORCE:
+                    self.chromosomes[chrom] = BruteForceFeatureStore()
+                case _:
+                    raise ValueError(f"Unknown store type: {self.store_type}")
         return self.chromosomes[chrom]
-    
+
     def add_feature(self, feature: GenomicFeature) -> None:
         """Add a genomic feature to the store."""
         chrom_store = self._get_or_create_chrom_store(feature.chrom)
-        chrom_store.add_feature(feature)
-    
+        chrom_store.add(feature)
+
     def add_features(self, features: list[GenomicFeature]) -> None:
         """Add multiple genomic features to the store."""
         for feature in features:
             self.add_feature(feature)
-    
+
     def get_by_position(self, chrom: str, position: int) -> list[GenomicFeature]:
         """Get all features at a specific position."""
         if chrom not in self.chromosomes:
             return []
         return self.chromosomes[chrom].get_by_position(position)
-    
+
     def get_by_interval(self, chrom: str, start: int, end: int) -> list[GenomicFeature]:
         """Get all features that overlap with the given range."""
         if chrom not in self.chromosomes:
             return []
         return self.chromosomes[chrom].get_by_interval(start, end)
-    
-    def get_nearest(self, chrom: str, position: int, max_distance: int = None) -> GenomicFeature | None:
+
+    def get_nearest(self, chrom: str, position: int, max_distance: int = MAX_DISTANCE) -> GenomicFeature | None:
         """Get the nearest feature to the given position."""
         if chrom not in self.chromosomes:
             return None
@@ -98,7 +101,7 @@ class GenomicFeatureStoreImpl(FeatureStore):
         
         # Count across all chromosomes
         return sum(len(store.features) for store in self.chromosomes.values())
-    
+
     def __str__(self) -> str:
         """Return a string representation of the feature store."""
         chrom_counts = [f"{chrom}: {len(store.features)}" 

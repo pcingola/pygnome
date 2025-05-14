@@ -5,7 +5,7 @@ Tests for FASTA parser.
 import unittest
 from pathlib import Path
 
-from pygnome.parsers.fasta_parser import FastaParser, FastaRecord
+from pygnome.parsers.fasta.fasta_parser import FastaParser, FastaRecord
 from pygnome.sequences.dna_string import DnaString
 from pygnome.sequences.rna_string import RnaString
 
@@ -15,7 +15,7 @@ class TestFastaParser(unittest.TestCase):
     
     def setUp(self):
         """Set up test data."""
-        self.test_file = Path("tests/data/sequences/test.fasta")
+        self.test_file = Path("pygnome/tests/data/sequences/test.fasta")
     
     def test_parse(self):
         """Test parsing a FASTA file."""
