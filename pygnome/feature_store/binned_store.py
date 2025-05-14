@@ -114,7 +114,7 @@ class BinnedGenomicStore(ChromosomeFeatureStore):
         result = []
         for idx in feature_indices:
             feature = self.features[idx]
-            if feature.start <= end and feature.end >= start:
+            if feature.intersects_interval(start, end):
                 result.append(feature)
         return result
     

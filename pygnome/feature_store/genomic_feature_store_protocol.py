@@ -10,9 +10,13 @@ from ..genomics.genomic_feature import GenomicFeature
 
 @runtime_checkable
 class GenomicFeatureStoreProtocol(Protocol):
-    """Protocol for genomic feature stores."""
+    """
+    Protocol for genomic feature stores.
+
+    Feature stores MUST also be context managers (__enter__ and __exit__ methods), which is used during index creation
+    """
     
-    def add_feature(self, feature: GenomicFeature) -> None:
+    def add(self, feature: GenomicFeature) -> None:
         """Add a genomic feature to the store."""
         ...
     

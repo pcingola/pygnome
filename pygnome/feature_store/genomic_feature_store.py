@@ -53,9 +53,11 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
                     self.chromosomes[chrom] = BruteForceFeatureStore()
                 case _:
                     raise ValueError(f"Unknown store type: {self.store_type}")
+            # Make sure the chromosome store is in 'index build' mode
+            self.chromosomes[chrom].index_build_start()
         return self.chromosomes[chrom]
 
-    def add_feature(self, feature: GenomicFeature) -> None:
+    def add(self, feature: GenomicFeature) -> None:
         """Add a genomic feature to the store."""
         chrom_store = self._get_or_create_chrom_store(feature.chrom)
         chrom_store.add(feature)
@@ -63,7 +65,7 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
     def add_features(self, features: list[GenomicFeature]) -> None:
         """Add multiple genomic features to the store."""
         for feature in features:
-            self.add_feature(feature)
+            self.add(feature)
 
     def get_by_position(self, chrom: str, position: int) -> list[GenomicFeature]:
         """Get all features at a specific position."""
@@ -110,3 +112,14 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
                 f"chromosomes={len(self.chromosomes)}, "
                 f"features={self.get_feature_count()}, "
                 f"{', '.join(chrom_counts)})")
+    
+    def __enter__(self):
+        """Enter the context manager when adding features"""
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Exit the context manager after adding features, ensures all indeces are built"""
+        # No special cleanup needed for this store
+        for chrom in self.chromosomes.values():
+            chrom.index_build_end()
+        return False

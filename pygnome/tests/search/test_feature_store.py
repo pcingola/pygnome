@@ -4,13 +4,14 @@ import unittest
 import time
 import numpy as np
 
+from pygnome.feature_store.brute_force_store import BruteForceFeatureStore
+from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore
+from pygnome.feature_store.genomic_feature_store_protocol import GenomicFeatureStoreProtocol
 from pygnome.genomics import GenomicFeature, Strand
 from pygnome.feature_store import (
     BinnedGenomicStore, GenomicFeatureStore, 
     IntervalTreeStore, StoreType
 )
-from pygnome.feature_store.genomic_feature_store_protocol import ChromosomeFeatureStore, FeatureStore
-from pygnome.feature_store.brute_force_store import BruteForceFeatureStore
 
 
 class TestFeatureStore(unittest.TestCase):
@@ -41,14 +42,22 @@ class TestFeatureStore(unittest.TestCase):
 
     def compare_results(self, store_type, expected, got, chr: str, start: int, end: int | None):
         end_str = "" if end is None else f"-{end}"
-        print(f"Comparing results for {store_type} at {chr}:{start}{end_str}, expected: {len(expected)}, got: {len(got)}")
+        # Compare number of features
+        exp_str = "\n".join(sorted([f"\t\t{f}" for f in expected]))
+        got_str = "\n".join(sorted([f"\t\t{f}" for f in got]))
         if len(expected) != len(got):
-            exp_str = "\n".join(sorted([f"\t\t{f}" for f in expected]))
-            got_str = "\n".join(sorted([f"\t\t{f}" for f in got]))
             self.assertEqual(len(expected), len(got), f"\nFeature store {store_type} failed to retrieve at {chr}:{start}{end_str}:\n" 
                              + f"\tExpexcted ({len(expected)}):\n{exp_str}\n" 
                              + f"\tGot       ({len(got)}):\n{got_str}\n"
-                             )  # small_2, medium_0, large_0
+                             )
+        # Compare found features
+        exp_ids = [f.id for f in expected]
+        got_ids = [f.id for f in got]
+        if exp_ids != got_ids:
+            self.assertEqual(len(expected), len(got), f"\nFeature store {store_type} failed to retrieve at {chr}:{start}{end_str}:\n" 
+                             + f"\tExpexcted IDs: : {exp_ids}\n" 
+                             + f"\tGot IDs        : {got_ids}\n"
+                             )        
 
 
     def compare_chr_stores(self, store_reference: ChromosomeFeatureStore, store: ChromosomeFeatureStore):
@@ -76,7 +85,7 @@ class TestFeatureStore(unittest.TestCase):
             self.compare_results(store_type, expected, features_in_range, "chr1", start, end)
 
 
-    def compare_stores(self, store_reference: FeatureStore, store: FeatureStore):
+    def compare_stores(self, store_reference: GenomicFeatureStoreProtocol, store: GenomicFeatureStoreProtocol):
             """
             Compare two feature stores.
             One is a reference store (store_reference) and the other is the store being tested (store).
@@ -85,15 +94,15 @@ class TestFeatureStore(unittest.TestCase):
             # Add features
             with store_reference, store:
                 for feature in self.features:
-                    store.add_feature(feature)
-                    store_reference.add_feature(feature)
+                    store.add(feature)
+                    store_reference.add(feature)
             
             # Test position query
             chr, pos = 'chr1', 250
             expected = store_reference.get_by_position(chr, pos)
             features_at_pos = store.get_by_position(chr, pos)
             self.compare_results(store_type, expected, features_at_pos, "chr1", pos, None)
-            
+
             # Test range query
             chr, start, end = 'chr1', 1000, 1200
             expected = store_reference.get_by_interval(chr, start, end)
@@ -147,7 +156,7 @@ class TestFeatureStore(unittest.TestCase):
         for name, store in stores.items():
             start_time = time.time()
             for feature in features:
-                store.add_feature(feature)
+                store.add(feature)
             end_time = time.time()
             print(f"{name} insertion time: {end_time - start_time:.4f} seconds")
         

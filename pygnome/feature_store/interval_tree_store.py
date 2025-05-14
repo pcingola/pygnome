@@ -3,8 +3,8 @@
 import numpy as np
 from dataclasses import dataclass, field
 
-from ..genomics.genomic_feature import GenomicFeature
-from .genomic_feature_store_protocol import ChromosomeFeatureStore
+from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore
+from pygnome.genomics.genomic_feature import GenomicFeature
 
 
 @dataclass
