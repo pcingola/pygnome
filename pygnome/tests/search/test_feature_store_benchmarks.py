@@ -129,7 +129,6 @@ class TestFeatureStoreBenchmarks(unittest.TestCase):
                     end = max(f.end for f in features if f.chrom == chrom)
                     results = store[chrom].get_by_interval(0, end + 1)
                     result_ids = {f.id for f in results}
-                    print(f"LEN: {chrom}, {len(expected_ids)} / {len(result_ids)}")
                     self.assertEqual(result_ids, expected_ids, f"{name} did not return all features correctly for {count} features in chromosome '{chrom}' on query [0, {end + 1}]")
 
 
@@ -190,8 +189,6 @@ class TestFeatureStoreBenchmarks(unittest.TestCase):
                 all_results = []
                 for chrom, start, end in queries:
                     results = store.get_by_interval(chrom, start, end)
-                    if end == 733876:
-                        print(f"RESULT: {start}-{end}, {results}")
                     total_results += len(results)
                     all_results.append((chrom, start, end, {f.id for f in results} if results else set()))
                 end_time = time.time()
@@ -236,7 +233,6 @@ class TestFeatureStoreBenchmarks(unittest.TestCase):
                 for chrom, pos in queries:
                     result = store.get_nearest(chrom, pos)
                     all_results.append((chrom, pos, result.id if result else None))
-                    print(f"Querying {chrom}:{pos} -> Result: {all_results[-1]}")
                 end_time = time.time()
                 elapsed = end_time - start_time
                 
