@@ -5,6 +5,7 @@ import unittest
 
 from pygnome.parsers.vcf.vcf_header import VcfHeader
 from pygnome.parsers.vcf.vcf_record import VcfRecord, Genotype
+from pygnome.genomics.variant import SNP, Insertion, Deletion, ComplexVariant
 
 
 class TestVcfRecord(unittest.TestCase):
@@ -142,6 +143,27 @@ class TestVcfRecord(unittest.TestCase):
     def test_str(self):
         """Test the string representation of the record."""
         self.assertEqual(str(self.record), self.record_line)
+    
+    def test_iterator(self):
+        """Test the iterator functionality of VcfRecord."""
+        # Test with SNP record
+        variants = list(self.record)
+        self.assertEqual(len(variants), 1)
+        self.assertIsInstance(variants[0], SNP)
+        self.assertEqual(variants[0].ref, "G")
+        self.assertEqual(variants[0].alt, "A")  # Should be a string, not a list
+        
+        # Test with multi-allelic record
+        variants = list(self.multi_record)
+        self.assertEqual(len(variants), 2)
+        
+        # First variant should be an insertion (A -> G)
+        self.assertEqual(variants[0].ref, "A")
+        self.assertEqual(variants[0].alt, "G")  # Should be a string, not a list
+        
+        # Second variant should be an insertion (A -> T)
+        self.assertEqual(variants[1].ref, "A")
+        self.assertEqual(variants[1].alt, "T")  # Should be a string, not a list
 
 
 if __name__ == '__main__':

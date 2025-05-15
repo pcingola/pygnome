@@ -22,7 +22,7 @@ class TestVariant(unittest.TestCase):
             end=1001,
             strand=Strand.POSITIVE,
             ref="A",
-            alt=["T"]
+            alt="T"
         )
         
         self.assertEqual(variant.id, "test_variant")
@@ -31,25 +31,9 @@ class TestVariant(unittest.TestCase):
         self.assertEqual(variant.end, 1001)
         self.assertEqual(variant.strand, Strand.POSITIVE)
         self.assertEqual(variant.ref, "A")
-        self.assertEqual(variant.alt, ["T"])
+        self.assertEqual(variant.alt, "T")
         self.assertEqual(variant.length, 1)
-        self.assertFalse(variant.is_multi_allelic)
-        self.assertEqual(variant.alleles, ["A", "T"])
     
-    def test_multi_allelic_variant(self):
-        """Test creating a multi-allelic Variant."""
-        variant = Variant(
-            id="multi_allelic",
-            chrom="chr1",
-            start=1000,
-            end=1001,
-            strand=Strand.POSITIVE,
-            ref="A",
-            alt=["T", "G", "C"]
-        )
-        
-        self.assertTrue(variant.is_multi_allelic)
-        self.assertEqual(variant.alleles, ["A", "T", "G", "C"])
     
     def test_snp(self):
         """Test creating an SNP."""
@@ -60,11 +44,11 @@ class TestVariant(unittest.TestCase):
             end=1001,
             strand=Strand.POSITIVE,
             ref="A",
-            alt=["T"]
+            alt="T"
         )
         
         self.assertEqual(snp.ref, "A")
-        self.assertEqual(snp.alt, ["T"])
+        self.assertEqual(snp.alt, "T")
         self.assertEqual(snp.length, 1)
     
     def test_invalid_snp(self):
@@ -78,7 +62,7 @@ class TestVariant(unittest.TestCase):
                 end=1002,
                 strand=Strand.POSITIVE,
                 ref="AT",
-                alt=["T"]
+                alt="T"
             )
         
         # Alternate allele too long
@@ -90,7 +74,7 @@ class TestVariant(unittest.TestCase):
                 end=1001,
                 strand=Strand.POSITIVE,
                 ref="A",
-                alt=["TG"]
+                alt="TG"
             )
     
     def test_insertion(self):
@@ -102,12 +86,12 @@ class TestVariant(unittest.TestCase):
             end=1001,
             strand=Strand.POSITIVE,
             ref="A",
-            alt=["ATG"]
+            alt="ATG"
         )
         
         self.assertEqual(insertion.ref, "A")
-        self.assertEqual(insertion.alt, ["ATG"])
-        self.assertEqual(insertion.inserted_sequence, ["TG"])
+        self.assertEqual(insertion.alt, "ATG")
+        self.assertEqual(insertion.inserted_sequence, "TG")
     
     def test_invalid_insertion(self):
         """Test that invalid Insertions raise validation errors."""
@@ -120,7 +104,7 @@ class TestVariant(unittest.TestCase):
                 end=1001,
                 strand=Strand.POSITIVE,
                 ref="A",
-                alt=["A"]
+                alt="A"
             )
     
     def test_deletion(self):
@@ -132,11 +116,11 @@ class TestVariant(unittest.TestCase):
             end=1003,
             strand=Strand.POSITIVE,
             ref="ATG",
-            alt=["A"]
+            alt="A"
         )
         
         self.assertEqual(deletion.ref, "ATG")
-        self.assertEqual(deletion.alt, ["A"])
+        self.assertEqual(deletion.alt, "A")
         self.assertEqual(deletion.deleted_sequence, "TG")
     
     def test_invalid_deletion(self):
@@ -150,7 +134,7 @@ class TestVariant(unittest.TestCase):
                 end=1003,
                 strand=Strand.POSITIVE,
                 ref="ATG",
-                alt=["ATG"]
+                alt="ATG"
             )
     
     def test_duplication(self):
@@ -162,12 +146,12 @@ class TestVariant(unittest.TestCase):
             end=1003,
             strand=Strand.POSITIVE,
             ref="ATG",
-            alt=["<DUP>"],
+            alt="<DUP>",
             dup_length=3
         )
         
         self.assertEqual(duplication.ref, "ATG")
-        self.assertEqual(duplication.alt, ["<DUP>"])
+        self.assertEqual(duplication.alt, "<DUP>")
         self.assertEqual(duplication.dup_length, 3)
         self.assertEqual(duplication.duplicated_sequence, "ATG")
     
@@ -180,12 +164,12 @@ class TestVariant(unittest.TestCase):
             end=1003,
             strand=Strand.POSITIVE,
             ref="ATG",
-            alt=["<INV>"],
+            alt="<INV>",
             inv_length=3
         )
         
         self.assertEqual(inversion.ref, "ATG")
-        self.assertEqual(inversion.alt, ["<INV>"])
+        self.assertEqual(inversion.alt, "<INV>")
         self.assertEqual(inversion.inv_length, 3)
         self.assertEqual(inversion.inverted_sequence, "GTA")  # ATG reversed
     
@@ -198,13 +182,13 @@ class TestVariant(unittest.TestCase):
             end=1003,
             strand=Strand.POSITIVE,
             ref="ATG",
-            alt=["<TRA>"],
+            alt="<TRA>",
             dest_chrom="chr2",
             dest_pos=2000
         )
         
         self.assertEqual(translocation.ref, "ATG")
-        self.assertEqual(translocation.alt, ["<TRA>"])
+        self.assertEqual(translocation.alt, "<TRA>")
         self.assertEqual(translocation.dest_chrom, "chr2")
         self.assertEqual(translocation.dest_pos, 2000)
     
@@ -217,12 +201,12 @@ class TestVariant(unittest.TestCase):
             end=1010,
             strand=Strand.POSITIVE,
             ref="ATGCATGCAT",
-            alt=["ACGTACGTAC"],
+            alt="ACGTACGTAC",
             description="Complex rearrangement"
         )
         
         self.assertEqual(complex_var.ref, "ATGCATGCAT")
-        self.assertEqual(complex_var.alt, ["ACGTACGTAC"])
+        self.assertEqual(complex_var.alt, "ACGTACGTAC")
         self.assertEqual(complex_var.description, "Complex rearrangement")
 
 

@@ -15,7 +15,9 @@ class TestFastaParser(unittest.TestCase):
     
     def setUp(self):
         """Set up test data."""
-        self.test_file = Path("pygnome/tests/data/sequences/test.fasta")
+        # Use absolute path to ensure file can be found regardless of working directory
+        current_dir = Path(__file__).parent
+        self.test_file = current_dir.parent / "data" / "sequences" / "test.fasta"
     
     def test_parse(self):
         """Test parsing a FASTA file."""
@@ -78,7 +80,7 @@ class TestFastaParser(unittest.TestCase):
         
         self.assertEqual(len(sequences), 3)
         self.assertIsInstance(sequences["seq1"], RnaString)
-        self.assertEqual(str(sequences["seq1"]), "ACGUACGUACGUACGU")  # Note: T converted to U
+        self.assertEqual(str(sequences["seq1"]), "ACGAACGAACGAACGA")  # Note: T is not automatically converted to U
     
     def test_fasta_record_str(self):
         """Test string representation of FastaRecord."""

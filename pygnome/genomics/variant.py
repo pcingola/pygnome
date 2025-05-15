@@ -4,11 +4,22 @@ Variant classes for representing genomic variants.
 This module defines a hierarchy of classes for representing genomic variants,
 building on top of the GenomicFeature class.
 """
-
 from typing import Any
 from dataclasses import dataclass, field
+from enum import Enum, auto
 
 from .genomic_feature import GenomicFeature
+
+
+class VariantType(str, Enum):
+    """Enum representing different types of variants."""
+    SNP = "SNP"
+    INS = "INS"
+    DEL = "DEL"
+    SV = "SV"
+    BND = "BND"
+    OTHER = "OTHER"
+
 
 
 @dataclass
@@ -20,7 +31,7 @@ class Variant(GenomicFeature):
     alternate alleles.
     """
     ref: str  # Reference allele
-    alt: list[str]  # Alternate alleles
+    alt: str  # Alternate allele
     quality: float | None = None  # Quality score
     filters: list[str] = field(default_factory=list)  # Filter flags
     info: dict[str, Any] = field(default_factory=dict)  # INFO fields
@@ -29,23 +40,12 @@ class Variant(GenomicFeature):
         """Validate the variant after initialization."""
         super().__post_init__()
         
-        # Validate that there is at least one alternate allele
+        # Validate that the alternate allele is not empty
         if not self.alt:
-            raise ValueError("At least one alternate allele is required")
-    
-    @property
-    def is_multi_allelic(self) -> bool:
-        """Check if this variant has multiple alternate alleles."""
-        return len(self.alt) > 1
-    
-    @property
-    def alleles(self) -> list[str]:
-        """Get all alleles (reference and alternates)."""
-        return [self.ref] + self.alt
-    
+            raise ValueError("Alternate allele is required")
     def __str__(self) -> str:
         """Return a string representation of the variant."""
-        return f"{self.__class__.__name__}({self.id}, {self.chrom}:{self.start}-{self.end}, {self.ref}>{','.join(self.alt)})"
+        return f"{self.__class__.__name__}({self.id}, {self.chrom}:{self.start}-{self.end}, {self.ref}>{self.alt})"
 
 
 @dataclass
@@ -64,10 +64,9 @@ class SNP(Variant):
         if len(self.ref) != 1:
             raise ValueError("Reference allele must be a single base for SNP")
         
-        # Validate that all alternate alleles are single bases
-        for a in self.alt:
-            if len(a) != 1:
-                raise ValueError("Alternate alleles must be single bases for SNP")
+        # Validate that the alternate allele is a single base
+        if len(self.alt) != 1:
+            raise ValueError("Alternate allele must be a single base for SNP")
 
 
 @dataclass
@@ -82,15 +81,14 @@ class Insertion(Variant):
         """Validate the insertion after initialization."""
         super().__post_init__()
         
-        # Validate that all alternate alleles are longer than the reference
-        for a in self.alt:
-            if len(a) <= len(self.ref):
-                raise ValueError("Alternate alleles must be longer than reference for insertion")
+        # Validate that the alternate allele is longer than the reference
+        if len(self.alt) <= len(self.ref):
+            raise ValueError("Alternate allele must be longer than reference for insertion")
     
     @property
-    def inserted_sequence(self) -> list[str]:
-        """Get the inserted sequence for each alternate allele."""
-        return [a[len(self.ref):] for a in self.alt]
+    def inserted_sequence(self) -> str:
+        """Get the inserted sequence."""
+        return self.alt[len(self.ref):]
 
 
 @dataclass
@@ -105,15 +103,14 @@ class Deletion(Variant):
         """Validate the deletion after initialization."""
         super().__post_init__()
         
-        # Validate that all alternate alleles are shorter than the reference
-        for a in self.alt:
-            if len(a) >= len(self.ref):
-                raise ValueError("Alternate alleles must be shorter than reference for deletion")
+        # Validate that the alternate allele is shorter than the reference
+        if len(self.alt) >= len(self.ref):
+            raise ValueError("Alternate allele must be shorter than reference for deletion")
     
     @property
     def deleted_sequence(self) -> str:
         """Get the deleted sequence."""
-        return self.ref[len(self.alt[0]):]
+        return self.ref[len(self.alt):]
 
 
 @dataclass
