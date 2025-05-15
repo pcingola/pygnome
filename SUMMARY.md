@@ -46,10 +46,12 @@ The library models genomic features with a hierarchical structure:
 The library provides efficient data structures for querying genomic features:
 
 - `FeatureStore`: Interface for storing and querying genomic features
-- `GenomicFeatureStoreImpl`: Main implementation with multiple storage backends:
+- `GenomicFeatureStore`: Main implementation with multiple storage backends:
   - `IntervalTreeStore`: Uses interval trees for efficient range queries
   - `BinnedGenomicStore`: Divides genome into bins for faster lookups
-  - `PositionHashStore`: Optimized for position-specific queries
+  - `BruteForceFeatureStore`: Simple linear search implementation
+  - `MsiChromosomeStore`: Specialized store for MSI (Microsatellite Instability) sites
+- Feature stores support serialization via pickle for quick saving and loading of genomic data
 
 ### Parsers
 Parsers for common genomic file formats:

@@ -1,6 +1,8 @@
 """Main implementation of the genomic feature store."""
 
+import pickle
 from enum import Enum
+from pathlib import Path
 
 from pygnome.feature_store.binned_store import BinnedGenomicStore
 from pygnome.feature_store.brute_force_store import BruteForceFeatureStore
@@ -137,3 +139,44 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
     
     def __repr__(self) -> str:
         return self.__str__()
+    
+    def save(self, filepath: Path) -> None:
+        """
+        Save the genomic feature store to a file using pickle.
+        
+        Args:
+            filepath: Path to save the store to
+        """
+        # Ensure the directory exists
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Make sure all indices are built before saving
+        for chrom in self.chromosomes.values():
+            if chrom.index_build_mode:
+                chrom.index_build_end()
+        
+        with open(filepath, 'wb') as f:
+            pickle.dump(self, f)
+    
+    @classmethod
+    def load(cls, filepath: Path) -> 'GenomicFeatureStore':
+        """
+        Load a genomic feature store from a file.
+        
+        Args:
+            filepath: Path to load the store from
+            
+        Returns:
+            The loaded genomic feature store
+        """
+        if not filepath.exists():
+            raise FileNotFoundError(f"File not found: {filepath}")
+        
+        with open(filepath, 'rb') as f:
+            store = pickle.load(f)
+        
+        # Validate the loaded object
+        if not isinstance(store, GenomicFeatureStore):
+            raise TypeError(f"Loaded object is not a GenomicFeatureStore: {type(store)}")
+        
+        return store

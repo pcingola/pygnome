@@ -3,6 +3,7 @@ Utility functions for loading MSI sites into a GenomicFeatureStore.
 """
 
 from pathlib import Path
+import time
 from pygnome.feature_store.genomic_feature_store import GenomicFeatureStore, StoreType
 from pygnome.feature_store.msi_chromosome_store import MsiChromosomeStore, MsiSiteCounter
 from pygnome.parsers.msi.msi_sites_reader import MsiSitesReader
@@ -31,16 +32,19 @@ def load_msi_sites(file_path: Path, verbose: bool) -> GenomicFeatureStore:
     if verbose:
         print(f"Counting features in {file_path}...")
     prev_chrom, count = None, 0
+    start_time = time.time()
     with MsiSitesReader(file_path) as reader:
         for record in reader:
             counter.add(record)
             count += 1
             if verbose and record.chrom != prev_chrom:
                 # Show only if new chromosome is encountered
-                print(f"Processing chromosome: {record.chrom}, count: {count}")
+                elapsed = time.time() - start_time
+                print(f"{count} ({elapsed:.2f}s): {record.chrom}")
                 prev_chrom = record.chrom
     if verbose:
-        print(f"Total features counted: {count}")
+        elapsed = time.time() - start_time
+        print(f"Total features counted: {count} (elapsed: {elapsed:.2f}s)")
 
     # Create chromosome stores with pre-allocated arrays
     for chrom in counter.feature_counts:
@@ -64,11 +68,13 @@ def load_msi_sites(file_path: Path, verbose: bool) -> GenomicFeatureStore:
                 count += 1
                 if verbose and record.chrom != prev_chrom:
                     # Show only if new chromosome is encountered
-                    print(f"Loading chromosome: {record.chrom}, count: {count}")
+                    elapsed = time.time() - start_time
+                    print(f"{count} ({elapsed:.2f}s): {record.chrom}")
                     prev_chrom = record.chrom
     if verbose:
-        print(f"Total features loaded: {count}")
-    
+        elapsed = time.time() - start_time
+        print(f"Total features loaded: {count} ({elapsed:.2f}s)")
+
     # Finalize all chromosome stores
     for chrom_store in feature_store.chromosomes.values():
         chrom_store.index_build_end()
