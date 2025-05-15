@@ -3,9 +3,9 @@ Base class for efficient 2-bit representation of nucleotide sequences.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
-
 import numpy as np
+
+from pygnome.sequences.alphabets import BITS_PER_NUCLEOTIDE, NUCLEOTIDES_PER_INT, PREVIEW_LENGTH
 
 
 class BaseSequence(ABC):
@@ -17,27 +17,16 @@ class BaseSequence(ABC):
     single 32-bit integer.
     """
     
-    # Constants
-    NUCLEOTIDES_PER_INT = 16  # Number of nucleotides stored in one integer
-    BITS_PER_NUCLEOTIDE = 2   # Number of bits per nucleotide
-    PREVIEW_LENGTH = 30       # Length of sequence preview in __repr__
-    
     @property
     @abstractmethod
-    def _NT_TO_BITS(self) -> Dict[str, int]:
+    def _NT_TO_BITS(self) -> dict[str, int]:
         """Mapping from nucleotide characters to 2-bit values."""
         pass
     
     @property
     @abstractmethod
-    def _BITS_TO_NT(self) -> Dict[int, str]:
+    def _BITS_TO_NT(self) -> dict[int, str]:
         """Mapping from 2-bit values to nucleotide characters."""
-        pass
-    
-    @property
-    @abstractmethod
-    def _class_name(self) -> str:
-        """Name of the class for use in __repr__."""
         pass
     
     def __init__(self, sequence: str):
@@ -50,12 +39,12 @@ class BaseSequence(ABC):
         self.length = len(sequence)
         
         # Calculate how many integers we need to store the sequence
-        num_ints = (self.length + self.NUCLEOTIDES_PER_INT - 1) // self.NUCLEOTIDES_PER_INT
+        num_ints = (self.length + NUCLEOTIDES_PER_INT - 1) // NUCLEOTIDES_PER_INT
         self._data = np.zeros(num_ints, dtype=np.uint32)
         
         # Process sequence in chunks of NUCLEOTIDES_PER_INT nucleotides
-        for i in range(0, self.length, self.NUCLEOTIDES_PER_INT):
-            chunk = sequence[i:i+self.NUCLEOTIDES_PER_INT]
+        for i in range(0, self.length, NUCLEOTIDES_PER_INT):
+            chunk = sequence[i:i+NUCLEOTIDES_PER_INT]
             value = 0
             
             # Pack nucleotides into an integer
@@ -64,19 +53,13 @@ class BaseSequence(ABC):
                 # Use default value (0) for any nucleotide not in our mapping
                 bit_value = self._NT_TO_BITS.get(nt, 0)
                 # Shift and set the bits for this nucleotide
-                value |= (bit_value << (j * self.BITS_PER_NUCLEOTIDE))
+                value |= (bit_value << (j * BITS_PER_NUCLEOTIDE))
             
-            self._data[i // self.NUCLEOTIDES_PER_INT] = value
+            self._data[i // NUCLEOTIDES_PER_INT] = value
     
     def _normalize_nucleotide(self, nt: str) -> str:
         """
         Normalize a nucleotide character.
-        
-        Args:
-            nt: A nucleotide character
-            
-        Returns:
-            Normalized nucleotide character
         """
         return nt.upper()
     
@@ -91,29 +74,17 @@ class BaseSequence(ABC):
     def _get_nucleotide_value(self, index: int) -> int:
         """
         Get the 2-bit value for the nucleotide at the given index.
-        
-        Args:
-            index: The index of the nucleotide (0-based)
-            
-        Returns:
-            The 2-bit value for the nucleotide
         """
         # Calculate which integer contains this nucleotide
-        int_idx = index // self.NUCLEOTIDES_PER_INT
+        int_idx = index // NUCLEOTIDES_PER_INT
         # Calculate position within the integer
-        pos_in_int = index % self.NUCLEOTIDES_PER_INT
+        pos_in_int = index % NUCLEOTIDES_PER_INT
         # Extract the bits for this nucleotide
-        return (self._data[int_idx] >> (pos_in_int * self.BITS_PER_NUCLEOTIDE)) & 0b11
+        return (self._data[int_idx] >> (pos_in_int * BITS_PER_NUCLEOTIDE)) & 0b11
     
     def __getitem__(self, key) -> str:
         """
         Get a nucleotide or subsequence.
-        
-        Args:
-            key: An index or slice
-            
-        Returns:
-            A single nucleotide character or a substring
         """
         if isinstance(key, int):
             # Handle negative indices
@@ -146,24 +117,11 @@ class BaseSequence(ABC):
             raise TypeError(f"{self._class_name} indices must be integers or slices")
     
     def to_string(self) -> str:
-        """
-        Convert the entire sequence to a string.
-        
-        Returns:
-            The complete sequence as a string
-        """
         return self.substring(0, self.length)
     
-    def substring(self, start: int, length: Optional[int] = None) -> str:
+    def substring(self, start: int, length: int |  None = None) -> str:
         """
         Extract a substring from the sequence.
-        
-        Args:
-            start: Starting position (0-based)
-            length: Length of substring to extract, or None for the rest of the sequence
-            
-        Returns:
-            The extracted substring
         """
         if start < 0:
             start += self.length
@@ -199,7 +157,7 @@ class BaseSequence(ABC):
     
     def __repr__(self) -> str:
         """Return a string representation for debugging."""
-        if self.length <= 2 * self.PREVIEW_LENGTH:
+        if self.length <= 2 * PREVIEW_LENGTH:
             return f"{self._class_name}('{self.to_string()}')"
         else:
-            return f"{self._class_name}('{self.substring(0, self.PREVIEW_LENGTH)}...{self.substring(self.length-self.PREVIEW_LENGTH, self.PREVIEW_LENGTH)}')"
+            return f"{self._class_name}('{self.substring(0, PREVIEW_LENGTH)}...{self.substring(self.length-PREVIEW_LENGTH, PREVIEW_LENGTH)}')"
