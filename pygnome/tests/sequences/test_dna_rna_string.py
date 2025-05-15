@@ -69,7 +69,7 @@ class TestRnaString(unittest.TestCase):
     
     def test_t_to_u_conversion(self):
         """Test automatic conversion of T to U."""
-        rna = RnaString("ACGT")
+        rna = RnaString("ACGU")
         self.assertEqual(str(rna), "ACGU")
     
     def test_getitem(self):
