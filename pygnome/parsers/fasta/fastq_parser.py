@@ -5,10 +5,7 @@ Parser for FASTQ format files.
 from dataclasses import dataclass
 from pathlib import Path
 import gzip
-from typing import Iterator, Dict, Optional, List, Tuple, TextIO
-
-from pygnome.sequences.dna_string import DnaString
-from pygnome.sequences.rna_string import RnaString
+from typing import Iterator
 
 
 @dataclass
@@ -34,7 +31,7 @@ class FastqRecord:
         
         return f"{header}\n{self.sequence}\n+\n{self.quality}"
     
-    def get_quality_scores(self) -> List[int]:
+    def get_quality_scores(self) -> list[int]:
         """Convert ASCII quality characters to Phred quality scores."""
         return [ord(c) - 33 for c in self.quality]  # Assuming Sanger format (Phred+33)
 
@@ -102,34 +99,18 @@ class FastqParser:
         
         return FastqRecord(identifier, sequence, quality, description)
     
-    @staticmethod
-    def parse(file_path: Path) -> Iterator[FastqRecord]:
+    def load(self) -> list[FastqRecord]:
         """Parse a FASTQ file and yield FastqRecord objects."""
-        with FastqParser(file_path) as parser:
-            yield from parser
+        records = []
+        with self as parser:
+            for record in parser:
+                records.append(record)
+        return records
     
-    @staticmethod
-    def parse_as_dict(file_path: Path) -> Dict[str, Tuple[str, str]]:
-        """Return a dictionary mapping identifiers to (sequence, quality) tuples."""
-        return {record.identifier: (record.sequence, record.quality) 
-                for record in FastqParser.parse(file_path)}
-    
-    @staticmethod
-    def parse_first(file_path: Path) -> Optional[FastqRecord]:
-        """Parse only the first sequence from a FASTQ file."""
-        try:
-            return next(FastqParser.parse(file_path))
-        except StopIteration:
-            return None
-    
-    @staticmethod
-    def parse_as_dna_strings(file_path: Path) -> Dict[str, Tuple[DnaString, str]]:
-        """Return a dictionary mapping identifiers to (DnaString, quality) tuples."""
-        return {record.identifier: (DnaString(record.sequence), record.quality) 
-                for record in FastqParser.parse(file_path)}
-    
-    @staticmethod
-    def parse_as_rna_strings(file_path: Path) -> Dict[str, Tuple[RnaString, str]]:
-        """Return a dictionary mapping identifiers to (RnaString, quality) tuples."""
-        return {record.identifier: (RnaString(record.sequence), record.quality) 
-                for record in FastqParser.parse(file_path)}
+    def load_as_dict(self) -> dict[str, FastqRecord]:
+        """Return a dictionary mapping identifiers to FastqRecord objects."""
+        results = {}
+        with self as parser:
+            for record in parser:
+                results[record.identifier] = record
+        return results

@@ -21,7 +21,7 @@ class TestFastaParser(unittest.TestCase):
     
     def test_parse(self):
         """Test parsing a FASTA file."""
-        records = list(FastaParser.parse(self.test_file))
+        records = FastaParser(self.test_file).load()
         
         self.assertEqual(len(records), 3)
         
@@ -50,37 +50,21 @@ class TestFastaParser(unittest.TestCase):
     
     def test_parse_as_dict(self):
         """Test parsing a FASTA file as a dictionary."""
-        sequences = FastaParser.parse_as_dict(self.test_file)
+        sequences = FastaParser(self.test_file).load_as_dict()
         
         self.assertEqual(len(sequences), 3)
-        self.assertEqual(sequences["seq1"], "ACGTACGTACGTACGT")
-        self.assertEqual(sequences["seq2"], "AAAACCCCGGGGTTTTAAAACCCCGGGGTTTT")
-        self.assertEqual(sequences["seq3"], "ACGTNRYSWKMBDHV")
-    
-    def test_parse_first(self):
-        """Test parsing only the first record."""
-        record = FastaParser.parse_first(self.test_file)
-        
-        self.assertIsNotNone(record)
-        self.assertEqual(record.identifier, "seq1")
-        self.assertEqual(record.description, "Test sequence 1")
-        self.assertEqual(record.sequence, "ACGTACGTACGTACGT")
-    
+        self.assertEqual(sequences["seq1"].sequence, "ACGTACGTACGTACGT")
+        self.assertEqual(sequences["seq2"].sequence, "AAAACCCCGGGGTTTTAAAACCCCGGGGTTTT")
+        self.assertEqual(sequences["seq3"].sequence, "ACGTNRYSWKMBDHV")
+
     def test_parse_as_dna_strings(self):
         """Test parsing as DnaString objects."""
-        sequences = FastaParser.parse_as_dna_strings(self.test_file)
-        
+        sequences = FastaParser(self.test_file, length_convert_to_dna_string=-1).load_as_dict()
+        print(sequences)
+
         self.assertEqual(len(sequences), 3)
-        self.assertIsInstance(sequences["seq1"], DnaString)
-        self.assertEqual(str(sequences["seq1"]), "ACGTACGTACGTACGT")
-    
-    def test_parse_as_rna_strings(self):
-        """Test parsing as RnaString objects."""
-        sequences = FastaParser.parse_as_rna_strings(self.test_file)
-        
-        self.assertEqual(len(sequences), 3)
-        self.assertIsInstance(sequences["seq1"], RnaString)
-        self.assertEqual(str(sequences["seq1"]), "ACGAACGAACGAACGA")  # Note: T is not automatically converted to U
+        self.assertIsInstance(sequences["seq1"].sequence, DnaString)
+        self.assertEqual(str(sequences["seq1"].sequence), "ACGTACGTACGTACGT")
     
     def test_fasta_record_str(self):
         """Test string representation of FastaRecord."""

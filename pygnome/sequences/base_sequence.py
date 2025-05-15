@@ -157,7 +157,4 @@ class BaseSequence(ABC):
     
     def __repr__(self) -> str:
         """Return a string representation for debugging."""
-        if self.length <= 2 * PREVIEW_LENGTH:
-            return f"{self._class_name}('{self.to_string()}')"
-        else:
-            return f"{self._class_name}('{self.substring(0, PREVIEW_LENGTH)}...{self.substring(self.length-PREVIEW_LENGTH, PREVIEW_LENGTH)}')"
+        return self.to_string()
