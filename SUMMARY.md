@@ -13,7 +13,9 @@ pygnome/
 │   └── feature_store/      # Feature storage implementations
 ├── parsers/                # File format parsers
 │   ├── fasta/              # FASTA/FASTQ parsers
-│   └── gff/                # GFF/GTF parsers
+│   ├── gff/                # GFF/GTF parsers
+│   ├── msi/                # MSI-sites parsers
+│   └── vcf/                # VCF parsers
 ├── sequences/              # Sequence handling
 │   ├── base_sequence.py    # Base sequence class
 │   ├── dna_string.py       # DNA sequence implementation
@@ -46,6 +48,8 @@ Parsers for common genomic file formats:
 
 - GFF/GTF Parsers: Parse Gene Feature Format files (GFF2, GFF3, GTF)
 - FASTA/FASTQ Parsers: Parse sequence files
+- MSI-sites Parser: Parse Microsatellite Instability sites files
+- VCF Parsers: Parse Variant Call Format files
 
 ### Sequence Handling
 Efficient representation of nucleotide sequences:

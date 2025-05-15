@@ -5,7 +5,7 @@ Script to load genomic structure and chromosome sequence from GTF and FASTA file
 
 from pathlib import Path
 
-from pygnome.genomics.genome_loader import GenomeLoader
+from pygnome.parsers.genome_loader import GenomeLoader
 
 
 def main():

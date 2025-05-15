@@ -4,11 +4,11 @@ Genome Loader for building complete genomes from annotation and sequence files.
 from pathlib import Path
 from tqdm import tqdm
 
-from .genome import Genome
-from .chromosome import Chromosome
-from .gene import Gene
-from ..parsers.gff.genome_loader import GffGenomeLoader
-from ..parsers.fasta.fasta_parser import FastaParser
+from ..genomics.genome import Genome
+from ..genomics.chromosome import Chromosome
+from ..genomics.gene import Gene
+from .gff.genome_loader import GffGenomeLoader
+from .fasta.fasta_parser import FastaParser
 from ..sequences.dna_string import DnaString
 
 
