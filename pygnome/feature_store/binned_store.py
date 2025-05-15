@@ -7,16 +7,17 @@ from pygnome.genomics.genomic_feature import GenomicFeature
 class BinnedGenomicStore(ChromosomeFeatureStore):
     """Store genomic features using a memory-efficient binning approach."""
     
-    def __init__(self, bin_size: int = 100000):
+    def __init__(self, chromosome: str, bin_size: int = 100000):
         """
         Initialize a binned genomic store.
         
         Args:
+            chromosome: Name of the chromosome
             bin_size: Size of each bin in base pairs
         """
-        super().__init__()
+        super().__init__(chromosome=chromosome)
         self.bin_size = bin_size
-        
+    
         # Use dictionary of numpy arrays for memory efficiency
         # Each key is a bin_id, and the value is a numpy array of feature indices
         self.bins: dict[int, np.ndarray] = {}

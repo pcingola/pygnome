@@ -14,7 +14,8 @@ from pygnome.sequences.dna_string_array import DnaStringArray
 from pygnome.parsers.msi.msi_site_record import MsiSiteRecord
 
 
-DEFAULT_BIN_SIZE = 100000  # Default bin size in base pairs
+DEFAULT_BIN_SIZE = 100_000  # Default bin size
+DEFAULT_FEATURE_COUNT = 1024  # Default number of features to allocate space for
 
 class MsiSiteCounter:
     """
@@ -89,24 +90,26 @@ class MsiChromosomeStore(ChromosomeFeatureStore):
     Uses NumPy arrays and DnaStringArray for memory efficiency.
     Implements binary search for efficient querying.
     """
-    
-    def __init__(self, feature_count: int = 0, max_lengths_by_bin: dict[int, int] = None, bin_size: int = 100000):
+
+    def __init__(self, chromosome: str, feature_count: int = DEFAULT_FEATURE_COUNT, max_lengths_by_bin: dict[int, int] | None = None, bin_size: int = DEFAULT_BIN_SIZE):
         """
         Initialize an MSI chromosome store with pre-allocated arrays.
         
         Args:
+            chromosome: Name of the chromosome
             feature_count: Number of features to allocate space for
             max_lengths_by_bin: dictionary mapping bin IDs to maximum feature length in that bin
             bin_size: Size of each bin in base pairs
         """
-        super().__init__()
+        super().__init__(chromosome=chromosome)
         self.bin_size = bin_size
         
         # Arrays for efficient storage
-        self._starts = np.zeros(feature_count, dtype=np.uint32) if feature_count > 0 else None
-        self._ends = np.zeros(feature_count, dtype=np.uint32) if feature_count > 0 else None
-        self._repeat_unit_bases = DnaStringArray(initial_strings=feature_count) if feature_count > 0 else None
-        
+        assert feature_count > 0, "Feature count must be positive"
+        self._starts = np.zeros(feature_count, dtype=np.uint32)
+        self._ends = np.zeros(feature_count, dtype=np.uint32)
+        self._repeat_unit_bases = DnaStringArray(initial_strings=feature_count)
+
         # Binning for efficient lookups
         self._max_feature_length_by_bin = max_lengths_by_bin or {}
         
@@ -243,19 +246,16 @@ class MsiChromosomeStore(ChromosomeFeatureStore):
         # Calculate repeat_unit_length from repeat_unit_bases
         repeat_unit_length = len(repeat_unit_bases)
         
-        # Calculate repeat_times from start, end, and repeat_unit_length
-        repeat_times = (end - start) // repeat_unit_length if repeat_unit_length > 0 else 0
-        
         # Create a lightweight feature object (not a full MsiSiteRecord)
         return GenomicFeature(
             id=f"MSI_{start}",
-            chrom="",  # Chromosome is handled by the parent GenomicFeatureStore
+            chrom=self.chromosome,
             start=start,
             end=end,
             strand=Strand.UNSTRANDED
         )
         
-    def index_build_end(self) -> int:
+    def index_build_end(self) -> None:
         """
         Finalize the index build process.
         

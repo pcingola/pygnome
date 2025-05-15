@@ -21,6 +21,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 dependencies = [
+    "ipykernel>=6.29.5",
     "numpy>=2.2.5",
 ]
 

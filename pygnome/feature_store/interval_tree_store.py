@@ -201,8 +201,8 @@ class IntervalTree:
 class IntervalTreeStore(ChromosomeFeatureStore):
     """Store genomic features using an efficient interval tree."""
     
-    def __init__(self):
-        super().__init__()
+    def __init__(self, chromosome: str):
+        super().__init__(chromosome=chromosome)
         self.interval_tree = IntervalTree()
         self.tree_built = False
     

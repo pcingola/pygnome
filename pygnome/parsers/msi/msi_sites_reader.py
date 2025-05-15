@@ -36,14 +36,14 @@ class MsiSitesReader:
     ```
     """
     
-    def __init__(self, file_path: str | Path):
+    def __init__(self, file_path: Path):
         """
         Initialize an MSI sites reader.
         
         Args:
             file_path: Path to the MSI sites file (can be plain text or gzipped)
         """
-        self.file_path = Path(file_path)
+        self.file_path = file_path
         self._file_handle: Optional[TextIO] = None
         self._header_processed = False
         self._column_indices = {}

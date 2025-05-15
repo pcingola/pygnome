@@ -7,6 +7,7 @@ from pygnome.feature_store.brute_force_store import BruteForceFeatureStore
 from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore
 from pygnome.feature_store.genomic_feature_store_protocol import MAX_DISTANCE, GenomicFeatureStoreProtocol
 from pygnome.feature_store.interval_tree_store import IntervalTreeStore
+from pygnome.feature_store.msi_chromosome_store import MsiChromosomeStore
 from pygnome.genomics.genomic_feature import GenomicFeature
 
 
@@ -16,6 +17,7 @@ class StoreType(str, Enum):
     INTERVAL_TREE = "interval_tree"
     BINNED = "binned"
     BRUTE_FORCE = "brute_force"
+    MSI = "msi"
 
 
 class GenomicFeatureStore(GenomicFeatureStoreProtocol):
@@ -57,11 +59,13 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
         if chrom not in self.chromosomes:
             match self.store_type:
                 case StoreType.INTERVAL_TREE:
-                    self.chromosomes[chrom] = IntervalTreeStore()
+                    self.chromosomes[chrom] = IntervalTreeStore(chrom)
                 case StoreType.BINNED:
-                    self.chromosomes[chrom] = BinnedGenomicStore(self.bin_size)
+                    self.chromosomes[chrom] = BinnedGenomicStore(chrom, self.bin_size)
                 case StoreType.BRUTE_FORCE:
-                    self.chromosomes[chrom] = BruteForceFeatureStore()
+                    self.chromosomes[chrom] = BruteForceFeatureStore(chrom)
+                case StoreType.MSI:
+                    self.chromosomes[chrom] = MsiChromosomeStore(chrom)
                 case _:
                     raise ValueError(f"Unknown store type: {self.store_type}")
             # Make sure the chromosome store is in 'index build' mode
@@ -103,7 +107,7 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
     def __getitem__(self, chrom):
         return self.chromosomes.get(chrom)
     
-    def get_feature_count(self, chrom: str = None) -> int:
+    def get_feature_count(self, chrom: str | None = None) -> int:
         """
         Get the number of features in the store.
         
@@ -131,3 +135,5 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
                 f"features={self.get_feature_count()}, "
                 f"{', '.join(chrom_counts)})")
     
+    def __repr__(self) -> str:
+        return self.__str__()

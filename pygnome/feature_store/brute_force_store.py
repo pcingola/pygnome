@@ -10,8 +10,8 @@ class BruteForceFeatureStore(ChromosomeFeatureStore):
     It is primarily for testing purposes.
     """
     
-    def __init__(self):
-        self.features: list[GenomicFeature] = []
+    def __init__(self, chromosome: str):
+        super().__init__(chromosome)
     
     def add(self, feature: GenomicFeature) -> None:
         """Add a feature to this chromosome's store."""

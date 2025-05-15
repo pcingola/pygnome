@@ -14,9 +14,9 @@ class ChromosomeFeatureStore(ABC):
     Sub-classes typically implement more efficient search mechanisms, by adding an index to the features.
 
     Usage:
-        chrom_store = ChromosomeFeatureStore()
+        chrom_store = ChromosomeFeatureStore("chr1")
 
-        # When adding beature you can use in a context manager to ensure index build mode is active
+        # When adding features you can use in a context manager to ensure index build mode is active
         with chrom_store:
             for feature in features:
                 chrom_store.add(feature)
@@ -28,10 +28,11 @@ class ChromosomeFeatureStore(ABC):
         chrom_store.index_build_end()
     """
     
-    def __init__(self):
+    def __init__(self, chromosome: str) -> None:
         self.features: list[GenomicFeature] = []
         self.index_build_mode = False
         self.index_finished = False
+        self.chromosome = chromosome
     
     def add(self, feature: GenomicFeature) -> None:
         """Add a feature to this chromosome's store."""
@@ -77,12 +78,12 @@ class ChromosomeFeatureStore(ABC):
             window *= 2        
         return None
     
-    def index_build_start(self) -> int:
+    def index_build_start(self) -> None:
         """ This method must be called to build the index before adding features. """
         self.index_build_mode = True
         self.index_finished = False
 
-    def index_build_end(self) -> int:
+    def index_build_end(self) -> None:
         """ This method must be called to finish building the index, after adding features, but before quering. """
         self.index_build_mode = False
         self.index_finished = True
