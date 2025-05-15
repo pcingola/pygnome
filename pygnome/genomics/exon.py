@@ -1,13 +1,12 @@
 """Exon class for genomic annotations."""
 
-from pydantic import Field
+from dataclasses import dataclass
 
 from .genomic_feature import GenomicFeature
 from .phase import Phase
 
 
+@dataclass
 class Exon(GenomicFeature):
     """An exon within a transcript."""
-    phase: Phase | None = Field(
-        None, description="Frame phase for CDS; usually None for non-CDS exons"
-    )
+    phase: Phase | None = None  # Frame phase for CDS; usually None for non-CDS exons

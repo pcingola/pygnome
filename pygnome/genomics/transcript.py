@@ -1,6 +1,7 @@
 """Transcript class for genomic annotations."""
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
+from dataclasses import dataclass, field
 
 from .biotype import Biotype
 from .cds import CDS
@@ -14,15 +15,16 @@ from .utr import UTR
 from ..sequences.utils import reverse_complement
 
 
+@dataclass
 class Transcript(GenomicFeature):
     """A transcript of a gene, composed of exons, introns, UTRs, and CDS segments."""
     gene_id: str
     biotype: Biotype | None = None
-    exons: list[Exon] = []
-    cds_list: list[CDS] = []
-    utrs: list[UTR] = []
-    introns: list[Intron] = []
-    splice_sites: list[SpliceSite] = []
+    exons: list[Exon] = field(default_factory=list)
+    cds_list: list[CDS] = field(default_factory=list)
+    utrs: list[UTR] = field(default_factory=list)
+    introns: list[Intron] = field(default_factory=list)
+    splice_sites: list[SpliceSite] = field(default_factory=list)
     _cds: str | None = None
     _protein: str | None = None
     gene: Any = None  # Reference to Gene
@@ -118,8 +120,7 @@ class Transcript(GenomicFeature):
         
         return protein_seq
 
-# This will be called after all models are defined
-# to resolve forward references
-def update_forward_refs():
-    from .gene import Gene
-    Transcript.model_rebuild()
+# No longer needed with dataclasses
+# def update_forward_refs():
+#     from .gene import Gene
+#     Transcript.model_rebuild()

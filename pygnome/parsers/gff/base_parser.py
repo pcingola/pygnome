@@ -8,7 +8,7 @@ import gzip
 import re
 from typing import Iterator
 
-from .record import Record
+from .record import GffRecord
 from ...genomics.strand import Strand
 from .format import Format
 
@@ -22,7 +22,7 @@ class BaseParser(ABC):
     """
     
     @abstractmethod
-    def _parse_line(self, line: str) -> Record | None:
+    def _parse_line(self, line: str) -> GffRecord | None:
         """Parse a single line from the file into a Record object."""
         pass
     
@@ -31,10 +31,10 @@ class BaseParser(ABC):
         """Parse the attributes field into a dictionary."""
         pass
     
-    def _validate_record(self, record: Record) -> bool:
+    def _validate_record(self, record: GffRecord) -> bool:
         """Validate a parsed record."""
         # Basic validation: check required fields
-        if not record.seqid or not record.type:
+        if not record.chrom or not record.type:
             return False
         
         # Check that start <= end
@@ -43,7 +43,7 @@ class BaseParser(ABC):
             
         return True
     
-    def parse(self, file_path: str) -> Iterator[Record]:
+    def parse(self, file_path: str) -> Iterator[GffRecord]:
         """
         Parse a GFF/GTF file and yield Record objects.
         

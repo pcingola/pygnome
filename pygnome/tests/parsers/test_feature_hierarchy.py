@@ -4,7 +4,7 @@ Tests for the FeatureHierarchy class.
 
 import unittest
 from pygnome.parsers.gff.feature_hierarchy import FeatureHierarchy
-from pygnome.parsers.gff.record import Record
+from pygnome.parsers.gff.record import GffRecord
 
 
 class TestFeatureHierarchy(unittest.TestCase):
@@ -15,8 +15,9 @@ class TestFeatureHierarchy(unittest.TestCase):
         self.hierarchy = FeatureHierarchy()
         
         # Create test records
-        self.gene = Record(
-            seqid="chr1",
+        self.gene = GffRecord(
+            id="gene1",
+            chrom="chr1",
             source="test",
             type="gene",
             start=1000,
@@ -27,8 +28,9 @@ class TestFeatureHierarchy(unittest.TestCase):
             attributes={"ID": "gene1", "Name": "BRCA1"}
         )
         
-        self.mrna1 = Record(
-            seqid="chr1",
+        self.mrna1 = GffRecord(
+            id="mrna1",
+            chrom="chr1",
             source="test",
             type="mRNA",
             start=1000,
@@ -39,8 +41,9 @@ class TestFeatureHierarchy(unittest.TestCase):
             attributes={"ID": "mrna1", "Parent": "gene1", "Name": "BRCA1.1"}
         )
         
-        self.mrna2 = Record(
-            seqid="chr1",
+        self.mrna2 = GffRecord(
+            id="mrna2",
+            chrom="chr1",
             source="test",
             type="mRNA",
             start=1200,
@@ -51,8 +54,9 @@ class TestFeatureHierarchy(unittest.TestCase):
             attributes={"ID": "mrna2", "Parent": "gene1", "Name": "BRCA1.2"}
         )
         
-        self.exon1 = Record(
-            seqid="chr1",
+        self.exon1 = GffRecord(
+            id="exon1",
+            chrom="chr1",
             source="test",
             type="exon",
             start=1000,
@@ -63,8 +67,9 @@ class TestFeatureHierarchy(unittest.TestCase):
             attributes={"ID": "exon1", "Parent": "mrna1"}
         )
         
-        self.exon2 = Record(
-            seqid="chr1",
+        self.exon2 = GffRecord(
+            id="exon2",
+            chrom="chr1",
             source="test",
             type="exon",
             start=1500,
@@ -75,8 +80,9 @@ class TestFeatureHierarchy(unittest.TestCase):
             attributes={"ID": "exon2", "Parent": ["mrna1", "mrna2"]}
         )
         
-        self.exon3 = Record(
-            seqid="chr1",
+        self.exon3 = GffRecord(
+            id="exon3",
+            chrom="chr1",
             source="test",
             type="exon",
             start=4500,
@@ -87,8 +93,9 @@ class TestFeatureHierarchy(unittest.TestCase):
             attributes={"ID": "exon3", "Parent": "mrna1"}
         )
         
-        self.cds1 = Record(
-            seqid="chr1",
+        self.cds1 = GffRecord(
+            id="cds1",
+            chrom="chr1",
             source="test",
             type="CDS",
             start=1500,

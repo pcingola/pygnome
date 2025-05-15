@@ -1,11 +1,12 @@
 """Base class for genomic features."""
 
-from pydantic import BaseModel, Field, validator
+from dataclasses import dataclass
 
 from .strand import Strand
 
 
-class GenomicFeature(BaseModel):
+@dataclass
+class GenomicFeature:
     """
     Base class for all genomic features.
     
@@ -14,16 +15,18 @@ class GenomicFeature(BaseModel):
     """
     id: str
     chrom: str
-    start: int = Field(..., ge=0, description="Start position (0-based, inclusive)")
-    end: int = Field(..., ge=0, description="End position (0-based, exclusive)")
+    start: int  # Start position (0-based, inclusive)
+    end: int    # End position (0-based, exclusive)
     strand: Strand
     
-    @validator('end')
-    def end_must_be_after_start(cls, v, values):
-        """Validate that end position is not before start position."""
-        if 'start' in values and v < values['start']:
-            raise ValueError(f"End position ({v}) must be >= start position ({values['start']})")
-        return v
+    def __post_init__(self):
+        """Validate the feature after initialization."""
+        if self.start < 0:
+            raise ValueError(f"Start position ({self.start}) must be >= 0")
+        if self.end < 0:
+            raise ValueError(f"End position ({self.end}) must be >= 0")
+        if self.end < self.start:
+            raise ValueError(f"End position ({self.end}) must be >= start position ({self.start})")
     
     def __str__(self) -> str:
         """Return a string representation of the feature."""

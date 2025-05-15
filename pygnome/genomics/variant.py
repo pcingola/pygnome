@@ -5,13 +5,13 @@ This module defines a hierarchy of classes for representing genomic variants,
 building on top of the GenomicFeature class.
 """
 
-from typing import Optional, Any
-from pydantic import Field, validator
+from typing import Any
+from dataclasses import dataclass, field
 
 from .genomic_feature import GenomicFeature
-from .strand import Strand
 
 
+@dataclass
 class Variant(GenomicFeature):
     """
     Base class for all genomic variants.
@@ -19,18 +19,19 @@ class Variant(GenomicFeature):
     Extends GenomicFeature to represent a genomic variant with reference and
     alternate alleles.
     """
-    ref: str = Field(..., description="Reference allele")
-    alt: list[str] = Field(..., description="Alternate alleles")
-    quality: Optional[float] = Field(None, description="Quality score")
-    filters: list[str] = Field(default_factory=list, description="Filter flags")
-    info: dict[str, Any] = Field(default_factory=dict, description="INFO fields")
+    ref: str  # Reference allele
+    alt: list[str]  # Alternate alleles
+    quality: float | None = None  # Quality score
+    filters: list[str] = field(default_factory=list)  # Filter flags
+    info: dict[str, Any] = field(default_factory=dict)  # INFO fields
     
-    @validator('alt')
-    def alt_must_not_be_empty(cls, v):
-        """Validate that there is at least one alternate allele."""
-        if not v:
+    def __post_init__(self):
+        """Validate the variant after initialization."""
+        super().__post_init__()
+        
+        # Validate that there is at least one alternate allele
+        if not self.alt:
             raise ValueError("At least one alternate allele is required")
-        return v
     
     @property
     def is_multi_allelic(self) -> bool:
@@ -47,43 +48,44 @@ class Variant(GenomicFeature):
         return f"{self.__class__.__name__}({self.id}, {self.chrom}:{self.start}-{self.end}, {self.ref}>{','.join(self.alt)})"
 
 
+@dataclass
 class SNP(Variant):
     """
     Single Nucleotide Polymorphism (SNP) variant.
     
     A variant where a single nucleotide is changed.
     """
-    @validator('ref')
-    def ref_must_be_single_base(cls, v):
-        """Validate that the reference allele is a single base."""
-        if len(v) != 1:
-            raise ValueError("Reference allele must be a single base for SNP")
-        return v
     
-    @validator('alt')
-    def alt_must_be_single_bases(cls, v):
-        """Validate that all alternate alleles are single bases."""
-        for a in v:
+    def __post_init__(self):
+        """Validate the SNP after initialization."""
+        super().__post_init__()
+        
+        # Validate that the reference allele is a single base
+        if len(self.ref) != 1:
+            raise ValueError("Reference allele must be a single base for SNP")
+        
+        # Validate that all alternate alleles are single bases
+        for a in self.alt:
             if len(a) != 1:
                 raise ValueError("Alternate alleles must be single bases for SNP")
-        return v
 
 
+@dataclass
 class Insertion(Variant):
     """
     Insertion variant.
     
     A variant where one or more nucleotides are inserted.
     """
-    @validator('alt')
-    def alt_must_be_longer_than_ref(cls, v, values):
-        """Validate that all alternate alleles are longer than the reference."""
-        if 'ref' in values:
-            ref = values['ref']
-            for a in v:
-                if len(a) <= len(ref):
-                    raise ValueError("Alternate alleles must be longer than reference for insertion")
-        return v
+    
+    def __post_init__(self):
+        """Validate the insertion after initialization."""
+        super().__post_init__()
+        
+        # Validate that all alternate alleles are longer than the reference
+        for a in self.alt:
+            if len(a) <= len(self.ref):
+                raise ValueError("Alternate alleles must be longer than reference for insertion")
     
     @property
     def inserted_sequence(self) -> list[str]:
@@ -91,21 +93,22 @@ class Insertion(Variant):
         return [a[len(self.ref):] for a in self.alt]
 
 
+@dataclass
 class Deletion(Variant):
     """
     Deletion variant.
     
     A variant where one or more nucleotides are deleted.
     """
-    @validator('alt')
-    def alt_must_be_shorter_than_ref(cls, v, values):
-        """Validate that all alternate alleles are shorter than the reference."""
-        if 'ref' in values:
-            ref = values['ref']
-            for a in v:
-                if len(a) >= len(ref):
-                    raise ValueError("Alternate alleles must be shorter than reference for deletion")
-        return v
+    
+    def __post_init__(self):
+        """Validate the deletion after initialization."""
+        super().__post_init__()
+        
+        # Validate that all alternate alleles are shorter than the reference
+        for a in self.alt:
+            if len(a) >= len(self.ref):
+                raise ValueError("Alternate alleles must be shorter than reference for deletion")
     
     @property
     def deleted_sequence(self) -> str:
@@ -113,13 +116,22 @@ class Deletion(Variant):
         return self.ref[len(self.alt[0]):]
 
 
+@dataclass
 class Duplication(Variant):
     """
     Duplication variant.
     
     A variant where a segment of DNA is duplicated.
     """
-    dup_length: int = Field(..., description="Length of the duplicated segment")
+    dup_length: int = field(default=0)  # Length of the duplicated segment
+    
+    def __post_init__(self):
+        """Validate the duplication after initialization."""
+        super().__post_init__()
+        
+        # Ensure dup_length is provided
+        if self.dup_length <= 0:
+            raise ValueError("dup_length must be a positive integer")
     
     @property
     def duplicated_sequence(self) -> str:
@@ -127,13 +139,22 @@ class Duplication(Variant):
         return self.ref[-self.dup_length:] if self.dup_length <= len(self.ref) else self.ref
 
 
+@dataclass
 class Inversion(Variant):
     """
     Inversion variant.
     
     A variant where a segment of DNA is reversed.
     """
-    inv_length: int = Field(..., description="Length of the inverted segment")
+    inv_length: int = field(default=0)  # Length of the inverted segment
+    
+    def __post_init__(self):
+        """Validate the inversion after initialization."""
+        super().__post_init__()
+        
+        # Ensure inv_length is provided
+        if self.inv_length <= 0:
+            raise ValueError("inv_length must be a positive integer")
     
     @property
     def inverted_sequence(self) -> str:
@@ -141,23 +162,30 @@ class Inversion(Variant):
         return self.ref[:self.inv_length][::-1] if self.inv_length <= len(self.ref) else self.ref[::-1]
 
 
+@dataclass
 class Translocation(Variant):
     """
     Translocation variant.
     
     A variant where a segment of DNA is moved to a different location.
     """
-    dest_chrom: str = Field(..., description="Destination chromosome")
-    dest_pos: int = Field(..., description="Destination position")
+    dest_chrom: str = field(default="")  # Destination chromosome
+    dest_pos: int = field(default=0)     # Destination position
     
-    @validator('dest_pos')
-    def dest_pos_must_be_non_negative(cls, v):
-        """Validate that the destination position is non-negative."""
-        if v < 0:
+    def __post_init__(self):
+        """Validate the translocation after initialization."""
+        super().__post_init__()
+        
+        # Ensure dest_chrom is provided
+        if not self.dest_chrom:
+            raise ValueError("dest_chrom must be provided")
+        
+        # Validate that the destination position is non-negative
+        if self.dest_pos < 0:
             raise ValueError("Destination position must be non-negative")
-        return v
 
 
+@dataclass
 class ComplexVariant(Variant):
     """
     Complex variant.
@@ -165,4 +193,12 @@ class ComplexVariant(Variant):
     A variant that involves multiple types of changes and cannot be classified
     as a simple SNP, insertion, deletion, etc.
     """
-    description: str = Field(..., description="Description of the complex variant")
+    description: str = field(default="")  # Description of the complex variant
+    
+    def __post_init__(self):
+        """Validate the complex variant after initialization."""
+        super().__post_init__()
+        
+        # Ensure description is provided
+        if not self.description:
+            raise ValueError("description must be provided")

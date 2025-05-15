@@ -2,6 +2,8 @@
 VCF Record class for representing and parsing individual VCF records.
 """
 from dataclasses import dataclass
+from pygnome.genomics.genomic_feature import GenomicFeature
+from pygnome.genomics.strand import Strand
 from pygnome.parsers.vcf.vcf_header import VcfHeader
 
 
@@ -23,12 +25,14 @@ class Genotype:
         return separator.join(alleles)
 
 
-class VcfRecord:
+class VcfRecord(GenomicFeature):
     """
     Represents a single record (line) in a VCF file.
     
     This class implements lazy parsing of INFO and FORMAT fields to improve performance
     when only specific fields are needed.
+    
+    Inherits from GenomicFeature to provide standard genomic coordinate functionality.
     """
     
     def __init__(self, line: str, header: VcfHeader):
@@ -54,6 +58,22 @@ class VcfRecord:
         
         # Check if we have genotype data
         self.has_genotypes = len(self._fields) > 9
+        
+        # Initialize GenomicFeature fields
+        chrom = self.get_chrom()
+        start = self.get_pos()  # Already 0-based in get_pos()
+        end = start + len(self.get_ref())  # End is exclusive
+        id_value = self.get_id() if self.get_id() != "." else f"variant_{chrom}_{start}"
+        
+        # Call the parent class's __init__
+        GenomicFeature.__init__(
+            self,
+            id=id_value,
+            chrom=chrom,
+            start=start,
+            end=end,
+            strand=Strand.UNSTRANDED
+        )
     
     def get_chrom(self) -> str:
         """Get the chromosome name."""

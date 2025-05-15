@@ -5,7 +5,7 @@ This module provides parsers for GFF2, GFF3, GTF, FASTA, and FASTQ formats with 
 interface for working with genomic annotations and sequences.
 """
 
-from .gff.record import Record
+from .gff.record import GffRecord
 from .gff.gff import Gff
 from .gff.format import Format
 from ..genomics.strand import Strand

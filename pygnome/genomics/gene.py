@@ -1,23 +1,24 @@
 """Gene class for genomic annotations."""
 
-from typing import Any, Dict, List, Optional, Union
-
-from pydantic import Field
+from typing import Any
+from dataclasses import dataclass, field
 
 from .biotype import Biotype
 from .genomic_feature import GenomicFeature
 from .transcript import Transcript
 
 
+@dataclass
 class Gene(GenomicFeature):
     """A gene, which may have multiple transcripts."""
     name: str | None = None
     biotype: Biotype | None = None
-    transcripts: list[Transcript] = []
+    transcripts: list[Transcript] = field(default_factory=list)
     chromosome: Any = None  # Reference to Chromosome
     
-    def __init__(self, **data):
-        super().__init__(**data)
+    def __post_init__(self):
+        """Initialize the gene after creation."""
+        super().__post_init__()
         # Initialize transcripts with references to this gene
         for transcript in self.transcripts:
             transcript.gene = self
@@ -45,8 +46,7 @@ class Gene(GenomicFeature):
         """Iterate over transcripts sorted by start position."""
         return iter(sorted(self.transcripts, key=lambda x: x.start))
 
-# This will be called after all models are defined
-# to resolve forward references
-def update_forward_refs():
-    from .chromosome import Chromosome
-    Gene.model_rebuild()
+# No longer needed with dataclasses
+# def update_forward_refs():
+#     from .chromosome import Chromosome
+#     Gene.model_rebuild()

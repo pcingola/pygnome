@@ -45,7 +45,7 @@ class TestGff3Parser(unittest.TestCase):
         line = "ctg123\t.\tgene\t1000\t9000\t.\t+\t.\tID=gene00001;Name=EDEN"
         record = self.parser._parse_line(line)
         
-        self.assertEqual(record.seqid, "ctg123")
+        self.assertEqual(record.chrom, "ctg123")
         self.assertEqual(record.source, ".")
         self.assertEqual(record.type, "gene")
         self.assertEqual(record.start, 1000)
@@ -70,7 +70,7 @@ class TestGff3Parser(unittest.TestCase):
         
         # Check first record
         first_record = records[0]
-        self.assertEqual(first_record.seqid, "ctg123")
+        self.assertEqual(first_record.chrom, "ctg123")
         self.assertEqual(first_record.type, "gene")
         self.assertEqual(first_record.start, 1000)
         self.assertEqual(first_record.end, 9000)

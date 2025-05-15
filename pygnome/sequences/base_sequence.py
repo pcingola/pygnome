@@ -3,7 +3,9 @@ Base class for efficient 2-bit representation of nucleotide sequences.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Optional
+from typing import Dict, Optional
+
+import numpy as np
 
 
 class BaseSequence(ABC):
@@ -46,7 +48,10 @@ class BaseSequence(ABC):
             sequence: A string containing nucleotides.
         """
         self.length = len(sequence)
-        self._data: List[int] = []
+        
+        # Calculate how many integers we need to store the sequence
+        num_ints = (self.length + self.NUCLEOTIDES_PER_INT - 1) // self.NUCLEOTIDES_PER_INT
+        self._data = np.zeros(num_ints, dtype=np.uint32)
         
         # Process sequence in chunks of NUCLEOTIDES_PER_INT nucleotides
         for i in range(0, self.length, self.NUCLEOTIDES_PER_INT):
@@ -61,7 +66,7 @@ class BaseSequence(ABC):
                 # Shift and set the bits for this nucleotide
                 value |= (bit_value << (j * self.BITS_PER_NUCLEOTIDE))
             
-            self._data.append(value)
+            self._data[i // self.NUCLEOTIDES_PER_INT] = value
     
     def _normalize_nucleotide(self, nt: str) -> str:
         """
@@ -83,6 +88,23 @@ class BaseSequence(ABC):
         """Return the sequence as a string."""
         return self.to_string()
     
+    def _get_nucleotide_value(self, index: int) -> int:
+        """
+        Get the 2-bit value for the nucleotide at the given index.
+        
+        Args:
+            index: The index of the nucleotide (0-based)
+            
+        Returns:
+            The 2-bit value for the nucleotide
+        """
+        # Calculate which integer contains this nucleotide
+        int_idx = index // self.NUCLEOTIDES_PER_INT
+        # Calculate position within the integer
+        pos_in_int = index % self.NUCLEOTIDES_PER_INT
+        # Extract the bits for this nucleotide
+        return (self._data[int_idx] >> (pos_in_int * self.BITS_PER_NUCLEOTIDE)) & 0b11
+    
     def __getitem__(self, key) -> str:
         """
         Get a nucleotide or subsequence.
@@ -101,12 +123,8 @@ class BaseSequence(ABC):
             if key < 0 or key >= self.length:
                 raise IndexError(f"{self._class_name} index out of range")
             
-            # Calculate which integer contains this nucleotide
-            int_idx = key // self.NUCLEOTIDES_PER_INT
-            # Calculate position within the integer
-            pos_in_int = key % self.NUCLEOTIDES_PER_INT
-            # Extract the bits for this nucleotide
-            value = (self._data[int_idx] >> (pos_in_int * self.BITS_PER_NUCLEOTIDE)) & 0b11
+            # Get the 2-bit value for this nucleotide
+            value = self._get_nucleotide_value(key)
             
             return self._BITS_TO_NT[value]
         
@@ -162,12 +180,8 @@ class BaseSequence(ABC):
         result = ""
         
         for i in range(start, start + length):
-            # Calculate which integer contains this nucleotide
-            int_idx = i // self.NUCLEOTIDES_PER_INT
-            # Calculate position within the integer
-            pos_in_int = i % self.NUCLEOTIDES_PER_INT
-            # Extract the bits for this nucleotide
-            value = (self._data[int_idx] >> (pos_in_int * self.BITS_PER_NUCLEOTIDE)) & 0b11
+            # Get the 2-bit value for this nucleotide
+            value = self._get_nucleotide_value(i)
             
             result += self._BITS_TO_NT[value]
         
@@ -181,7 +195,7 @@ class BaseSequence(ABC):
         if self.length != other.length:
             return False
         
-        return self._data == other._data
+        return np.array_equal(self._data, other._data)
     
     def __repr__(self) -> str:
         """Return a string representation for debugging."""

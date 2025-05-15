@@ -5,14 +5,14 @@ Parser for GFF2 format files.
 import re
 
 from .base_parser import BaseParser
-from .record import Record
+from .record import GffRecord
 from pygnome.genomics.strand import Strand
 
 
 class Gff2Parser(BaseParser):
     """Parser for GFF2 format files."""
     
-    def _parse_line(self, line: str) -> Record | None:
+    def _parse_line(self, line: str) -> GffRecord | None:
         """Parse a single line from a GFF2 file."""
         fields = line.strip().split('\t')
         
@@ -27,8 +27,9 @@ class Gff2Parser(BaseParser):
         attributes = self._parse_attributes(attr_string)
         
         # Create and return record
-        return Record(
-            seqid=seqid,
+        return GffRecord(
+            id=attributes.get("ID", f"{type_}_{seqid}_{start}_{end}"),
+            chrom=seqid,
             source=source,
             type=type_,
             start=start,

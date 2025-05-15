@@ -47,7 +47,7 @@ class TestGff(unittest.TestCase):
             
             # Check first record
             first = records[0]
-            self.assertEqual(first.seqid, "ctg123")
+            self.assertEqual(first.chrom, "ctg123")
             self.assertEqual(first.type, "gene")
             self.assertEqual(first.start, 1000)
             self.assertEqual(first.end, 9000)

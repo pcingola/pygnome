@@ -10,7 +10,7 @@ from .gff2_parser import Gff2Parser
 from .gff3_parser import Gff3Parser
 from .gtf_parser import GtfParser
 from .feature_hierarchy import FeatureHierarchy
-from .record import Record
+from .record import GffRecord
 from .format import Format
 
 
@@ -64,7 +64,7 @@ class Gff:
         # Don't suppress exceptions
         return False
     
-    def __iter__(self) -> Iterator[Record]:
+    def __iter__(self) -> Iterator[GffRecord]:
         """Iterate over records in the file."""
         # Parse the file and yield records
         for record in self.parser.parse(self.file_path):
@@ -88,7 +88,7 @@ class Gff:
         
         return self._hierarchy
     
-    def get_features_by_type(self, type_: str) -> List[Record]:
+    def get_features_by_type(self, type_: str) -> List[GffRecord]:
         """
         Get all features of a specific type (e.g., 'gene', 'exon', 'CDS').
         
@@ -100,7 +100,7 @@ class Gff:
         """
         return [r for r in self.records if r.type == type_]
     
-    def get_features_by_location(self, seqid: str, start: int, end: int) -> List[Record]:
+    def get_features_by_location(self, seqid: str, start: int, end: int) -> List[GffRecord]:
         """
         Get all features that overlap with the specified genomic region.
         
@@ -113,12 +113,12 @@ class Gff:
             List of features that overlap with the region
         """
         return [
-            r for r in self.records 
-            if r.seqid == seqid and 
+            r for r in self.records
+            if r.chrom == seqid and
                not (r.end < start or r.start > end)  # Overlap check
         ]
     
-    def get_features_by_attribute(self, attr_name: str, attr_value: str | None = None) -> List[Record]:
+    def get_features_by_attribute(self, attr_name: str, attr_value: str | None = None) -> List[GffRecord]:
         """
         Get features based on their attributes.
         

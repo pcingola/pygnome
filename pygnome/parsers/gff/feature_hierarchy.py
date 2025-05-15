@@ -5,7 +5,7 @@ Feature hierarchy for representing parent-child relationships in genomic feature
 from collections import defaultdict
 from typing import List
 
-from .record import Record
+from .record import GffRecord
 
 
 class FeatureHierarchy:
@@ -23,7 +23,7 @@ class FeatureHierarchy:
         self.child_to_parents = defaultdict(list)    # child_id -> [parent_records]
         self.id_to_record = {}                       # id -> record
     
-    def add_record(self, record: Record) -> None:
+    def add_record(self, record: GffRecord) -> None:
         """
         Add a record to the hierarchy.
         
@@ -46,7 +46,7 @@ class FeatureHierarchy:
                 self.child_to_parents[record_id].append(parent_id)
                 self.parent_to_children[parent_id].append(record)
     
-    def build_from_records(self, records: List[Record]) -> None:
+    def build_from_records(self, records: List[GffRecord]) -> None:
         """
         Build the hierarchy from a list of records.
         
@@ -56,7 +56,7 @@ class FeatureHierarchy:
         for record in records:
             self.add_record(record)
     
-    def get_children(self, parent_id: str) -> List[Record]:
+    def get_children(self, parent_id: str) -> List[GffRecord]:
         """
         Get all direct children of a feature.
         
@@ -68,7 +68,7 @@ class FeatureHierarchy:
         """
         return self.parent_to_children.get(parent_id, [])
     
-    def get_parents(self, child_id: str) -> List[Record]:
+    def get_parents(self, child_id: str) -> List[GffRecord]:
         """
         Get all direct parents of a feature.
         
@@ -81,7 +81,7 @@ class FeatureHierarchy:
         parent_ids = self.child_to_parents.get(child_id, [])
         return [self.id_to_record.get(pid) for pid in parent_ids if pid in self.id_to_record]
     
-    def get_descendants(self, parent_id: str, max_depth: int | None = None) -> List[Record]:
+    def get_descendants(self, parent_id: str, max_depth: int | None = None) -> List[GffRecord]:
         """
         Get all descendants of a feature (children, grandchildren, etc.).
         
@@ -116,7 +116,7 @@ class FeatureHierarchy:
         _traverse(parent_id)
         return descendants
     
-    def get_ancestors(self, child_id: str, max_depth: int | None = None) -> List[Record]:
+    def get_ancestors(self, child_id: str, max_depth: int | None = None) -> List[GffRecord]:
         """
         Get all ancestors of a feature (parents, grandparents, etc.).
         

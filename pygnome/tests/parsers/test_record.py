@@ -4,17 +4,18 @@ Tests for the Record class.
 """
 
 import unittest
-from pygnome.parsers.gff.record import Record
+from pygnome.parsers.gff.record import GffRecord
 from pygnome.genomics.strand import Strand
 
 
 class TestRecord(unittest.TestCase):
-    """Test cases for the Record class."""
+    """Test cases for the GffRecord class."""
     
     def test_record_initialization(self):
         """Test basic Record initialization."""
-        record = Record(
-            seqid="chr1",
+        record = GffRecord(
+            id="gene1",
+            chrom="chr1",
             source="test",
             type="gene",
             start="1000",
@@ -26,7 +27,7 @@ class TestRecord(unittest.TestCase):
         )
         
         # Check field conversions
-        self.assertEqual(record.seqid, "chr1")
+        self.assertEqual(record.chrom, "chr1")
         self.assertEqual(record.source, "test")
         self.assertEqual(record.type, "gene")
         self.assertEqual(record.start, 1000)  # Converted to int
@@ -39,8 +40,9 @@ class TestRecord(unittest.TestCase):
     
     def test_record_with_numeric_values(self):
         """Test Record with numeric values."""
-        record = Record(
-            seqid="chr1",
+        record = GffRecord(
+            id="gene2",
+            chrom="chr1",
             source="test",
             type="gene",
             start=1000,
@@ -59,8 +61,9 @@ class TestRecord(unittest.TestCase):
     
     def test_get_set_attribute(self):
         """Test get_attribute and set_attribute methods."""
-        record = Record(
-            seqid="chr1",
+        record = GffRecord(
+            id="gene1",
+            chrom="chr1",
             source="test",
             type="gene",
             start=1000,
@@ -82,8 +85,9 @@ class TestRecord(unittest.TestCase):
     
     def test_string_representation(self):
         """Test string representation of Record."""
-        record = Record(
-            seqid="chr1",
+        record = GffRecord(
+            id="gene1",
+            chrom="chr1",
             source="test",
             type="gene",
             start=1000,

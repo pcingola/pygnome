@@ -10,7 +10,7 @@ from .gtf_parser import GtfParser
 from .gff3_parser import Gff3Parser
 from .gff2_parser import Gff2Parser
 from .format import Format
-from .record import Record
+from .record import GffRecord
 from ...genomics.genome import Genome
 from ...genomics.chromosome import Chromosome
 from ...genomics.gene import Gene
@@ -84,7 +84,7 @@ class GffGenomeLoader:
         else:  # Format.GFF2
             return Gff2Parser()
     
-    def _process_record(self, record: Record) -> None:
+    def _process_record(self, record: GffRecord) -> None:
         """Process a single GFF/GTF record."""
         feature_type = record.type
         
@@ -97,13 +97,13 @@ class GffGenomeLoader:
         elif feature_type == "CDS":
             self._process_cds_record(record)
     
-    def _process_gene_record(self, record: Record) -> None:
+    def _process_gene_record(self, record: GffRecord) -> None:
         """Process a gene record."""
         # Handle different attribute names in different formats
         gene_id = (
             record.get_attribute("gene_id") or 
-            record.get_attribute("ID") or 
-            f"gene_{record.seqid}_{record.start}_{record.end}"
+            record.get_attribute("ID") or
+            f"gene_{record.chrom}_{record.start}_{record.end}"
         )
         
         gene_name = (
@@ -122,7 +122,7 @@ class GffGenomeLoader:
         # Create a Gene object
         gene = Gene(
             id=gene_id,
-            chrom=record.seqid,
+            chrom=record.chrom,
             start=record.start - 1,  # Convert to 0-based
             end=record.end,  # GFF/GTF is 1-based, inclusive; we want 0-based, exclusive
             strand=record.strand,
@@ -132,19 +132,19 @@ class GffGenomeLoader:
         )
         self.genes_by_id[gene_id] = gene
     
-    def _process_transcript_record(self, record: Record) -> None:
+    def _process_transcript_record(self, record: GffRecord) -> None:
         """Process a transcript record."""
         # Handle different attribute names in different formats
         gene_id = (
             record.get_attribute("gene_id") or 
-            record.get_attribute("Parent") or 
-            f"gene_{record.seqid}_{record.start}_{record.end}"
+            record.get_attribute("Parent") or
+            f"gene_{record.chrom}_{record.start}_{record.end}"
         )
         
         transcript_id = (
             record.get_attribute("transcript_id") or 
-            record.get_attribute("ID") or 
-            f"transcript_{record.seqid}_{record.start}_{record.end}"
+            record.get_attribute("ID") or
+            f"transcript_{record.chrom}_{record.start}_{record.end}"
         )
         
         transcript_biotype = (
@@ -157,7 +157,7 @@ class GffGenomeLoader:
         # Create a Transcript object
         transcript = Transcript(
             id=transcript_id,
-            chrom=record.seqid,
+            chrom=record.chrom,
             start=record.start - 1,  # Convert to 0-based
             end=record.end,  # GFF/GTF is 1-based, inclusive; we want 0-based, exclusive
             strand=record.strand,
@@ -175,7 +175,7 @@ class GffGenomeLoader:
         if gene_id not in self.genes_by_id:
             gene = Gene(
                 id=gene_id,
-                chrom=record.seqid,
+                chrom=record.chrom,
                 start=record.start - 1,  # Convert to 0-based
                 end=record.end,  # GFF/GTF is 1-based, inclusive; we want 0-based, exclusive
                 strand=record.strand,
@@ -185,7 +185,7 @@ class GffGenomeLoader:
             )
             self.genes_by_id[gene_id] = gene
     
-    def _process_exon_record(self, record: Record) -> None:
+    def _process_exon_record(self, record: GffRecord) -> None:
         """Process an exon record."""
         # Handle different attribute names in different formats
         transcript_id = (
@@ -200,14 +200,14 @@ class GffGenomeLoader:
         
         exon_id = (
             record.get_attribute("exon_id") or 
-            record.get_attribute("ID") or 
-            f"exon_{record.seqid}_{record.start}_{record.end}"
+            record.get_attribute("ID") or
+            f"exon_{record.chrom}_{record.start}_{record.end}"
         )
         
         # Create an Exon object
         exon = Exon(
             id=exon_id,
-            chrom=record.seqid,
+            chrom=record.chrom,
             start=record.start - 1,  # Convert to 0-based
             end=record.end,  # GFF/GTF is 1-based, inclusive; we want 0-based, exclusive
             strand=record.strand,
@@ -221,7 +221,7 @@ class GffGenomeLoader:
         else:
             self.exons_by_transcript[transcript_id].append(exon)
     
-    def _process_cds_record(self, record: Record) -> None:
+    def _process_cds_record(self, record: GffRecord) -> None:
         """Process a CDS record."""
         # Handle different attribute names in different formats
         transcript_id = (
@@ -236,8 +236,8 @@ class GffGenomeLoader:
         
         # Create a CDS object
         cds = CDS(
-            id=f"CDS_{record.seqid}_{record.start}_{record.end}",
-            chrom=record.seqid,
+            id=f"CDS_{record.chrom}_{record.start}_{record.end}",
+            chrom=record.chrom,
             start=record.start - 1,  # Convert to 0-based
             end=record.end,  # GFF/GTF is 1-based, inclusive; we want 0-based, exclusive
             strand=record.strand,
