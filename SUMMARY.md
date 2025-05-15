@@ -32,6 +32,14 @@ The library models genomic features with a hierarchical structure:
 - `Gene`: Contains multiple transcripts and gene-level properties
 - `Transcript`: Represents an RNA transcript with exons, introns, UTRs, and coding sequences
 - `Exon`, `Intron`, `CDS`, `UTR`, `SpliceSite`: Specific genomic features with specialized properties
+- `Variant`: Base class for genomic variants with reference and alternate alleles
+  - `SNP`: Single Nucleotide Polymorphism (single base change)
+  - `Insertion`: Insertion of one or more bases
+  - `Deletion`: Deletion of one or more bases
+  - `Duplication`: Duplication of a genomic segment
+  - `Inversion`: Inversion of a genomic segment
+  - `Translocation`: Movement of a genomic segment to a different location
+  - `ComplexVariant`: Complex variants that don't fit other categories
 - `Strand`, `Phase`, `Biotype`, `UTRType`: Enumerations for genomic feature properties
 
 ### Feature Storage
