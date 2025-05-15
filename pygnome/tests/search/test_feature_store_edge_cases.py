@@ -16,9 +16,9 @@ class TestFeatureStoreEdgeCases(unittest.TestCase):
     def test_extreme_coordinates(self):
         """Test features with extreme coordinates."""
         # Create stores
-        interval_store = IntervalTreeStore()
-        binned_store = BinnedGenomicStore()
-        
+        interval_store = IntervalTreeStore(chromosome="chr1")
+        binned_store = BinnedGenomicStore(chromosome="chr1")
+
         # Feature with very large coordinates
         large_coord_feature = GenomicFeature(
             id="large_coord",
@@ -104,9 +104,9 @@ class TestFeatureStoreEdgeCases(unittest.TestCase):
         )
         
         # Create stores
-        interval_store = IntervalTreeStore()
-        binned_store = BinnedGenomicStore()
-        
+        interval_store = IntervalTreeStore(chromosome="chr1")
+        binned_store = BinnedGenomicStore(chromosome="chr1")
+
         # Add the huge feature
         for store in [interval_store, binned_store]:
             with store:
@@ -130,8 +130,8 @@ class TestFeatureStoreEdgeCases(unittest.TestCase):
     def test_many_features_same_position(self):
         """Test handling many features at the same position."""
         # Create stores
-        interval_store = IntervalTreeStore()
-        binned_store = BinnedGenomicStore()
+        interval_store = IntervalTreeStore(chromosome="chr1")
+        binned_store = BinnedGenomicStore(chromosome="chr1")
         position_store = GenomicFeatureStore(store_type=StoreType.BRUTE_FORCE)
         
         # Create 100 features all containing position 1000
@@ -198,8 +198,8 @@ class TestFeatureStoreEdgeCases(unittest.TestCase):
         # Test different bin sizes
         bin_sizes = [10, 100, 1000, 10000]
         for bin_size in bin_sizes:
-            store = BinnedGenomicStore(bin_size=bin_size)
-            
+            store = BinnedGenomicStore(chromosome='chr1', bin_size=bin_size)
+
             # Add features
             store.index_build_start()
             for feature in features:

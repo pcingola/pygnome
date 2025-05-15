@@ -264,8 +264,8 @@ class MsiChromosomeStore(ChromosomeFeatureStore):
         super().index_build_end()
         
         # Sort arrays by start position for binary search
-        if self._starts is not None and len(self._starts) > 0:
-            sort_indices = np.argsort(self._starts)
+        if self._starts is not None and len(self._starts) > 0 and self._feature_count > 0:
+            sort_indices = np.argsort(self._starts[:self._feature_count])
             self._starts = self._starts[sort_indices]
             self._ends = self._ends[sort_indices]
             

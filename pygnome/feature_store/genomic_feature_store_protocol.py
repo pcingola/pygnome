@@ -32,7 +32,7 @@ class GenomicFeatureStoreProtocol(Protocol):
         """Get the nearest feature to the given position."""
         ...
 
-    def __getitem__(self, chrom: str) -> 'ChromosomeFeatureStore':
+    def __getitem__(self, chrom: str) -> 'ChromosomeFeatureStore': # type: ignore
         """Get a chromosome store by name."""
         ...
 

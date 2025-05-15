@@ -112,8 +112,8 @@ class TestFeatureStore(unittest.TestCase):
 
     def test_stores(self):
         """Test the interval tree store implementation."""
-        for store in [IntervalTreeStore(), BinnedGenomicStore(bin_size=1000)]:
-            store_naive = BruteForceFeatureStore()
+        for store in [IntervalTreeStore('chr1'), BinnedGenomicStore('chr1', bin_size=1000)]:
+            store_naive = BruteForceFeatureStore('chr1')
             self.compare_chr_stores(store_naive, store)
     
     
@@ -127,15 +127,10 @@ class TestFeatureStore(unittest.TestCase):
 
     
     def test_performance_comparison(self):
-        """Compare performance of different store implementations."""
-        # Skip in normal test runs to avoid slowing down the test suite
-        if not hasattr(self, 'run_performance_tests'):
-            self.skipTest("Performance tests disabled")
-        
+        """Compare performance of different store implementations."""        
         # Create stores
         interval_store = GenomicFeatureStore(store_type=StoreType.INTERVAL_TREE)
         binned_store = GenomicFeatureStore(store_type=StoreType.BINNED)
-        position_store = GenomicFeatureStore(store_type=StoreType.POSITION_HASH)
         
         # Create more test data for performance testing
         features = []
@@ -150,7 +145,6 @@ class TestFeatureStore(unittest.TestCase):
         stores = {
             "Interval Tree": interval_store,
             "Binned": binned_store,
-            "Position Hash": position_store
         }
         
         for name, store in stores.items():

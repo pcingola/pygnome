@@ -56,6 +56,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
             
         # Create a store with pre-allocated arrays
         store = MsiChromosomeStore(
+            chromosome="chr1",
             feature_count=counter.get_count("chr1"),
             max_lengths_by_bin=counter.get_max_lengths("chr1"),
             bin_size=1000
@@ -94,18 +95,19 @@ class TestMsiChromosomeStore(unittest.TestCase):
         features = store.get_by_interval(10050, 10090)
         self.assertEqual(len(features), 0)
         
-    def test_edge_cases(self):
-        """Test edge cases for the MsiChromosomeStore."""
+    def test_empty_store(self):
+        """Test an empty MsiChromosomeStore."""
         # Empty store
-        store = MsiChromosomeStore()
+        store = MsiChromosomeStore(chromosome="chr1")
         store.index_build_start()
         store.index_build_end()
         
-        self.assertEqual(len(store.get_by_position(10000)), 0)
-        self.assertEqual(len(store.get_by_interval(10000, 10100)), 0)
-        
-        # Single feature
-        record = MsiSiteRecord(
+        self.assertEqual(len(store.get_by_position(10000)), 0, "Empty store should return no features for position query")
+        self.assertEqual(len(store.get_by_interval(10000, 10100)), 0, "Empty store should return no features for interval query")
+    
+    def _create_test_record(self):
+        """Helper method to create a test record."""
+        return MsiSiteRecord(
             repeat_unit_length=2,
             repeat_unit_binary=9,
             repeat_times=3,
@@ -117,6 +119,10 @@ class TestMsiChromosomeStore(unittest.TestCase):
             chromosome="chr1",
             location=10000
         )
+    
+    def _create_store_with_single_feature(self):
+        """Helper method to create a store with a single feature."""
+        record = self._create_test_record()
         
         # Create a counter to calculate max lengths
         counter = MsiSiteCounter(bin_size=1000)
@@ -126,36 +132,61 @@ class TestMsiChromosomeStore(unittest.TestCase):
         max_lengths = counter.get_max_lengths("chr1")
         
         # Create a store with pre-calculated max lengths
-        store = MsiChromosomeStore(feature_count=1, max_lengths_by_bin=max_lengths, bin_size=1000)
+        store = MsiChromosomeStore(
+            chromosome="chr1",
+            feature_count=1,
+            max_lengths_by_bin=max_lengths,
+            bin_size=1000
+        )
         store.index_build_start()
         store.add(record)
         store.index_build_end()
         
+        return store, record
         
-        # Test exact position match
+    def test_single_feature_exact_match(self):
+        """Test finding a feature at its exact start position."""
+        store, record = self._create_store_with_single_feature()
+        
         features = store.get_by_position(10000)
         self.assertEqual(len(features), 1, "Should find feature at its start position")
+        self.assertEqual(features[0].start, 10000, "Feature start position should match")
+        self.assertEqual(features[0].end, 10006, "Feature end position should match")
+    
+    def test_position_within_feature(self):
+        """Test finding a feature when querying a position within the feature."""
+        store, record = self._create_store_with_single_feature()
         
-        # Test position within feature
         features = store.get_by_position(10002)
-        self.assertEqual(len(features), 1)
+        self.assertEqual(len(features), 1, "Should find feature when position is within feature")
+        self.assertEqual(features[0].start, 10000, "Feature start position should match")
+    
+    def test_position_outside_feature(self):
+        """Test querying a position outside any feature."""
+        store, record = self._create_store_with_single_feature()
         
-        # Test position outside feature
         features = store.get_by_position(10007)
-        self.assertEqual(len(features), 0)
+        self.assertEqual(len(features), 0, "Should not find any features when position is outside feature")
+    
+    def test_interval_overlap(self):
+        """Test finding a feature when the query interval overlaps with it."""
+        store, record = self._create_store_with_single_feature()
         
-        # Test interval overlap
         features = store.get_by_interval(9990, 10003)
-        self.assertEqual(len(features), 1)
+        self.assertEqual(len(features), 1, "Should find feature when interval overlaps with it")
+        self.assertEqual(features[0].start, 10000, "Feature start position should match")
+    
+    def test_interval_no_overlap(self):
+        """Test querying an interval that doesn't overlap with any feature."""
+        store, record = self._create_store_with_single_feature()
         
-        # Test interval no overlap
         features = store.get_by_interval(10007, 10100)
-        self.assertEqual(len(features), 0)
+        self.assertEqual(len(features), 0, "Should not find any features when interval doesn't overlap")
         
     def test_binary_search(self):
         """Test the binary search implementation."""
         # Create a store with features at specific positions
-        store = MsiChromosomeStore(feature_count=5)
+        store = MsiChromosomeStore(chromosome="chr1", feature_count=5)
         store.index_build_start()
         
         # Add features at positions 10, 20, 30, 40, 50
@@ -256,16 +287,12 @@ class TestMsiChromosomeStore(unittest.TestCase):
         max_lengths = counter.get_max_lengths("chr1")
         
         # Create a store with pre-calculated max lengths
-        store = MsiChromosomeStore(feature_count=3, max_lengths_by_bin=max_lengths, bin_size=1000)
-        store.index_build_start()
+        store = MsiChromosomeStore(chromosome="chr1", feature_count=3, max_lengths_by_bin=max_lengths, bin_size=1000)
         
         # Add the records to the store
-        
-        for record in test_records:
-            store.add(record)
-            
-        store.index_build_end()
-        
+        with store:
+            for record in test_records:
+                store.add(record)
         
         # Test searching for positions exactly in the middle of each feature
         positions_to_test = [10001, 20001, 30001]
@@ -314,7 +341,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
         specific_max_lengths = specific_counter.get_max_lengths("chr1")
         
         # Create a new store for this specific test with pre-calculated max lengths
-        specific_store = MsiChromosomeStore(feature_count=1, max_lengths_by_bin=specific_max_lengths, bin_size=1000)
+        specific_store = MsiChromosomeStore(chromosome="chr1", feature_count=1, max_lengths_by_bin=specific_max_lengths, bin_size=1000)
         specific_store.index_build_start()
         specific_store.add(specific_record)
         specific_store.index_build_end()
@@ -371,6 +398,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
             counter.add(record)
             
         store = MsiChromosomeStore(
+            chromosome="chr1",
             feature_count=counter.get_count("chr1"),
             max_lengths_by_bin=counter.get_max_lengths("chr1"),
             bin_size=10000
@@ -453,6 +481,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
             counter.add(record)
             
         store = MsiChromosomeStore(
+            chromosome="chr1",
             feature_count=counter.get_count("chr1"),
             max_lengths_by_bin=counter.get_max_lengths("chr1"),
             bin_size=bin_size
@@ -533,6 +562,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
             counter.add(record)
             
         store = MsiChromosomeStore(
+            chromosome="chr1",
             feature_count=counter.get_count("chr1"),
             max_lengths_by_bin=counter.get_max_lengths("chr1"),
             bin_size=10000

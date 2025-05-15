@@ -3,11 +3,12 @@ import numpy as np
 from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore
 from pygnome.genomics.genomic_feature import GenomicFeature
 
+DEFAULT_BIN_SIZE = 100_000  # Default bin size in base pairs
 
 class BinnedGenomicStore(ChromosomeFeatureStore):
     """Store genomic features using a memory-efficient binning approach."""
-    
-    def __init__(self, chromosome: str, bin_size: int = 100000):
+
+    def __init__(self, chromosome: str, bin_size: int = DEFAULT_BIN_SIZE):
         """
         Initialize a binned genomic store.
         
@@ -123,7 +124,7 @@ class BinnedGenomicStore(ChromosomeFeatureStore):
                 result.append(feature)
         return result
     
-    def index_build_end(self) -> int:
+    def index_build_end(self) -> None:
         """Finalize the index build process."""
         super().index_build_end()
         # Convert all remaining buffers to arrays

@@ -24,7 +24,7 @@ class TestMsiSitesReader(unittest.TestCase):
             "chr2\t20000\t3\t100\t4\t200\t300\tCAT\tGGGGG\tAAAAA\n"
         )
         self.temp_file.close()
-        self.file_path = self.temp_file.name
+        self.file_path = Path(self.temp_file.name)
     
     def tearDown(self):
         """Clean up test data."""
@@ -34,7 +34,7 @@ class TestMsiSitesReader(unittest.TestCase):
     def test_reader_as_context_manager(self):
         """Test using the reader as a context manager."""
         records = []
-        with MsiSitesReader(self.file_path) as reader:
+        with MsiSitesReader(file_path=self.file_path) as reader:
             for record in reader:
                 records.append(record)
         

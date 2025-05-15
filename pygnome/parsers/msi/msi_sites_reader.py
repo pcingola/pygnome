@@ -44,7 +44,7 @@ class MsiSitesReader:
             file_path: Path to the MSI sites file (can be plain text or gzipped)
         """
         self.file_path = file_path
-        self._file_handle: Optional[TextIO] = None
+        self._file_handle: TextIO | None = None
         self._header_processed = False
         self._column_indices = {}
         
