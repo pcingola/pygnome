@@ -16,6 +16,7 @@ from pygnome.parsers.msi.msi_site_record import MsiSiteRecord
 
 DEFAULT_BIN_SIZE = 100_000  # Default bin size
 DEFAULT_FEATURE_COUNT = 1024  # Default number of features to allocate space for
+MAX_LOOK_FORWARD = 1000 # Maximum number of features to look forward in the array
 
 class MsiSiteCounter:
     """
@@ -161,7 +162,7 @@ class MsiChromosomeStore(ChromosomeFeatureStore):
             
         # Collect all features that contain the position
         results = []
-        for i in range(look_back_idx, min(len(self._starts), idx + 100)):  # Limit forward search
+        for i in range(look_back_idx, min(len(self._starts), idx + MAX_LOOK_FORWARD)):  # Limit forward search
             if self._starts[i] > position:
                 break
             if self._starts[i] <= position < self._ends[i]:
