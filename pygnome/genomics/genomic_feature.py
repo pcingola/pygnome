@@ -28,10 +28,6 @@ class GenomicFeature:
         if self.end < self.start:
             raise ValueError(f"End position ({self.end}) must be >= start position ({self.start})")
     
-    def __str__(self) -> str:
-        """Return a string representation of the feature."""
-        return f"{self.__class__.__name__}({self.id}, {self.chrom}:{self.start}-{self.end}:{self.strand})"
-    
     @property
     def length(self) -> int:
         """Return the length of the feature (end - start)."""
@@ -67,3 +63,8 @@ class GenomicFeature:
             return (position - self.end) + 1
         else:
             return 0
+
+    def __str__(self) -> str:
+        """Return a string representation of the feature."""
+        return f"{self.__class__.__name__}({self.id}, {self.chrom}:{self.start}-{self.end}:{self.strand})"
+    

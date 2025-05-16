@@ -19,17 +19,17 @@ class MsiSiteRecord(GenomicFeature):
     
     def __init__(
         self,
-        repeat_unit_length: int,
-        repeat_unit_binary: int,
-        repeat_times: int,
-        left_flank_binary: int,
-        right_flank_binary: int,
-        repeat_unit_bases: str,
-        left_flank_bases: str,
-        right_flank_bases: str,
         chrom: str,
         location: int,
+        repeat_unit_length: int,
+        repeat_times: int,
+        repeat_unit_bases: str,
         id: str = "",
+        left_flank_bases: str = '',
+        right_flank_bases: str = '',
+        left_flank_binary: int = 0,
+        right_flank_binary: int = 0,
+        repeat_unit_binary: int = 0,
         strand: Strand = Strand.UNSTRANDED
     ):
         """

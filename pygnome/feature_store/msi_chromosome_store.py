@@ -245,16 +245,14 @@ class MsiChromosomeStore(ChromosomeFeatureStore):
         end = int(self._ends[idx])
         repeat_unit_bases = self._repeat_unit_bases[idx]
         
-        # Calculate repeat_unit_length from repeat_unit_bases
-        repeat_unit_length = len(repeat_unit_bases)
-        
         # Create a lightweight feature object (not a full MsiSiteRecord)
-        return GenomicFeature(
+        return MsiSiteRecord(
             id=f"MSI_{start}",
-            chrom=self.chromosome,  # Use self.chromosome from parent class
-            start=start,
-            end=end,
-            strand=Strand.UNSTRANDED
+            chrom=self.chromosome,
+            location=start,
+            repeat_unit_bases=repeat_unit_bases,
+            repeat_unit_length=len(repeat_unit_bases),
+            repeat_times=(end - start) // len(repeat_unit_bases),
         )
         
     def index_build_end(self) -> None:

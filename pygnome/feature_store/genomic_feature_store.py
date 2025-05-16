@@ -134,13 +134,16 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
     
     def __str__(self) -> str:
         """Return a string representation of the feature store."""
-        chrom_counts = [f"{chrom}: {len(store)}"
-                        for chrom, store in self.chromosomes.items()]
+        chrom_counts = [f"{chrom}: {len(store)}" for chrom, store in self.chromosomes.items()]
+        keys = sorted(list(self.chromosomes.keys()))
+        stores = [f"\t{self.chromosomes[chr]}" for chr in keys]
         return (f"GenomicFeatureStore(type={self.store_type.value}, "
-                f"chromosomes={len(self.chromosomes)}, "
-                f"features={self.get_feature_count()}, "
-                f"{', '.join(chrom_counts)})")
-    
+                + f"chromosomes={len(self.chromosomes)}, "
+                + f"features={self.get_feature_count()}, "
+                + f"{', '.join(chrom_counts)})\n"
+                + '\n'.join(stores)
+                )
+
     def __repr__(self) -> str:
         return self.__str__()
     
