@@ -9,7 +9,7 @@ from pygnome.feature_store.msi_chromosome_store import MsiChromosomeStore, MsiSi
 from pygnome.parsers.msi.msi_sites_reader import MsiSitesReader
 
 
-def load_msi_sites(file_path: Path, verbose: bool) -> GenomicFeatureStore:
+def load_msi_sites(file_path: Path, verbose: bool, force: bool = False) -> GenomicFeatureStore:
     """
     Load MSI sites from a file into a GenomicFeatureStore.
     
@@ -27,6 +27,13 @@ def load_msi_sites(file_path: Path, verbose: bool) -> GenomicFeatureStore:
     # Create the genomic feature store
     feature_store = GenomicFeatureStore(store_type=StoreType.MSI)
 
+    pickle_path = file_path.with_suffix('.pckl')
+    if pickle_path.exists() and not force:
+        # Load from the pickle file if it exists and force is not set
+        if verbose:
+            print(f"Loading from {pickle_path}...")
+        return GenomicFeatureStore.load(pickle_path)
+
     # First pass: Count features per chromosome
     counter = MsiSiteCounter()
     if verbose:
@@ -40,7 +47,7 @@ def load_msi_sites(file_path: Path, verbose: bool) -> GenomicFeatureStore:
             if verbose and record.chrom != prev_chrom:
                 # Show only if new chromosome is encountered
                 elapsed = time.time() - start_time
-                print(f"{count} ({elapsed:.2f}s): {record.chrom}")
+                print(f"{count:,} ({elapsed:.2f}s): {record.chrom}")
                 prev_chrom = record.chrom
     if verbose:
         elapsed = time.time() - start_time
@@ -68,7 +75,7 @@ def load_msi_sites(file_path: Path, verbose: bool) -> GenomicFeatureStore:
             if verbose and record.chrom != prev_chrom:
                 # Show only if new chromosome is encountered
                 elapsed = time.time() - start_time
-                print(f"{count} ({elapsed:.2f}s): {record.chrom}")
+                print(f"{count:,} ({elapsed:.2f}s): {record.chrom}")
                 prev_chrom = record.chrom
     if verbose:
         elapsed = time.time() - start_time
@@ -79,10 +86,19 @@ def load_msi_sites(file_path: Path, verbose: bool) -> GenomicFeatureStore:
         for chrom, store in feature_store.chromosomes.items():
             print(f"  {chrom}: {len(store)} features")
             total_features += len(store)
-        print(f"  Total features in stores: {total_features}")
+        print(f"  Total features in store: {total_features}")
 
     # Finalize all chromosome stores
     for chrom_store in feature_store.chromosomes.values():
+        if verbose:
+            print(f"Indexing '{chrom_store.chromosome}'...")
         chrom_store.index_build_end()
     
+    # Save the feature store to a pickle file
+    if verbose:
+        print(f"Saving to {pickle_path}...")
+    feature_store.save(pickle_path)
+    if verbose:
+        print(f"Saved to {pickle_path}, file size: {pickle_path.stat().st_size / 1e6:.2f} MB")
+
     return feature_store

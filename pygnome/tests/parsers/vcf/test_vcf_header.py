@@ -38,7 +38,8 @@ class TestVcfHeader(unittest.TestCase):
         
         # Check that the NS field is correctly parsed
         ns_field = self.header.get_info_field_definition('NS')
-        self.assertIsNotNone(ns_field)
+        if ns_field is None:
+            raise ValueError("NS field is None")
         self.assertEqual(ns_field.id, 'NS')
         self.assertEqual(ns_field.number, '1')
         self.assertEqual(ns_field.type, 'Integer')
@@ -46,7 +47,8 @@ class TestVcfHeader(unittest.TestCase):
         
         # Check that the AF field is correctly parsed
         af_field = self.header.get_info_field_definition('AF')
-        self.assertIsNotNone(af_field)
+        if af_field is None:
+            raise ValueError("AF field is None")
         self.assertEqual(af_field.id, 'AF')
         self.assertEqual(af_field.number, 'A')
         self.assertEqual(af_field.type, 'Float')
@@ -59,7 +61,8 @@ class TestVcfHeader(unittest.TestCase):
         
         # Check that the GT field is correctly parsed
         gt_field = self.header.get_format_field_definition('GT')
-        self.assertIsNotNone(gt_field)
+        if gt_field is None:
+            raise ValueError("GT field is None")
         self.assertEqual(gt_field.id, 'GT')
         self.assertEqual(gt_field.number, '1')
         self.assertEqual(gt_field.type, 'String')
@@ -67,7 +70,8 @@ class TestVcfHeader(unittest.TestCase):
         
         # Check that the GQ field is correctly parsed
         gq_field = self.header.get_format_field_definition('GQ')
-        self.assertIsNotNone(gq_field)
+        if gq_field is None:
+            raise ValueError("GQ field is None")
         self.assertEqual(gq_field.id, 'GQ')
         self.assertEqual(gq_field.number, '1')
         self.assertEqual(gq_field.type, 'Integer')
@@ -80,7 +84,8 @@ class TestVcfHeader(unittest.TestCase):
         
         # Check that the q10 filter is correctly parsed
         q10_filter = self.header.filters.get('q10')
-        self.assertIsNotNone(q10_filter)
+        if q10_filter is None:
+            raise ValueError("q10 filter is None")
         self.assertEqual(q10_filter.id, 'q10')
         self.assertEqual(q10_filter.description, 'Quality below 10')
     
@@ -91,7 +96,8 @@ class TestVcfHeader(unittest.TestCase):
         
         # Check that the contig is correctly parsed
         contig = self.header.contigs.get('20')
-        self.assertIsNotNone(contig)
+        if contig is None:
+            raise ValueError("Contig 20 is None")
         self.assertEqual(contig.id, '20')
         self.assertEqual(contig.length, 62435964)
         self.assertEqual(contig.md5, None)

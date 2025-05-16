@@ -68,7 +68,20 @@ Represents a FORMAT field with type-specific parsing.
 - **Key methods**:
   - `parse(values, field_type, number)`: Parse values according to type and number
 
-### 6. `VcfVariant`
+### 6. `VariantFactory`
+Factory class for creating Variant objects from VCF records.
+
+- **Responsibilities**:
+  - Determine variant types (SNP, insertion, deletion, etc.)
+  - Create appropriate Variant objects from VCF record data
+  - Handle complex variant type detection logic
+
+- **Key methods**:
+  - `is_snp()`, `is_indel()`, `is_structural_variant()`: Static variant type detection methods
+  - `get_variant_type()`: Determine the VariantType enum for a variant
+  - `create_variants_from_record()`: Create Variant objects from a VcfRecord
+
+### 7. `VcfVariant`
 Higher-level representation of a variant.
 
 - **Responsibilities**:
@@ -77,11 +90,10 @@ Higher-level representation of a variant.
   - Represent structural variants, SNPs, indels, etc.
 
 - **Key methods**:
-  - `is_snp()`, `is_indel()`, `is_structural_variant()`: Variant type checks
   - `get_alleles()`: Get reference and alternate alleles
   - `get_genotypes()`: Get genotypes for all samples
 
-### 7. `VcfIndex`
+### 8. `VcfIndex`
 Provides indexing for random access to VCF files.
 
 - **Responsibilities**:

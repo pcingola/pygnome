@@ -32,9 +32,6 @@ class Variant(GenomicFeature):
     """
     ref: str  # Reference allele
     alt: str  # Alternate allele
-    quality: float | None = None  # Quality score
-    filters: list[str] = field(default_factory=list)  # Filter flags
-    info: dict[str, Any] = field(default_factory=dict)  # INFO fields
     
     def __post_init__(self):
         """Validate the variant after initialization."""
@@ -104,12 +101,17 @@ class Deletion(Variant):
         super().__post_init__()
         
         # Validate that the alternate allele is shorter than the reference
-        if len(self.alt) >= len(self.ref):
-            raise ValueError("Alternate allele must be shorter than reference for deletion")
+        # Skip validation for symbolic alleles like <DEL>
+        if not (self.alt.startswith("<") and self.alt.endswith(">")):
+            if len(self.alt) >= len(self.ref):
+                raise ValueError("Alternate allele must be shorter than reference for deletion")
     
     @property
     def deleted_sequence(self) -> str:
         """Get the deleted sequence."""
+        # For symbolic alleles, return the reference sequence
+        if self.alt.startswith("<") and self.alt.endswith(">"):
+            return self.ref
         return self.ref[len(self.alt):]
 
 

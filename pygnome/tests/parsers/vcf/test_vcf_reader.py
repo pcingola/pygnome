@@ -7,7 +7,6 @@ from pathlib import Path
 
 from pygnome.parsers.vcf.vcf_reader import VcfReader
 from pygnome.parsers.vcf.vcf_record import VcfRecord
-from pygnome.parsers.vcf.vcf_variant import VcfVariant
 
 
 class TestVcfReader(unittest.TestCase):
@@ -83,37 +82,6 @@ class TestVcfReader(unittest.TestCase):
             self.assertEqual(last_record.get_ref(), "GTC")
             self.assertEqual(last_record.get_alt(), ["G", "GTCT"])
     
-    def test_variant_iteration(self):
-        """Test iterating through variants."""
-        with VcfReader(self.sample_vcf_path) as reader:
-            variants = list(reader.get_variants())
-            
-            # Check that we have the expected number of variants
-            self.assertEqual(len(variants), 5)
-            
-            # Check that all variants are VcfVariant objects
-            for variant in variants:
-                self.assertIsInstance(variant, VcfVariant)
-            
-            # Check the first variant
-            first_variant = variants[0]
-            self.assertEqual(first_variant.get_chrom(), "20")
-            self.assertEqual(first_variant.get_pos(), 14369)  # 0-based
-            self.assertEqual(first_variant.get_id(), "rs6054257")
-            self.assertEqual(first_variant.get_ref(), "G")
-            self.assertEqual(first_variant.get_alt(), ["A"])
-            self.assertTrue(first_variant.is_snp())
-            
-            # Check the last variant
-            last_variant = variants[-1]
-            self.assertEqual(last_variant.get_chrom(), "20")
-            self.assertEqual(last_variant.get_pos(), 1234566)  # 0-based
-            self.assertEqual(last_variant.get_id(), "microsat1")
-            self.assertEqual(last_variant.get_ref(), "GTC")
-            self.assertEqual(last_variant.get_alt(), ["G", "GTCT"])
-            self.assertTrue(last_variant.is_indel())
-            self.assertTrue(last_variant.is_multi_allelic())
-    
     def test_fetch(self):
         """Test fetching records by region."""
         with VcfReader(self.sample_vcf_path) as reader:
@@ -140,22 +108,7 @@ class TestVcfReader(unittest.TestCase):
             self.assertEqual(records[1].get_pos(), 1230236)  # 0-based
             self.assertEqual(records[2].get_pos(), 1234566)  # 0-based
     
-    def test_fetch_variants(self):
-        """Test fetching variants by region."""
-        with VcfReader(self.sample_vcf_path) as reader:
-            # Fetch variants in a region
-            variants = list(reader.fetch_variants("20", 14000, 15000))
-            
-            # Check that we have the expected number of variants
-            self.assertEqual(len(variants), 1)
-            
-            # Check the variant
-            variant = variants[0]
-            self.assertEqual(variant.get_chrom(), "20")
-            self.assertEqual(variant.get_pos(), 14369)  # 0-based
-            self.assertEqual(variant.get_id(), "rs6054257")
-            self.assertTrue(variant.is_snp())
-    
+
     def test_context_manager(self):
         """Test using the reader as a context manager."""
         # Open the reader using a context manager

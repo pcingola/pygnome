@@ -7,7 +7,6 @@ from typing import Iterator, TextIO
 
 from pygnome.parsers.vcf.vcf_header import VcfHeader
 from pygnome.parsers.vcf.vcf_record import VcfRecord
-from pygnome.parsers.vcf.vcf_variant import VcfVariant
 
 
 class VcfReader:
@@ -134,16 +133,6 @@ class VcfReader:
             self._file_handle.close()
             self._file_handle = None
     
-    def get_variants(self) -> Iterator[VcfVariant]:
-        """
-        Iterate through the variants in the VCF file.
-        
-        Yields:
-            VcfVariant objects for each record in the file
-        """
-        for record in self:
-            yield VcfVariant(record)
-    
     def fetch(self, chrom: str, start: int, end: int) -> Iterator[VcfRecord]:
         """
         Fetch records in a specific genomic region.
@@ -162,21 +151,6 @@ class VcfReader:
         for record in self:
             if record.get_chrom() == chrom and record.get_pos() >= start and record.get_pos() < end:
                 yield record
-    
-    def fetch_variants(self, chrom: str, start: int, end: int) -> Iterator[VcfVariant]:
-        """
-        Fetch variants in a specific genomic region.
-        
-        Args:
-            chrom: Chromosome name
-            start: Start position (0-based, inclusive)
-            end: End position (0-based, exclusive)
-            
-        Yields:
-            VcfVariant objects for variants in the specified region
-        """
-        for record in self.fetch(chrom, start, end):
-            yield VcfVariant(record)
     
     def get_samples(self) -> list[str]:
         """

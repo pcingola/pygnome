@@ -2,10 +2,12 @@
 VCF Record class for representing and parsing individual VCF records.
 """
 from dataclasses import dataclass
+from typing import Any, Iterator
 from pygnome.genomics.genomic_feature import GenomicFeature
 from pygnome.genomics.strand import Strand
-from pygnome.genomics.variant import VariantType, Variant, SNP, Insertion, Deletion, ComplexVariant
+from pygnome.genomics.variant import Variant
 from pygnome.parsers.vcf.vcf_header import VcfHeader
+from pygnome.parsers.vcf.variant_factory import VariantFactory
 
 
 @dataclass
@@ -49,8 +51,8 @@ class VcfRecord(GenomicFeature):
         self._fields = line.strip().split("\t")
         
         # Cache for parsed fields
-        self._info_cache: dict[str, any] = {}
-        self._format_cache: dict[str, list[any]] = {}
+        self._info_cache: dict[str, Any] = {}
+        self._format_cache: dict[str, list[Any]] = {}
         self._genotypes: list[Genotype] | None = None
         
         # Validate the number of fields
@@ -121,7 +123,7 @@ class VcfRecord(GenomicFeature):
             return []
         return filter_field.split(";")
     
-    def get_info(self, field_id: str) -> any:
+    def get_info(self, field_id: str) -> Any:
         """
         Get the value of an INFO field.
         
@@ -204,7 +206,7 @@ class VcfRecord(GenomicFeature):
         
         return False
     
-    def get_format(self, field_id: str, sample_idx: int = 0) -> any:
+    def get_format(self, field_id: str, sample_idx: int = 0) -> Any:
         """
         Get the value of a FORMAT field for a specific sample.
         
@@ -365,7 +367,7 @@ class VcfRecord(GenomicFeature):
         alleles.extend(self.get_alt())
         return alleles
     
-    def _parse_field_value(self, value: str, field_type: str, number: str) -> any:
+    def _parse_field_value(self, value: str, field_type: str, number: str) -> Any:
         """
         Parse a field value based on its type and number.
         
@@ -389,7 +391,7 @@ class VcfRecord(GenomicFeature):
             values = value.split(",")
             return [self._parse_single_value(v, field_type) for v in values]
     
-    def _parse_single_value(self, value: str, field_type: str) -> any:
+    def _parse_single_value(self, value: str, field_type: str) -> Any:
         """
         Parse a single field value based on its type.
         
@@ -418,142 +420,6 @@ class VcfRecord(GenomicFeature):
         return self.raw_line
     
     # Methods for variant type detection
-    def is_snp(self, alt_idx: int = 0) -> bool:
-        """
-        Check if this variant is a SNP (Single Nucleotide Polymorphism).
-        
-        Args:
-            alt_idx: Index of the alternate allele to check (default: 0)
-            
-        Returns:
-            True if the variant is a SNP, False otherwise
-        """
-        ref = self.get_ref()
-        alt_alleles = self.get_alt()
-        
-        if alt_idx >= len(alt_alleles):
-            return False
-            
-        alt = alt_alleles[alt_idx]
-        
-        # SNP: single reference base and alternate allele is a single base
-        return (len(ref) == 1 and len(alt) == 1 and alt in "ACGTN")
-    
-    def is_indel(self, alt_idx: int = 0) -> bool:
-        """
-        Check if this variant is an indel (insertion or deletion).
-        
-        Args:
-            alt_idx: Index of the alternate allele to check (default: 0)
-            
-        Returns:
-            True if the variant is an indel, False otherwise
-        """
-        # Structural variants are not considered indels
-        if self.is_structural_variant(alt_idx) or self.is_breakend(alt_idx):
-            return False
-            
-        ref = self.get_ref()
-        alt_alleles = self.get_alt()
-        
-        if alt_idx >= len(alt_alleles):
-            return False
-            
-        alt = alt_alleles[alt_idx]
-        
-        # Indel: reference and alternate allele have different lengths
-        return len(ref) != len(alt)
-    
-    def is_insertion(self, alt_idx: int = 0) -> bool:
-        """
-        Check if this variant is an insertion.
-        
-        Args:
-            alt_idx: Index of the alternate allele to check (default: 0)
-            
-        Returns:
-            True if the variant is an insertion, False otherwise
-        """
-        # Structural variants are not considered insertions
-        if self.is_structural_variant(alt_idx) or self.is_breakend(alt_idx):
-            return False
-            
-        ref = self.get_ref()
-        alt_alleles = self.get_alt()
-        
-        if alt_idx >= len(alt_alleles):
-            return False
-            
-        alt = alt_alleles[alt_idx]
-        
-        # Insertion: alternate allele is longer than the reference
-        return len(alt) > len(ref)
-    
-    def is_deletion(self, alt_idx: int = 0) -> bool:
-        """
-        Check if this variant is a deletion.
-        
-        Args:
-            alt_idx: Index of the alternate allele to check (default: 0)
-            
-        Returns:
-            True if the variant is a deletion, False otherwise
-        """
-        # Structural variants are not considered deletions
-        if self.is_structural_variant(alt_idx) or self.is_breakend(alt_idx):
-            return False
-            
-        ref = self.get_ref()
-        alt_alleles = self.get_alt()
-        
-        if alt_idx >= len(alt_alleles):
-            return False
-            
-        alt = alt_alleles[alt_idx]
-        
-        # Deletion: alternate allele is shorter than the reference
-        return len(alt) < len(ref)
-    
-    def is_structural_variant(self, alt_idx: int = 0) -> bool:
-        """
-        Check if this variant is a structural variant.
-        
-        Args:
-            alt_idx: Index of the alternate allele to check (default: 0)
-            
-        Returns:
-            True if the variant is a structural variant, False otherwise
-        """
-        alt_alleles = self.get_alt()
-        
-        if alt_idx >= len(alt_alleles):
-            return False
-            
-        alt = alt_alleles[alt_idx]
-        
-        # Structural variant: alternate allele is symbolic (<...>)
-        return alt.startswith("<") and alt.endswith(">")
-    
-    def is_breakend(self, alt_idx: int = 0) -> bool:
-        """
-        Check if this variant is a breakend.
-        
-        Args:
-            alt_idx: Index of the alternate allele to check (default: 0)
-            
-        Returns:
-            True if the variant is a breakend, False otherwise
-        """
-        alt_alleles = self.get_alt()
-        
-        if alt_idx >= len(alt_alleles):
-            return False
-            
-        alt = alt_alleles[alt_idx]
-        
-        # Breakend: alternate allele contains [ or ]
-        return "[" in alt or "]" in alt
-    
     def is_multi_allelic(self) -> bool:
         """
         Check if this variant has multiple alternate alleles.
@@ -562,37 +428,6 @@ class VcfRecord(GenomicFeature):
             True if the variant has multiple alternate alleles, False otherwise
         """
         return len(self.get_alt()) > 1
-    
-    def get_variant_type(self, alt_idx: int = 0) -> VariantType:
-        """
-        Get the type of this variant.
-        
-        Args:
-            alt_idx: Index of the alternate allele to check (default: 0)
-            
-        Returns:
-            A VariantType enum value describing the variant type
-        """
-        if self.is_snp(alt_idx):
-            return VariantType.SNP
-        elif self.is_insertion(alt_idx):
-            return VariantType.INS
-        elif self.is_deletion(alt_idx):
-            return VariantType.DEL
-        elif self.is_structural_variant(alt_idx):
-            # Get the specific type from the symbolic allele
-            alt_alleles = self.get_alt()
-            if alt_idx < len(alt_alleles):
-                alt = alt_alleles[alt_idx]
-                if alt.startswith("<") and alt.endswith(">"):
-                    # Try to map the symbolic allele to a variant type
-                    sv_type = alt[1:-1]  # Remove the < and >
-                    return sv_type
-            return VariantType.SV
-        elif self.is_breakend(alt_idx):
-            return VariantType.BND
-        else:
-            return VariantType.OTHER
     
     def get_end(self, alt_idx: int = 0) -> int:
         """
@@ -607,7 +442,8 @@ class VcfRecord(GenomicFeature):
         Returns:
             The end position (0-based, exclusive)
         """
-        if self.is_structural_variant(alt_idx):
+        alt_alleles = self.get_alt()
+        if alt_idx < len(alt_alleles) and VariantFactory.is_structural_variant(alt_alleles[alt_idx]):
             # Check for END info field
             if self.has_info("END"):
                 end = self.get_info("END")
@@ -648,7 +484,7 @@ class VcfRecord(GenomicFeature):
             
         return f"{self.get_chrom()}:{self.get_vcf_pos()}:{self.get_ref()}>{alt_alleles[alt_idx]}"
     
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Variant]:
         """
         Iterate over the variants represented in this VCF record.
         
@@ -661,15 +497,4 @@ class VcfRecord(GenomicFeature):
             for variant in vcf_record:
                 print(variant)
         """
-        for i in range(len(self.get_alt())):
-            variant_id = self.get_id() if self.get_id() != "." else f"variant_{self.get_chrom()}_{self.get_pos()}"
-            info = {k: self.get_info(k) for k in self.header.info_fields if self.has_info(k)}
-            
-            if self.is_snp(i):
-                yield SNP(id=variant_id, chrom=self.get_chrom(), start=self.get_pos(), end=self.get_end(i), strand=Strand.UNSTRANDED, ref=self.get_ref(), alt=self.get_alt()[i], quality=self.get_qual(), filters=self.get_filter(), info=info)
-            elif self.is_insertion(i):
-                yield Insertion(id=variant_id, chrom=self.get_chrom(), start=self.get_pos(), end=self.get_end(i), strand=Strand.UNSTRANDED, ref=self.get_ref(), alt=self.get_alt()[i], quality=self.get_qual(), filters=self.get_filter(), info=info)
-            elif self.is_deletion(i):
-                yield Deletion(id=variant_id, chrom=self.get_chrom(), start=self.get_pos(), end=self.get_end(i), strand=Strand.UNSTRANDED, ref=self.get_ref(), alt=self.get_alt()[i], quality=self.get_qual(), filters=self.get_filter(), info=info)
-            else:
-                yield ComplexVariant(id=variant_id, chrom=self.get_chrom(), start=self.get_pos(), end=self.get_end(i), strand=Strand.UNSTRANDED, ref=self.get_ref(), alt=self.get_alt()[i], quality=self.get_qual(), filters=self.get_filter(), info=info, description=f"{self.get_variant_type(i)} variant")
+        yield from VariantFactory.create_variants_from_record(self)

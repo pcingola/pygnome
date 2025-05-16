@@ -60,6 +60,10 @@ Parsers for common genomic file formats:
 - FASTA/FASTQ Parsers: Parse sequence files
 - MSI-sites Parser: Parse Microsatellite Instability sites files
 - VCF Parsers: Parse Variant Call Format files
+  - `VcfReader`: Read and parse VCF files
+  - `VcfHeader`: Parse and represent VCF headers
+  - `VcfRecord`: Represent individual VCF records
+  - `VariantFactory`: Create Variant objects from VCF records
 
 ### Sequence Handling
 Efficient representation of nucleotide sequences:
