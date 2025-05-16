@@ -4,7 +4,7 @@ Tests for the VcfHeader class.
 import unittest
 from pathlib import Path
 
-from pygnome.parsers.vcf.vcf_header import VcfHeader
+from pygnome.parsers.vcf.vcf_header import VcfHeader, FieldType, FieldNumber
 
 
 class TestVcfHeader(unittest.TestCase):
@@ -41,8 +41,8 @@ class TestVcfHeader(unittest.TestCase):
         if ns_field is None:
             raise ValueError("NS field is None")
         self.assertEqual(ns_field.id, 'NS')
-        self.assertEqual(ns_field.number, '1')
-        self.assertEqual(ns_field.type, 'Integer')
+        self.assertEqual(ns_field.number, 1)
+        self.assertEqual(ns_field.type, FieldType.INTEGER)
         self.assertEqual(ns_field.description, 'Number of Samples With Data')
         
         # Check that the AF field is correctly parsed
@@ -50,8 +50,8 @@ class TestVcfHeader(unittest.TestCase):
         if af_field is None:
             raise ValueError("AF field is None")
         self.assertEqual(af_field.id, 'AF')
-        self.assertEqual(af_field.number, 'A')
-        self.assertEqual(af_field.type, 'Float')
+        self.assertEqual(af_field.number, FieldNumber.A)
+        self.assertEqual(af_field.type, FieldType.FLOAT)
         self.assertEqual(af_field.description, 'Allele Frequency')
     
     def test_format_fields(self):
@@ -64,8 +64,8 @@ class TestVcfHeader(unittest.TestCase):
         if gt_field is None:
             raise ValueError("GT field is None")
         self.assertEqual(gt_field.id, 'GT')
-        self.assertEqual(gt_field.number, '1')
-        self.assertEqual(gt_field.type, 'String')
+        self.assertEqual(gt_field.number, 1)
+        self.assertEqual(gt_field.type, FieldType.STRING)
         self.assertEqual(gt_field.description, 'Genotype')
         
         # Check that the GQ field is correctly parsed
@@ -73,8 +73,8 @@ class TestVcfHeader(unittest.TestCase):
         if gq_field is None:
             raise ValueError("GQ field is None")
         self.assertEqual(gq_field.id, 'GQ')
-        self.assertEqual(gq_field.number, '1')
-        self.assertEqual(gq_field.type, 'Integer')
+        self.assertEqual(gq_field.number, 1)
+        self.assertEqual(gq_field.type, FieldType.INTEGER)
         self.assertEqual(gq_field.description, 'Genotype Quality')
     
     def test_filters(self):
@@ -115,6 +115,42 @@ class TestVcfHeader(unittest.TestCase):
         self.assertIn('##fileformat=VCFv4.5', header_str)
         self.assertIn('##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">', header_str)
         self.assertIn('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNA00001\tNA00002\tNA00003', header_str)
+
+
+    def test_field_type_enum(self):
+        """Test the FieldType enum."""
+        # Test that all expected values are present
+        self.assertEqual(FieldType.INTEGER, "Integer")
+        self.assertEqual(FieldType.FLOAT, "Float")
+        self.assertEqual(FieldType.FLAG, "Flag")
+        self.assertEqual(FieldType.CHARACTER, "Character")
+        self.assertEqual(FieldType.STRING, "String")
+        
+        # Test conversion from string
+        self.assertEqual(FieldType("Integer"), FieldType.INTEGER)
+        self.assertEqual(FieldType("Float"), FieldType.FLOAT)
+    
+    def test_field_number_enum(self):
+        """Test the FieldNumber enum."""
+        # Test that all expected values are present
+        self.assertEqual(FieldNumber.A, "A")
+        self.assertEqual(FieldNumber.R, "R")
+        self.assertEqual(FieldNumber.G, "G")
+        self.assertEqual(FieldNumber.DOT, ".")
+        
+        # Test from_str method
+        self.assertEqual(FieldNumber.from_str("A"), FieldNumber.A)
+        self.assertEqual(FieldNumber.from_str("R"), FieldNumber.R)
+        self.assertEqual(FieldNumber.from_str("G"), FieldNumber.G)
+        self.assertEqual(FieldNumber.from_str("."), FieldNumber.DOT)
+        
+        # Test numeric values
+        self.assertEqual(FieldNumber.from_str("1"), 1)
+        self.assertEqual(FieldNumber.from_str("2"), 2)
+        self.assertEqual(FieldNumber.from_str("0"), 0)
+        
+        # Test invalid values
+        self.assertEqual(FieldNumber.from_str("invalid"), "invalid")
 
 
 if __name__ == '__main__':

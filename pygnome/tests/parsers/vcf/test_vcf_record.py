@@ -4,7 +4,7 @@ Tests for the VcfRecord class.
 import unittest
 
 from pygnome.parsers.vcf.vcf_header import VcfHeader
-from pygnome.parsers.vcf.vcf_record import VcfRecord, Genotype
+from pygnome.parsers.vcf.vcf_record import VcfRecord, Genotype, decode_percent_encoded
 from pygnome.genomics.variant import SNP, Insertion, Deletion, ComplexVariant
 
 
@@ -164,6 +164,39 @@ class TestVcfRecord(unittest.TestCase):
         # Second variant should be an insertion (A -> T)
         self.assertEqual(variants[1].ref, "A")
         self.assertEqual(variants[1].alt, "T")  # Should be a string, not a list
+    
+    def test_percent_encoded_characters(self):
+        """Test handling of percent-encoded characters in INFO fields."""
+        # Test the decode_percent_encoded function
+        self.assertEqual(decode_percent_encoded("Hello%20World"), "Hello World")
+        self.assertEqual(decode_percent_encoded("value%3Bwith%3Bsemicolons"), "value;with;semicolons")
+        self.assertEqual(decode_percent_encoded("value%3Awith%3Acolons"), "value:with:colons")
+        self.assertEqual(decode_percent_encoded("value%3Dwith%3Dequals"), "value=with=equals")
+        self.assertEqual(decode_percent_encoded("value%2Cwith%2Ccommas"), "value,with,commas")
+        self.assertEqual(decode_percent_encoded("value%25with%25percent"), "value%with%percent")
+        
+        # Create a header with an INFO field that might contain escaped characters
+        header = VcfHeader()
+        header.add_meta_line('##fileformat=VCFv4.5')
+        header.add_meta_line('##INFO=<ID=DESC,Number=1,Type=String,Description="Description with special characters">')
+        
+        # Create a record with percent-encoded characters in the INFO field
+        record_line = '1\t100\t.\tA\tG\t30\tPASS\tDESC=Value%20with%20spaces%3B%20semicolons%3A%20colons%2C%20commas\tGT\t0/1'
+        record = VcfRecord(record_line, header)
+        
+        # Check that the INFO field is correctly decoded
+        self.assertEqual(record.get_info('DESC'), "Value with spaces; semicolons: colons, commas")
+        
+        # Test with multiple values separated by commas
+        header.add_meta_line('##INFO=<ID=TAGS,Number=.,Type=String,Description="Multiple tags">')
+        record_line = '1\t100\t.\tA\tG\t30\tPASS\tTAGS=tag1%2Ctag2,tag3%3Bwith%3Bsemicolons\tGT\t0/1'
+        record = VcfRecord(record_line, header)
+        
+        # Check that the comma-separated values are correctly parsed
+        tags = record.get_info('TAGS')
+        self.assertEqual(len(tags), 2)
+        self.assertEqual(tags[0], "tag1,tag2")  # This should be treated as a single value due to the escaped comma
+        self.assertEqual(tags[1], "tag3;with;semicolons")
 
 
 if __name__ == '__main__':

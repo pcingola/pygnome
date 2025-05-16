@@ -2,14 +2,77 @@
 VCF Header class for parsing and representing VCF file headers.
 """
 from dataclasses import dataclass, field
+from enum import Enum, auto
+
+
+class FieldType(str, Enum):
+    """Enumeration of valid VCF field types."""
+    INTEGER = "Integer"
+    FLOAT = "Float"
+    FLAG = "Flag"
+    CHARACTER = "Character"
+    STRING = "String"
+
+
+class FieldNumber(str, Enum):
+    """
+    Enumeration of special VCF field number values.
+    
+    Values:
+        A: One value per alternate allele
+        R: One value per allele (including reference)
+        G: One value per genotype
+        DOT: Unknown or unbounded number of values
+        LA: Local allele subset of A
+        LR: Local allele subset of R
+        LG: Local allele subset of G
+        P: One value per allele in genotype
+        M: One value per possible base modification
+    """
+    A = "A"  # One value per alternate allele
+    R = "R"  # One value per allele (including reference)
+    G = "G"  # One value per genotype
+    DOT = "."  # Unknown or unbounded number of values
+    LA = "LA"  # Local allele subset of A
+    LR = "LR"  # Local allele subset of R
+    LG = "LG"  # Local allele subset of G
+    P = "P"  # One value per allele in genotype
+    M = "M"  # One value per possible base modification
+    
+    @classmethod
+    def from_str(cls, value: str) -> "FieldNumber | int | str":
+        """
+        Convert a string to a FieldNumber enum value or an integer.
+        
+        For numeric values, the integer value is returned.
+        For special codes, the corresponding enum value is returned.
+        
+        Args:
+            value: The string value to convert
+            
+        Returns:
+            The corresponding FieldNumber enum value or an integer
+        """
+        try:
+            # If it's a numeric value, return it as an integer
+            return int(value)
+        except ValueError:
+            # If it's a special code, return the enum value
+            try:
+                return cls(value)
+            except ValueError:
+                # If it's not a valid enum value, return it as is
+                # This should rarely happen with valid VCF files
+                return value
+
 
 
 @dataclass
 class FieldDefinition:
     """Represents a structured field definition in the VCF header."""
     id: str
-    number: str
-    type: str
+    number: FieldNumber | int | str
+    type: FieldType
     description: str
     source: str | None = None
     version: str | None = None
@@ -17,10 +80,22 @@ class FieldDefinition:
     @classmethod
     def from_dict(cls, data: dict) -> "FieldDefinition":
         """Create a FieldDefinition from a dictionary of attributes."""
+        # Convert number string to FieldNumber enum or keep as string for numeric values
+        number_str = data.get("Number", "")
+        number = FieldNumber.from_str(number_str)
+        
+        # Convert type string to FieldType enum
+        type_str = data.get("Type", "")
+        try:
+            field_type = FieldType(type_str)
+        except ValueError:
+            # Default to STRING if the type is invalid
+            field_type = FieldType.STRING
+        
         return cls(
             id=data.get("ID", ""),
-            number=data.get("Number", ""),
-            type=data.get("Type", ""),
+            number=number,
+            type=field_type,
             description=data.get("Description", ""),
             source=data.get("Source"),
             version=data.get("Version")

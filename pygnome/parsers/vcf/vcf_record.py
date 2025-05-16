@@ -1,13 +1,37 @@
 """
 VCF Record class for representing and parsing individual VCF records.
 """
+import re
 from dataclasses import dataclass
 from typing import Any, Iterator
 from pygnome.genomics.genomic_feature import GenomicFeature
 from pygnome.genomics.strand import Strand
 from pygnome.genomics.variant import Variant
-from pygnome.parsers.vcf.vcf_header import VcfHeader
+from pygnome.parsers.vcf.vcf_header import VcfHeader, FieldType, FieldNumber
 from pygnome.parsers.vcf.variant_factory import VariantFactory
+
+
+def decode_percent_encoded(text: str) -> str:
+    """
+    Decode percent-encoded characters in a string according to VCF specification.
+    
+    Args:
+        text: The text to decode
+        
+    Returns:
+        The decoded text
+    """
+    # Define a pattern to match percent-encoded characters
+    pattern = re.compile(r'%([0-9A-Fa-f]{2})')
+    
+    # Define a replacement function
+    def replace_match(match):
+        hex_code = match.group(1)
+        # Convert the hex code to an integer and then to a character
+        return chr(int(hex_code, 16))
+    
+    # Replace all percent-encoded characters
+    return pattern.sub(replace_match, text)
 
 
 @dataclass
@@ -137,13 +161,6 @@ class VcfRecord(GenomicFeature):
         if field_id in self._info_cache:
             return self._info_cache[field_id]
         
-        # Get the field definition
-        field_def = self.header.get_info_field_definition(field_id)
-        if field_def is None:
-            # Return None for unknown fields
-            self._info_cache[field_id] = None
-            return None
-        
         # Parse the INFO field
         info_str = self._fields[7]
         if info_str == ".":
@@ -152,6 +169,8 @@ class VcfRecord(GenomicFeature):
         
         # Split the INFO field into key-value pairs
         info_fields = {}
+        
+        # Split by semicolons
         for field in info_str.split(";"):
             if "=" in field:
                 key, value = field.split("=", 1)
@@ -168,8 +187,15 @@ class VcfRecord(GenomicFeature):
         # Parse the field value based on its type
         value = info_fields[field_id]
         
+        # Get the field definition
+        field_def = self.header.get_info_field_definition(field_id)
+        if field_def is None:
+            # Return None for unknown fields
+            self._info_cache[field_id] = None
+            return None
+        
         # Handle flag fields
-        if field_def.type == "Flag":
+        if field_def.type == FieldType.FLAG:
             parsed_value = bool(value)
         else:
             # Parse the value based on the field type and number
@@ -177,7 +203,7 @@ class VcfRecord(GenomicFeature):
             
             # If we have a list with a single value, return the value directly for certain Number types
             if isinstance(parsed_value, list) and len(parsed_value) == 1:
-                if field_def.number == "1" or field_def.number == "A" and len(self.get_alt()) == 1:
+                if field_def.number == 1 or field_def.number == FieldNumber.A and len(self.get_alt()) == 1:
                     parsed_value = parsed_value[0]
         
         # Cache the parsed value
@@ -195,6 +221,9 @@ class VcfRecord(GenomicFeature):
         Returns:
             True if the field is present, False otherwise
         """
+        if field_id in self._info_cache:
+            return self._info_cache[field_id] is not None
+
         info_str = self._fields[7]
         if info_str == ".":
             return False
@@ -367,7 +396,7 @@ class VcfRecord(GenomicFeature):
         alleles.extend(self.get_alt())
         return alleles
     
-    def _parse_field_value(self, value: str, field_type: str, number: str) -> Any:
+    def _parse_field_value(self, value: str, field_type: FieldType, number: FieldNumber | int | str) -> Any:
         """
         Parse a field value based on its type and number.
         
@@ -380,18 +409,19 @@ class VcfRecord(GenomicFeature):
             The parsed field value
         """
         # Handle different number specifications
-        if number == "1" or number == ".":
+        print(f"Parsing field value: {value}, type: {field_type}, number: {number}")
+        if number == 1:
             # Single value or unknown number
             return self._parse_single_value(value, field_type)
-        elif number == "0":
+        elif number == 0:
             # Flag field (presence means it's true)
             return True
         else:
-            # Multiple values
+            # Multiple values - split by comma
             values = value.split(",")
             return [self._parse_single_value(v, field_type) for v in values]
     
-    def _parse_single_value(self, value: str, field_type: str) -> Any:
+    def _parse_single_value(self, value: str, field_type: FieldType) -> Any:
         """
         Parse a single field value based on its type.
         
@@ -405,15 +435,17 @@ class VcfRecord(GenomicFeature):
         if value == ".":
             return None
         
-        if field_type == "Integer":
+        if field_type == FieldType.INTEGER:
             return int(value)
-        elif field_type == "Float":
+        elif field_type == FieldType.FLOAT:
             return float(value)
-        elif field_type == "Character":
+        elif field_type == FieldType.CHARACTER:
             return value[0] if value else ""
+        elif field_type == FieldType.FLAG:
+            return True
         else:
-            # String or Flag
-            return value
+            # String
+            return decode_percent_encoded(value)
     
     def __str__(self) -> str:
         """Return the original VCF record line."""
