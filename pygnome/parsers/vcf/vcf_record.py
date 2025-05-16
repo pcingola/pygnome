@@ -11,6 +11,39 @@ from pygnome.parsers.vcf.vcf_header import VcfHeader, FieldType, FieldNumber
 from pygnome.parsers.vcf.variant_factory import VariantFactory
 
 
+def encode_percent_encoded(text: str) -> str:
+    """
+    Encode special characters in a string according to VCF specification.
+    
+    Args:
+        text: The text to encode
+        
+    Returns:
+        The encoded text with special characters percent-encoded
+    """
+    # We need to encode % first to avoid double-encoding
+    text = text.replace('%', '%25')
+    
+    # Define a pattern to match special characters that need encoding
+    special_chars = {
+        ' ': '%20',  # Space
+        ':': '%3A',
+        ';': '%3B',
+        '=': '%3D',
+        ',': '%2C',
+        '\r': '%0D',
+        '\n': '%0A',
+        '\t': '%09'
+    }
+    
+    # Replace special characters with their percent-encoded equivalents
+    result = text
+    for char, encoded in special_chars.items():
+        result = result.replace(char, encoded)
+    
+    return result
+
+
 def decode_percent_encoded(text: str) -> str:
     """
     Decode percent-encoded characters in a string according to VCF specification.
@@ -75,7 +108,9 @@ class VcfRecord(GenomicFeature):
         self._fields = line.strip().split("\t")
         
         # Cache for parsed fields
-        self._info_cache: dict[str, Any] = {}
+        self._info_cache: dict[str, Any] = {}       # Cache for parsed INFO fields
+        self._info_raw_cache: dict[str, str | None] | None = None  # Cache for raw string values
+        self._info_modified: set[str] = set()  # Set of modified INFO fields
         self._format_cache: dict[str, list[Any]] = {}
         self._genotypes: list[Genotype] | None = None
         
@@ -147,6 +182,24 @@ class VcfRecord(GenomicFeature):
             return []
         return filter_field.split(";")
     
+    def _parse_info_raw(self, field_id: str) -> str | None:
+        """Get the raw value of an INFO field."""
+        if self._info_raw_cache is None:
+            self._info_raw_cache = {}
+            info_str = self._fields[7]
+            if info_str != ".":
+                # Split the INFO field into key-value pairs
+                for field in info_str.split(";"):
+                    if "=" in field:
+                        key, value = field.split("=", 1)
+                        self._info_raw_cache[key] = value
+                    else:
+                        # Flag field (presence means it's true)
+                        self._info_raw_cache[field] = "True"
+        # Return the raw value or None if not present
+        return self._info_raw_cache.get(field_id)
+
+
     def get_info(self, field_id: str) -> Any:
         """
         Get the value of an INFO field.
@@ -161,32 +214,12 @@ class VcfRecord(GenomicFeature):
         if field_id in self._info_cache:
             return self._info_cache[field_id]
         
-        # Parse the INFO field
-        info_str = self._fields[7]
-        if info_str == ".":
+        value_raw = self._parse_info_raw(field_id)
+        if value_raw is None:
+            # Field not present
             self._info_cache[field_id] = None
             return None
-        
-        # Split the INFO field into key-value pairs
-        info_fields = {}
-        
-        # Split by semicolons
-        for field in info_str.split(";"):
-            if "=" in field:
-                key, value = field.split("=", 1)
-                info_fields[key] = value
-            else:
-                # Flag field (presence means it's true)
-                info_fields[field] = True
-        
-        # Check if the field is present
-        if field_id not in info_fields:
-            self._info_cache[field_id] = None
-            return None
-        
-        # Parse the field value based on its type
-        value = info_fields[field_id]
-        
+                
         # Get the field definition
         field_def = self.header.get_info_field_definition(field_id)
         if field_def is None:
@@ -196,45 +229,27 @@ class VcfRecord(GenomicFeature):
         
         # Handle flag fields
         if field_def.type == FieldType.FLAG:
-            parsed_value = bool(value)
+            value_parsed = bool(value_raw)
         else:
             # Parse the value based on the field type and number
-            parsed_value = self._parse_field_value(value, field_def.type, field_def.number)
+            value_parsed = self._parse_field_value(value_raw, field_def.type, field_def.number)
             
             # If we have a list with a single value, return the value directly for certain Number types
-            if isinstance(parsed_value, list) and len(parsed_value) == 1:
+            if isinstance(value_parsed, list) and len(value_parsed) == 1:
                 if field_def.number == 1 or field_def.number == FieldNumber.A and len(self.get_alt()) == 1:
-                    parsed_value = parsed_value[0]
+                    value_parsed = value_parsed[0]
         
         # Cache the parsed value
-        self._info_cache[field_id] = parsed_value
+        self._info_cache[field_id] = value_parsed
         
-        return parsed_value
+        return value_parsed
     
     def has_info(self, field_id: str) -> bool:
         """
         Check if an INFO field is present.
-        
-        Args:
-            field_id: The ID of the INFO field
-            
-        Returns:
-            True if the field is present, False otherwise
         """
-        if field_id in self._info_cache:
-            return self._info_cache[field_id] is not None
+        return self.get_info(field_id) is not None
 
-        info_str = self._fields[7]
-        if info_str == ".":
-            return False
-        
-        # Check if the field is present as a key=value pair or a flag
-        for field in info_str.split(";"):
-            if field == field_id or field.startswith(f"{field_id}="):
-                return True
-        
-        return False
-    
     def get_format(self, field_id: str, sample_idx: int = 0) -> Any:
         """
         Get the value of a FORMAT field for a specific sample.
@@ -409,7 +424,7 @@ class VcfRecord(GenomicFeature):
             The parsed field value
         """
         # Handle different number specifications
-        print(f"Parsing field value: {value}, type: {field_type}, number: {number}")
+        # Removed debug print statement
         if number == 1:
             # Single value or unknown number
             return self._parse_single_value(value, field_type)
@@ -447,9 +462,102 @@ class VcfRecord(GenomicFeature):
             # String
             return decode_percent_encoded(value)
     
-    def __str__(self) -> str:
-        """Return the original VCF record line."""
-        return self.raw_line
+    def set_info(self, field_id: str, value: Any) -> None:
+        """
+        Set the value of an INFO field. If the field already exists, it will be updated.
+        If it doesn't exist, it will be added.
+        
+        Args:
+            field_id: The ID of the INFO field
+            value: The value to set
+        """
+        # Mark the field as modified
+        self._info_modified.add(field_id)
+        # Get the field definition
+        field_def = self.header.get_info_field_definition(field_id)
+        if field_def is None:
+            raise ValueError(f"Unknown INFO field: {field_id}. Add it to the header first.")
+        # Split all raw info fields
+        # Update the cache
+        self._info_cache[field_id] = value
+        # Invlidate the raw cache (first make sure the raw cache exists)
+        self._parse_info_raw(field_id)
+        self._info_raw_cache[field_id] = None  # type: ignore # Invalidate the raw cache
+    
+    def add_info(self, field_id: str, value: Any) -> None:
+        """
+        Add a new INFO field. If the field already exists, it will be updated.
+        This is just an alias for set_info for clarity
+        """
+        self.set_info(field_id, value)
+    
+    def _info_str(self) -> str:
+        """
+        Create the string for an INFO field in the record.
+        """
+        # No modifications, return the original line
+        if len(self._info_modified) == 0:
+            return self._fields[7]
+
+        # Re build the INFO field string
+        assert self._info_raw_cache is not None
+        infos = []
+        for name, value in self._info_raw_cache.items():
+            if name in self._info_modified:
+                # Modified fields, use the new value, not the raw value
+                value = self._info_cache[name]
+                
+                field_def = self.header.get_info_field_definition(name)
+                if field_def is None:
+                    raise ValueError(f"Unknown INFO field: {name}. Add it to the header first.")
+                
+                # Format the value based on its type
+                formatted_value = self._format_info_value(value, field_def.type)
+                infos.append(f"{name}={formatted_value}")
+            else:
+                # Unmodified fields, use the original 'raw' string'
+                if value is not None:
+                    infos.append(f"{name}={value}")
+                else:
+                    infos.append(f"{name}")
+
+        return ";".join(infos)
+    
+    def _format_info_value(self, value: Any, field_type: FieldType) -> str:
+        """
+        Format a value for inclusion in an INFO field.
+        
+        Args:
+            value: The value to format
+            field_type: The type of the field
+            
+        Returns:
+            The formatted value as a string
+        """
+        if value is None:
+            return "."
+        
+        if isinstance(value, list):
+            # Format each value in the list and join with commas
+            formatted_values = []
+            for v in value:
+                if v is None:
+                    formatted_values.append(".")
+                elif field_type == FieldType.STRING:
+                    formatted_values.append(encode_percent_encoded(str(v)))
+                else:
+                    formatted_values.append(str(v))
+            return ",".join(formatted_values)
+        else:
+            # Format a single value
+            if field_type == FieldType.STRING:
+                return encode_percent_encoded(str(value))
+            else:
+                return str(value)
+    
+    def _update_raw_line(self) -> None:
+        """Update the raw line to reflect changes to the fields."""
+        self.raw_line = "\t".join(self._fields)
     
     # Methods for variant type detection
     def is_multi_allelic(self) -> bool:
@@ -530,3 +638,12 @@ class VcfRecord(GenomicFeature):
                 print(variant)
         """
         yield from VariantFactory.create_variants_from_record(self)
+
+    def __str__(self) -> str:
+        """Return the string representation of the VCF record."""
+        if len(self._info_modified) == 0:
+            # No modifications, return the original line
+            return self.raw_line
+        # If there are modifications, update the raw line
+
+        
