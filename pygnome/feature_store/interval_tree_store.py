@@ -3,7 +3,7 @@
 import numpy as np
 from dataclasses import dataclass, field
 
-from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore
+from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore, MAX_SAMPLES_TO_SHOW
 from pygnome.genomics.genomic_feature import GenomicFeature
 
 
@@ -243,3 +243,40 @@ class IntervalTreeStore(ChromosomeFeatureStore):
         # Get indices from interval tree
         indices = self.interval_tree.overlap(start, end)
         return [self.features[idx] for idx in indices]
+        
+    def __str__(self) -> str:
+        """Return a string representation of the interval tree store."""
+        status = "building" if self.index_build_mode else "built" if self.index_finished else "uninitialized"
+        tree_status = "built" if self.tree_built else "not built"
+        
+        # Get tree statistics if available
+        tree_stats = ""
+        if self.tree_built and self.interval_tree.root:
+            # Count nodes in the tree (simple BFS)
+            node_count = 0
+            queue = [self.interval_tree.root]
+            while queue:
+                node = queue.pop(0)
+                node_count += 1
+                if node.left:
+                    queue.append(node.left)
+                if node.right:
+                    queue.append(node.right)
+            
+            # Count intervals at the root level
+            root_intervals = len(self.interval_tree.root.intervals) if self.interval_tree.root else 0
+            tree_stats = f", tree_nodes={node_count}, root_intervals={root_intervals}"
+        
+        # Sample of features
+        sample_size = min(MAX_SAMPLES_TO_SHOW, len(self.features))
+        sample = self.features[:sample_size] if self.features else []
+        sample_str = ""
+        if sample:
+            sample_str = f", sample: [{', '.join(str(f.id) for f in sample)}" + (", ...]" if len(self.features) > sample_size else "]")
+        
+        return (f"IntervalTreeStore(chromosome='{self.chromosome}', features={len(self.features)}, "
+                f"status={status}, tree_status={tree_status}{tree_stats}{sample_str})")
+    
+    def __repr__(self) -> str:
+        """Return a string representation of the interval tree store."""
+        return self.__str__()

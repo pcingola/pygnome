@@ -20,9 +20,9 @@ class TestMsiChromosomeStore(unittest.TestCase):
         """Set up test fixtures."""
         # Create some test MSI site records
         self.records = [
-            MsiSiteRecord(repeat_unit_length=2, repeat_unit_binary=9, repeat_times=3, left_flank_binary=258, right_flank_binary=409, repeat_unit_bases="GC", left_flank_bases="CAAAG", right_flank_bases="CGCGC", chromosome="chr1", location=10000 ),
-            MsiSiteRecord(repeat_unit_length=4, repeat_unit_binary=149, repeat_times=3, left_flank_binary=150, right_flank_binary=685, repeat_unit_bases="GCCC", left_flank_bases="AGCCG", right_flank_bases="GGGTC", chromosome="chr1", location=10100),
-            MsiSiteRecord(repeat_unit_length=2, repeat_unit_binary=2, repeat_times=3, left_flank_binary=665, right_flank_binary=614, repeat_unit_bases="AG", left_flank_bases="GGCGC", right_flank_bases="GCGCG", chromosome="chr1", location=10200)
+            MsiSiteRecord(repeat_unit_length=2, repeat_unit_binary=9, repeat_times=3, left_flank_binary=258, right_flank_binary=409, repeat_unit_bases="GC", left_flank_bases="CAAAG", right_flank_bases="CGCGC", chrom="chr1", location=10000 ),
+            MsiSiteRecord(repeat_unit_length=4, repeat_unit_binary=149, repeat_times=3, left_flank_binary=150, right_flank_binary=685, repeat_unit_bases="GCCC", left_flank_bases="AGCCG", right_flank_bases="GGGTC", chrom="chr1", location=10100),
+            MsiSiteRecord(repeat_unit_length=2, repeat_unit_binary=2, repeat_times=3, left_flank_binary=665, right_flank_binary=614, repeat_unit_bases="AG", left_flank_bases="GGCGC", right_flank_bases="GCGCG", chrom="chr1", location=10200)
         ]
         
     def test_msi_site_counter(self):
@@ -56,7 +56,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
             
         # Create a store with pre-allocated arrays
         store = MsiChromosomeStore(
-            chromosome="chr1",
+            chrom="chr1",
             feature_count=counter.get_count("chr1"),
             max_lengths_by_bin=counter.get_max_lengths("chr1"),
             bin_size=1000
@@ -98,7 +98,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
     def test_empty_store(self):
         """Test an empty MsiChromosomeStore."""
         # Empty store
-        store = MsiChromosomeStore(chromosome="chr1")
+        store = MsiChromosomeStore(chrom="chr1")
         store.index_build_start()
         store.index_build_end()
         
@@ -116,7 +116,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
             repeat_unit_bases="GC",
             left_flank_bases="CAAAG",
             right_flank_bases="CGCGC",
-            chromosome="chr1",
+            chrom="chr1",
             location=10000
         )
     
@@ -133,7 +133,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
         
         # Create a store with pre-calculated max lengths
         store = MsiChromosomeStore(
-            chromosome="chr1",
+            chrom="chr1",
             feature_count=1,
             max_lengths_by_bin=max_lengths,
             bin_size=1000
@@ -186,7 +186,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
     def test_binary_search(self):
         """Test the binary search implementation."""
         # Create a store with features at specific positions
-        store = MsiChromosomeStore(chromosome="chr1", feature_count=5)
+        store = MsiChromosomeStore(chrom="chr1", feature_count=5)
         store.index_build_start()
         
         # Add features at positions 10, 20, 30, 40, 50
@@ -200,7 +200,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
                 repeat_unit_bases="GC",
                 left_flank_bases="CAAAG",
                 right_flank_bases="CGCGC",
-                chromosome="chr1",
+                chrom="chr1",
                 location=pos
             )
             store.add(record)
@@ -250,7 +250,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
                 repeat_unit_bases="A",
                 left_flank_bases="AAAAA",
                 right_flank_bases="AAAAA",
-                chromosome="chr1",
+                chrom="chr1",
                 location=10000  # Will span 10000-10002
             ),
             MsiSiteRecord(
@@ -262,7 +262,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
                 repeat_unit_bases="A",
                 left_flank_bases="AAAAA",
                 right_flank_bases="AAAAA",
-                chromosome="chr1",
+                chrom="chr1",
                 location=20000  # Will span 20000-20002
             ),
             MsiSiteRecord(
@@ -274,7 +274,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
                 repeat_unit_bases="A",
                 left_flank_bases="AAAAA",
                 right_flank_bases="AAAAA",
-                chromosome="chr1",
+                chrom="chr1",
                 location=30000  # Will span 30000-30002
             )
         ]
@@ -287,7 +287,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
         max_lengths = counter.get_max_lengths("chr1")
         
         # Create a store with pre-calculated max lengths
-        store = MsiChromosomeStore(chromosome="chr1", feature_count=3, max_lengths_by_bin=max_lengths, bin_size=1000)
+        store = MsiChromosomeStore(chrom="chr1", feature_count=3, max_lengths_by_bin=max_lengths, bin_size=1000)
         
         # Add the records to the store
         with store:
@@ -329,7 +329,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
             repeat_unit_bases="A",
             left_flank_bases="AAAAA",
             right_flank_bases="AAAAA",
-            chromosome="chr1",
+            chrom="chr1",
             location=15000  # Will span 15000-15002
         )
         
@@ -341,7 +341,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
         specific_max_lengths = specific_counter.get_max_lengths("chr1")
         
         # Create a new store for this specific test with pre-calculated max lengths
-        specific_store = MsiChromosomeStore(chromosome="chr1", feature_count=1, max_lengths_by_bin=specific_max_lengths, bin_size=1000)
+        specific_store = MsiChromosomeStore(chrom="chr1", feature_count=1, max_lengths_by_bin=specific_max_lengths, bin_size=1000)
         specific_store.index_build_start()
         specific_store.add(specific_record)
         specific_store.index_build_end()
@@ -387,7 +387,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
                 repeat_unit_bases=repeat_bases,
                 left_flank_bases=left_flank,
                 right_flank_bases=right_flank,
-                chromosome="chr1",
+                chrom="chr1",
                 location=pos
             )
             records.append(record)
@@ -398,7 +398,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
             counter.add(record)
             
         store = MsiChromosomeStore(
-            chromosome="chr1",
+            chrom="chr1",
             feature_count=counter.get_count("chr1"),
             max_lengths_by_bin=counter.get_max_lengths("chr1"),
             bin_size=10000
@@ -470,7 +470,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
                 repeat_unit_bases=repeat_bases,
                 left_flank_bases='AAAAA',
                 right_flank_bases='TTTTT',
-                chromosome="chr1",
+                chrom="chr1",
                 location=pos
             )
             records.append(record)
@@ -481,7 +481,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
             counter.add(record)
             
         store = MsiChromosomeStore(
-            chromosome="chr1",
+            chrom="chr1",
             feature_count=counter.get_count("chr1"),
             max_lengths_by_bin=counter.get_max_lengths("chr1"),
             bin_size=bin_size
@@ -551,7 +551,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
                     repeat_unit_bases=repeat_bases,
                     left_flank_bases=''.join(random.choices('ACGT', k=5)),
                     right_flank_bases=''.join(random.choices('ACGT', k=5)),
-                    chromosome="chr1",
+                    chrom="chr1",
                     location=pos
                 )
                 records.append(record)
@@ -562,7 +562,7 @@ class TestMsiChromosomeStore(unittest.TestCase):
             counter.add(record)
             
         store = MsiChromosomeStore(
-            chromosome="chr1",
+            chrom="chr1",
             feature_count=counter.get_count("chr1"),
             max_lengths_by_bin=counter.get_max_lengths("chr1"),
             bin_size=10000

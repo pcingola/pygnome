@@ -42,7 +42,7 @@ class TestMsiSitesReader(unittest.TestCase):
         self.assertEqual(len(records), 4)
         
         # Check the first record
-        self.assertEqual(records[0].chromosome, "chr1")
+        self.assertEqual(records[0].chrom, "chr1")
         self.assertEqual(records[0].location, 10485)
         self.assertEqual(records[0].repeat_unit_length, 4)
         self.assertEqual(records[0].repeat_unit_binary, 149)
@@ -63,7 +63,7 @@ class TestMsiSitesReader(unittest.TestCase):
             self.assertEqual(len(records), 4)
             
             # Check the second record
-            self.assertEqual(records[1].chromosome, "chr1")
+            self.assertEqual(records[1].chrom, "chr1")
             self.assertEqual(records[1].location, 10629)
             self.assertEqual(records[1].repeat_unit_bases, "GC")
             self.assertEqual(records[1].repeat_times, 3)
@@ -80,9 +80,9 @@ class TestMsiSitesReader(unittest.TestCase):
             self.assertEqual(len(records), 2)
             
             # Check the records
-            self.assertEqual(records[0].chromosome, "chr1")
+            self.assertEqual(records[0].chrom, "chr1")
             self.assertEqual(records[0].location, 10629)
-            self.assertEqual(records[1].chromosome, "chr1")
+            self.assertEqual(records[1].chrom, "chr1")
             self.assertEqual(records[1].location, 10652)
     
     def test_record_properties(self):

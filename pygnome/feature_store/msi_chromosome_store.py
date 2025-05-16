@@ -7,7 +7,7 @@ per chromosome using NumPy arrays and DnaStringArray for memory efficiency.
 
 import numpy as np
 
-from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore
+from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore, MAX_SAMPLES_TO_SHOW
 from pygnome.genomics.genomic_feature import GenomicFeature
 from pygnome.genomics.strand import Strand
 from pygnome.sequences.dna_string_array import DnaStringArray
@@ -325,3 +325,37 @@ class MsiChromosomeStore(ChromosomeFeatureStore):
         
         # Return the object's state
         return self.__dict__
+        
+    def __str__(self) -> str:
+        """Return a string representation of the MSI chromosome store."""
+        status = "building" if self.index_build_mode else "built" if self.index_finished else "uninitialized"
+        loaded_status = "loaded" if self._is_loaded else "not loaded"
+        
+        # Memory usage statistics
+        mem_stats = ""
+        if self._starts is not None and self._ends is not None:
+            starts_mem = self._starts.nbytes / (1024 * 1024)  # MB
+            ends_mem = self._ends.nbytes / (1024 * 1024)  # MB
+            mem_stats = f", memory_usage={starts_mem + ends_mem:.2f}MB"
+        
+        # Bin statistics
+        bin_stats = ""
+        if self._max_feature_length_by_bin:
+            bin_count = len(self._max_feature_length_by_bin)
+            avg_max_length = sum(self._max_feature_length_by_bin.values()) / bin_count if bin_count > 0 else 0
+            bin_stats = f", bins={bin_count}, avg_max_length={avg_max_length:.1f}"
+        
+        # Sample of features (create a few sample features)
+        sample_str = ""
+        if self._feature_count > 0 and self._is_loaded:
+            sample_size = min(MAX_SAMPLES_TO_SHOW, self._feature_count)
+            sample_indices = range(sample_size)
+            sample_features = [self._create_feature_from_index(i) for i in sample_indices]
+            sample_str = f", sample: [{', '.join(f.id for f in sample_features)}" + (", ...]" if self._feature_count > sample_size else "]")
+        
+        return (f"MsiChromosomeStore(chromosome='{self.chromosome}', features={self._feature_count}, "
+                f"status={status}, data_status={loaded_status}{mem_stats}{bin_stats}{sample_str})")
+    
+    def __repr__(self) -> str:
+        """Return a string representation of the MSI chromosome store."""
+        return self.__str__()

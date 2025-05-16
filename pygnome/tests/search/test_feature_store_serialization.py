@@ -113,6 +113,8 @@ class TestFeatureStoreSerialization(unittest.TestCase):
         
         # Create an MsiSiteRecord
         msi_feature = MsiSiteRecord(
+            id="test_msi_site",
+            chrom="chr1",
             repeat_unit_length=3,
             repeat_unit_binary=0,  # Placeholder value
             repeat_times=5,
@@ -121,9 +123,7 @@ class TestFeatureStoreSerialization(unittest.TestCase):
             repeat_unit_bases="CAG",
             left_flank_bases="ACGT",
             right_flank_bases="TGCA",
-            chromosome="chr1",
             location=100,
-            id="test_msi_site",
             strand=Strand.POSITIVE
         )
         

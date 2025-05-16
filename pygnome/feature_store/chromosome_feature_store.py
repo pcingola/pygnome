@@ -5,6 +5,9 @@ from abc import ABC, abstractmethod
 from pygnome.feature_store.genomic_feature_store_protocol import MAX_DISTANCE
 from pygnome.genomics.genomic_feature import GenomicFeature
 
+# Maximum number of samples to show in string representations
+MAX_SAMPLES_TO_SHOW = 10
+
 
 class ChromosomeFeatureStore(ABC):
     """
@@ -100,6 +103,22 @@ class ChromosomeFeatureStore(ABC):
     def __len__(self) -> int:
         """Get the number of features in this chromosome's store."""
         return len(self.features)
+    
+    def __str__(self) -> str:
+        """Return a string representation of the chromosome feature store."""
+        status = "building" if self.index_build_mode else "built" if self.index_finished else "uninitialized"
+        sample_size = min(MAX_SAMPLES_TO_SHOW, len(self.features))
+        sample = self.features[:sample_size] if self.features else []
+        
+        sample_str = ""
+        if sample:
+            sample_str = f", sample: [{', '.join(str(f.id) for f in sample)}" + (", ...]" if len(self.features) > sample_size else "]")
+        
+        return f"ChromosomeFeatureStore(chromosome='{self.chromosome}', features={len(self.features)}, status={status}{sample_str})"
+    
+    def __repr__(self) -> str:
+        """Return a string representation of the chromosome feature store."""
+        return self.__str__()
         
     def trim(self) -> None:
         """

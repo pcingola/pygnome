@@ -1,4 +1,4 @@
-from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore
+from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore, MAX_SAMPLES_TO_SHOW
 from pygnome.feature_store.genomic_feature_store_protocol import MAX_DISTANCE
 from pygnome.genomics.genomic_feature import GenomicFeature
 
@@ -35,6 +35,24 @@ class BruteForceFeatureStore(ChromosomeFeatureStore):
             if distance < min_distance:
                 min_distance = distance
                 nearest_feature = feature
-        
         return nearest_feature
+    
+    def __str__(self) -> str:
+        """Return a string representation of the brute force feature store."""
+        status = "building" if self.index_build_mode else "built" if self.index_finished else "uninitialized"
+        
+        # Sample of features
+        sample_size = min(MAX_SAMPLES_TO_SHOW, len(self.features))
+        sample = self.features[:sample_size] if self.features else []
+        sample_str = ""
+        if sample:
+            sample_str = f", sample: [{', '.join(str(f.id) for f in sample)}" + (", ...]" if len(self.features) > sample_size else "]")
+        
+        return (f"BruteForceFeatureStore(chromosome='{self.chromosome}', features={len(self.features)}, "
+                f"status={status}{sample_str})")
+    
+    def __repr__(self) -> str:
+        """Return a string representation of the brute force feature store."""
+        return self.__str__()
+        
         

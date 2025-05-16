@@ -1,6 +1,6 @@
 import numpy as np
 
-from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore
+from pygnome.feature_store.chromosome_feature_store import ChromosomeFeatureStore, MAX_SAMPLES_TO_SHOW
 from pygnome.genomics.genomic_feature import GenomicFeature
 
 DEFAULT_BIN_SIZE = 100_000  # Default bin size in base pairs
@@ -131,3 +131,36 @@ class BinnedGenomicStore(ChromosomeFeatureStore):
         for bin_id in list(self._bin_buffers.keys()):
             if self._bin_buffers[bin_id]:
                 self._convert_buffer_to_array(bin_id)
+                
+    def __str__(self) -> str:
+        """Return a string representation of the binned genomic store."""
+        # Get basic info from parent class
+        status = "building" if self.index_build_mode else "built" if self.index_finished else "uninitialized"
+        
+        # Calculate bin statistics
+        bin_count = len(self.bins)
+        avg_features_per_bin = len(self.features) / max(1, bin_count) if bin_count > 0 else 0
+        
+        # Find most populated bins
+        bin_sizes = {bin_id: len(indices) for bin_id, indices in self.bins.items()}
+        top_bins = sorted(bin_sizes.items(), key=lambda x: x[1], reverse=True)[:3] if bin_sizes else []
+        
+        # Sample of features
+        sample_size = min(MAX_SAMPLES_TO_SHOW, len(self.features))
+        sample = self.features[:sample_size] if self.features else []
+        sample_str = ""
+        if sample:
+            sample_str = f", sample: [{', '.join(str(f.id) for f in sample)}" + (", ...]" if len(self.features) > sample_size else "]")
+        
+        # Bin statistics
+        bin_stats = ""
+        if top_bins:
+            bin_stats = f", top bins: {', '.join(f'bin_{bin_id}({count})' for bin_id, count in top_bins)}"
+        
+        return (f"BinnedGenomicStore(chromosome='{self.chromosome}', features={len(self.features)}, "
+                f"status={status}, bin_size={self.bin_size}, bins={bin_count}, "
+                f"avg_features_per_bin={avg_features_per_bin:.1f}{bin_stats}{sample_str})")
+    
+    def __repr__(self) -> str:
+        """Return a string representation of the binned genomic store."""
+        return self.__str__()
