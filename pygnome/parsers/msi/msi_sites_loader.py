@@ -52,7 +52,7 @@ def load_msi_sites(file_path: Path, verbose: bool) -> GenomicFeatureStore:
         max_lengths = counter.get_max_lengths(chrom)
         
         # Create and register the chromosome store
-        chrom_store = MsiChromosomeStore(chromosome=chrom, feature_count=count, max_lengths_by_bin=max_lengths)
+        chrom_store = MsiChromosomeStore(chrom=chrom, feature_count=count, max_lengths_by_bin=max_lengths)
         feature_store.chromosomes[chrom] = chrom_store
         chrom_store.index_build_start()
     
@@ -62,18 +62,24 @@ def load_msi_sites(file_path: Path, verbose: bool) -> GenomicFeatureStore:
     prev_chrom, count = None, 0
     with MsiSitesReader(file_path) as reader:
         for record in reader:
-            chrom_store = feature_store.chromosomes.get(record.chrom)
-            if chrom_store:
-                chrom_store.add(record)
-                count += 1
-                if verbose and record.chrom != prev_chrom:
-                    # Show only if new chromosome is encountered
-                    elapsed = time.time() - start_time
-                    print(f"{count} ({elapsed:.2f}s): {record.chrom}")
-                    prev_chrom = record.chrom
+            # Use feature_store.add() instead of directly accessing the chromosome store
+            feature_store.add(record)
+            count += 1
+            if verbose and record.chrom != prev_chrom:
+                # Show only if new chromosome is encountered
+                elapsed = time.time() - start_time
+                print(f"{count} ({elapsed:.2f}s): {record.chrom}")
+                prev_chrom = record.chrom
     if verbose:
         elapsed = time.time() - start_time
         print(f"Total features loaded: {count} ({elapsed:.2f}s)")
+        
+        # Debug: Check if features were actually added
+        total_features = 0
+        for chrom, store in feature_store.chromosomes.items():
+            print(f"  {chrom}: {len(store)} features")
+            total_features += len(store)
+        print(f"  Total features in stores: {total_features}")
 
     # Finalize all chromosome stores
     for chrom_store in feature_store.chromosomes.values():

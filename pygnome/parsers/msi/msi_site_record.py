@@ -27,7 +27,7 @@ class MsiSiteRecord(GenomicFeature):
         repeat_unit_bases: str,
         left_flank_bases: str,
         right_flank_bases: str,
-        chromosome: str,
+        chrom: str,
         location: int,
         id: str = "",
         strand: Strand = Strand.UNSTRANDED
@@ -58,11 +58,9 @@ class MsiSiteRecord(GenomicFeature):
         self.repeat_unit_bases = repeat_unit_bases
         self.left_flank_bases = left_flank_bases
         self.right_flank_bases = right_flank_bases
-        self.chromosome = chromosome
         self.location = location
         
         # Calculate GenomicFeature fields
-        chrom = chromosome
         start = location
         end = location + (repeat_unit_length * repeat_times)
         

@@ -108,7 +108,7 @@ class MsiSitesReader:
         
         # Extract fields using column indices
         return MsiSiteRecord(
-            chromosome=fields[self._column_indices["chromosome"]],
+            chrom=fields[self._column_indices["chromosome"]],  # Use chrom instead of chromosome
             location=int(fields[self._column_indices["location"]]),
             repeat_unit_length=int(fields[self._column_indices["repeat_unit_length"]]),
             repeat_unit_binary=int(fields[self._column_indices["repeat_unit_binary"]]),
@@ -198,7 +198,7 @@ class MsiSitesReader:
         """
         for record in self:
             # Check if the record overlaps with the specified region
-            if (record.chromosome == chromosome and 
-                record.location <= end and 
+            if (record.chrom == chromosome and
+                record.location <= end and
                 record.end_location >= start):
                 yield record

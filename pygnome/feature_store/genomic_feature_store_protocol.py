@@ -39,4 +39,13 @@ class GenomicFeatureStoreProtocol(Protocol):
     def __iterator__(self):
         """Iterate over all chromosome stores."""
         ...
+        
+    def trim(self) -> None:
+        """
+        Trim internal data structures to reduce memory usage.
+        
+        This method should be called before serialization to reduce
+        the size of pickled objects by removing unused allocated memory.
+        """
+        ...
 

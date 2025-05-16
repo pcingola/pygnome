@@ -54,7 +54,7 @@ class ChromosomeFeatureStore(ABC):
         """Get all features."""
         return self.features
 
-    def __getitem__(self, index: int) -> list[GenomicFeature]:
+    def __getitem__(self, index: int) -> GenomicFeature:
         """Get all features at a specific index."""
         return self.features[index]
 
@@ -96,3 +96,18 @@ class ChromosomeFeatureStore(ABC):
     def __exit__(self, exc_type, exc_value, traceback):
         """Exit the context manager."""
         self.index_build_end()
+
+    def __len__(self) -> int:
+        """Get the number of features in this chromosome's store."""
+        return len(self.features)
+        
+    def trim(self) -> None:
+        """
+        Trim internal data structures to reduce memory usage.
+        
+        This method should be implemented by subclasses to reduce memory usage
+        before serialization. The base implementation does nothing since the
+        standard list-based storage doesn't have excess allocation.
+        """
+        # Base implementation does nothing
+        pass

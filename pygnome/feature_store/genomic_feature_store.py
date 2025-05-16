@@ -122,15 +122,19 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
             return len(self.chromosomes[chrom].features)
         
         # Count across all chromosomes
-        return sum(len(store.features) for store in self.chromosomes.values())
+        return sum(len(store) for store in self.chromosomes.values())
 
     def __iterator__(self):
+        """Iterate over all features in the store."""
+        return self
+    
+    def __iter__(self):
         """Iterate over all features in the store."""
         return iter(self.chromosomes.values())
     
     def __str__(self) -> str:
         """Return a string representation of the feature store."""
-        chrom_counts = [f"{chrom}: {len(store.features)}" 
+        chrom_counts = [f"{chrom}: {len(store)}"
                         for chrom, store in self.chromosomes.items()]
         return (f"GenomicFeatureStore(type={self.store_type.value}, "
                 f"chromosomes={len(self.chromosomes)}, "
@@ -139,6 +143,16 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
     
     def __repr__(self) -> str:
         return self.__str__()
+    
+    def trim(self) -> None:
+        """
+        Trim internal data structures to reduce memory usage.
+        
+        This method calls trim() on all chromosome stores
+        to reduce memory usage before serialization.
+        """
+        for chrom_store in self.chromosomes.values():
+            chrom_store.trim()
     
     def save(self, filepath: Path) -> None:
         """
@@ -154,6 +168,9 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
         for chrom in self.chromosomes.values():
             if chrom.index_build_mode:
                 chrom.index_build_end()
+        
+        # Trim all stores to reduce memory usage before serialization
+        self.trim()
         
         with open(filepath, 'wb') as f:
             pickle.dump(self, f)

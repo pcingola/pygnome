@@ -91,17 +91,18 @@ class MsiChromosomeStore(ChromosomeFeatureStore):
     Implements binary search for efficient querying.
     """
 
-    def __init__(self, chromosome: str, feature_count: int = DEFAULT_FEATURE_COUNT, max_lengths_by_bin: dict[int, int] | None = None, bin_size: int = DEFAULT_BIN_SIZE):
+    def __init__(self, chrom: str, feature_count: int = DEFAULT_FEATURE_COUNT, max_lengths_by_bin: dict[int, int] | None = None, bin_size: int = DEFAULT_BIN_SIZE):
         """
         Initialize an MSI chromosome store with pre-allocated arrays.
         
         Args:
-            chromosome: Name of the chromosome
+            chrom: Name of the chromosome
             feature_count: Number of features to allocate space for
             max_lengths_by_bin: dictionary mapping bin IDs to maximum feature length in that bin
             bin_size: Size of each bin in base pairs
         """
-        super().__init__(chromosome=chromosome)
+        super().__init__(chromosome=chrom)  # Parent class uses 'chromosome' parameter
+        self.features = None  # type: ignore # We won't use the features field
         self.bin_size = bin_size
         
         # Arrays for efficient storage
@@ -124,9 +125,9 @@ class MsiChromosomeStore(ChromosomeFeatureStore):
         Args:
             feature: The MSI site record to add
         """
-        super().add(feature)  # This adds to self.features which we won't use for queries
-        
-        # Store in arrays
+        if not self.index_build_mode:
+            raise RuntimeError("Index build mode is not active. Call index_build_start() before adding features.")        
+        # Store in arrays, do not use the features list
         idx = self._feature_count
         self._starts[idx] = feature.start
         self._ends[idx] = feature.end
@@ -249,7 +250,7 @@ class MsiChromosomeStore(ChromosomeFeatureStore):
         # Create a lightweight feature object (not a full MsiSiteRecord)
         return GenomicFeature(
             id=f"MSI_{start}",
-            chrom=self.chromosome,
+            chrom=self.chromosome,  # Use self.chromosome from parent class
             start=start,
             end=end,
             strand=Strand.UNSTRANDED
@@ -276,3 +277,51 @@ class MsiChromosomeStore(ChromosomeFeatureStore):
             self._repeat_unit_bases = new_repeat_unit_bases
             
         self._is_loaded = True
+
+    def __getitem__(self, index: int) -> GenomicFeature:
+        """Get all features at a specific index."""
+        return self._create_feature_from_index(index)
+    
+    def get_features(self) -> list[GenomicFeature]:
+        """Get all features."""
+        return [self._create_feature_from_index(i) for i in range(self._feature_count)]
+    
+    def __len__(self) -> int:
+        return self._feature_count
+        
+    def trim(self) -> None:
+        """
+        Trim arrays to their actual used size to reduce memory usage.
+        
+        This is particularly useful before serialization to avoid storing
+        large amounts of unused memory in pickle files.
+        """
+        # Call the parent class implementation first
+        super().trim()
+        
+        # Trim NumPy arrays if they're larger than needed
+        if self._starts is not None and len(self._starts) > self._feature_count:
+            self._starts = self._starts[:self._feature_count].copy()
+            
+        if self._ends is not None and len(self._ends) > self._feature_count:
+            self._ends = self._ends[:self._feature_count].copy()
+            
+        # Trim the DnaStringArray if it exists
+        if hasattr(self, '_repeat_unit_bases') and self._repeat_unit_bases is not None:
+            self._repeat_unit_bases.trim()
+            
+    def __getstate__(self):
+        """
+        Prepare the object for pickling.
+        
+        This method is called by pickle before serialization.
+        It trims the arrays to reduce the serialized size.
+        
+        Returns:
+            The object's state dictionary
+        """
+        # Trim arrays before pickling
+        self.trim()
+        
+        # Return the object's state
+        return self.__dict__

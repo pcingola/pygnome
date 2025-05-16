@@ -260,6 +260,34 @@ class DnaStringArray:
         self._data[int_idx] |= (bit_value << (pos_in_int * BITS_PER_NUCLEOTIDE))
 
 
+    def trim(self) -> None:
+        """
+        Trim the internal arrays to their actual used size.
+        
+        This method reduces memory usage by resizing the data and positions arrays
+        to match the actual amount of data stored. This is particularly useful
+        before serialization to avoid storing large amounts of unused memory.
+        
+        Returns:
+            None
+        """
+        if self._count == 0:
+            # Reset to minimal arrays if empty
+            self._data = np.zeros(1, dtype=np.uint32)
+            self._positions = np.zeros(2, dtype=np.uint64)  # Need count+1 positions
+            return
+            
+        # Calculate how many integers we actually need for the data
+        required_ints = (self._total_nucleotides + NUCLEOTIDES_PER_INT - 1) // NUCLEOTIDES_PER_INT
+        
+        # Trim the data array if it's larger than needed
+        if len(self._data) > required_ints:
+            self._data = self._data[:required_ints].copy()
+            
+        # Trim the positions array if it's larger than needed
+        if len(self._positions) > self._count + 1:
+            self._positions = self._positions[:self._count + 1].copy()
+        
     def __str__(self) -> str:
         """Return a string representation."""
         count, total_nt, bits_per_nt = self.get_stats()
@@ -291,6 +319,22 @@ class DnaStringArray:
             bits_per_nt = 0
             
         return self._count, self._total_nucleotides, bits_per_nt
+        
+    def __getstate__(self):
+        """
+        Prepare the object for pickling.
+        
+        This method is called by pickle before serialization.
+        It trims the arrays to reduce the serialized size.
+        
+        Returns:
+            The object's state dictionary
+        """
+        # Trim arrays before pickling
+        self.trim()
+        
+        # Return the object's state
+        return self.__dict__
         
     def to_dna_string(self, idx: int) -> 'DnaString':
         """
