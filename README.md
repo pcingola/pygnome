@@ -100,22 +100,15 @@ with VcfReader(Path("path/to/variants.vcf")) as reader:
     for record in reader:
         print(f"Record: {record.get_chrom()}:{record.get_pos()} {record.get_ref()}>{','.join(record.get_alt())}")
         
+        # Create variant objects from the record using VariantFactory
+        for variant in record:  # Uses VariantFactory internally
+            print(f"Variant: {variant}")
+            
         # Access genotypes
         genotypes = record.get_genotypes()
         for i, genotype in enumerate(genotypes):
             print(f"  {samples[i]}: {genotype}")
         
-        # Create variant objects from the record using VariantFactory
-        for variant in record:  # Uses VariantFactory internally
-            print(f"Variant: {variant}")
-            
-    # Using VariantFactory directly
-    from pygnome.parsers.vcf import VariantFactory
-    
-    # Create variants from a record
-    record = next(iter(reader))
-    variants = list(VariantFactory.create_variants_from_record(record))
-    
     # Query a specific region
     for record in reader.fetch("chr1", 1000000, 2000000):
         for variant in record:
