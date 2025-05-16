@@ -1,4 +1,7 @@
+
 # PyGnome: Python Library for Genome Annotations
+
+![PyGnome Logo](./pygnome.png){width=200px}
 
 PyGnome is a Python library for working with genomic annotations and sequences. It provides efficient data structures and parsers for common genomic file formats, making it easy to work with genomic data in Python.
 
