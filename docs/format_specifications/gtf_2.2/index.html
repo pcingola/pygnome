@@ -1,0 +1,1118 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Python library for genome annotations">
+      
+      
+      
+        <link rel="canonical" href="https://pcingola.github.io/pygnome/format_specifications/gtf_2.2/">
+      
+      
+      
+      
+      <link rel="icon" href="../../pygnome.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>Gtf 2.2 - PyGnome</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="PyGnome" class="md-header__button md-logo" aria-label="PyGnome" data-md-component="logo">
+      
+  <img src="../../pygnome.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PyGnome
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Gtf 2.2
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pcingola/pygnome" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pcingola/pygnome
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="PyGnome" class="md-nav__button md-logo" aria-label="PyGnome" data-md-component="logo">
+      
+  <img src="../../pygnome.png" alt="logo">
+
+    </a>
+    PyGnome
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pcingola/pygnome" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pcingola/pygnome
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/installation.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/basic-usage.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Basic Usage
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/advanced-usage.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Advanced Usage
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Format Specifications
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Format Specifications
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../format-specifications/fasta.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FASTA
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../format-specifications/fastq.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FASTQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../format-specifications/gff3.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    GFF3
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../format-specifications/gtf.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    GTF
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../format-specifications/vcf.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    VCF
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/index.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/genomics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Genomics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/parsers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Parsers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/sequences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sequences
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/feature-store.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Feature Store
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Development
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/contributing.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/changelog.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Gtf 2.2</h1>
+
+<p><strong>GTF2.2: A Gene Annotation Format</strong> <strong>(Revised Ensembl GTF)</strong> <strong>Contents</strong></p>
+<p>Reference: http://mblab.wustl.edu/GTF22.html</p>
+<ul>
+<li><a href="http://mblab.wustl.edu/GTF22.html#intro">Introduction</a></li>
+<li><a href="http://mblab.wustl.edu/GTF22.html#fields">GTF Field Definitions</a></li>
+<li><a href="http://mblab.wustl.edu/GTF22.html#examples">Examples</a></li>
+<li><a href="http://mblab.wustl.edu/GTF22.html#resources">Scripts and Resources</a></li>
+</ul>
+<p><strong>Introduction</strong>
+GTF stands for Gene transfer format. It borrows from  <a href="http://www.sanger.ac.uk/Software/formats/GFF/GFF_Spec.shtml">GFF</a>,
+but has additional structure that warrants a separate definition and format
+name.</p>
+<p>Structure is as <a href="http://www.sanger.ac.uk/Software/formats/GFF/GFF_Spec.shtml">GFF</a>,
+so the fields are:</p>
+<p><seqname> <source> <feature> <start> <end> <score></p>
+<p><strand> <frame> [attributes] [comments]</p>
+<p>Here is a simple example with 3 translated exons. Order of rows is not
+important.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>381 Twinscan  CDS          380   401   .   +   0  gene_id &quot;001&quot;; transcript_id &quot;001.1&quot;;
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>381 Twinscan  CDS          501   650   .   +   2  gene_id &quot;001&quot;; transcript_id &quot;001.1&quot;;
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>381 Twinscan  CDS          700   707   .   +   2  gene_id &quot;001&quot;; transcript_id &quot;001.1&quot;;
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>381 Twinscan  start_codon  380   382   .   +   0  gene_id &quot;001&quot;; transcript_id &quot;001.1&quot;;
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>381 Twinscan  stop_codon   708   710   .   +   0  gene_id &quot;001&quot;; transcript_id &quot;001.1&quot;;
+</code></pre></div>
+<p>The whitespace in this example is provided only for readability. In GTF,
+fields must be separated by a single TAB and no white space.</p>
+<p><a href="http://mblab.wustl.edu/GTF22.html#top">Top</a></p>
+<p><strong>GTF Field Definitions</strong>
+<strong><seqname></strong></p>
+<p>The name of the sequence. Commonly, this is the chromosome ID or contig ID. Note that the coordinates used must be unique within each sequence name in all GTFs for an annotation set.</p>
+<p><strong><source></strong></p>
+<p>The source column should be a unique label indicating where the annotations
+came from --- typically the name of either a prediction program or a public
+database.</p>
+<p><strong><feature></strong></p>
+<p>The following feature types are required: "CDS", "start_codon", "stop_codon". The features "5UTR", "3UTR", "inter", "inter_CNS", "intron_CNS" and "exon" are optional. All other features will be ignored. The types must have the correct capitalization shown here.</p>
+<p>CDS represents the coding sequence starting with the first translated
+codon and proceeding to the last translated codon. Unlike Genbank annotation,
+the stop codon is not included in the CDS for the terminal exon.
+The optional feature "5UTR" represents regions from the transcription start site or beginning of the known 5' UTR to the base before the start codon of the transcript. If this region is interrupted by introns
+then
+each exon or partial exon is annotated as a separate 5UTR feature. Similarly, "3UTR" represents regions after the stop codon and before the polyadenylation site or end of the known 3' untranslated region.
+Note that the UTR features can only be used to annotate portions of mRNA genes, not non-coding RNA genes.</p>
+<p>The feature "exon" more generically describes any transcribed exon. Therefore, exon boundaries will be the transcription start site, splice donor, splice acceptor and poly-adenylation site. The start or
+stop codon will not necessarily lie on an exon boundary.</p>
+<p>The "start_codon" feature is up to 3bp long in total and is included in the coordinates for the "CDS" features. The "stop_codon" feature similarly is up to 3bp long and is excluded from the coordinates for the
+"3UTR" features, if used.</p>
+<p>The "start_codon" and "stop_codon" features are not required to be atomic; they may be interrupted by valid splice sites. A split start or stop codon appears as two distinct features. All "start_codon" and "stop_codon" features must have a 0,1,2 in the <frame> field indicating which part of the codon is represented by this feature. Contiguous start and stop codons will always have frame 0.</p>
+<p>The "inter" feature describes an intergenic region, one which is by almost all accounts not transcribed. The "inter_CNS" feature describes an intergenic conserved noncoding sequence region. All of these should have an empty transcript_id attribute, since they are not transcribed and do not belong to any transcript. The "intron_CNS" feature describes a conserved noncoding sequence region within an intron of a transcript, and should have a transcript_id associated with it.</p>
+<p><strong><start> <end></strong></p>
+<p>Integer start and end coordinates of the feature relative to the beginning
+of the sequence named in <seqname>.  <start> must be less than
+or equal to <end>. Sequence numbering starts at 1. Values of <start>
+and <end> that extend outside the reference sequence are technically
+acceptable, but they are discouraged.</p>
+<p><strong><score></strong></p>
+<p>The score field indicates a degree of confidence in the feature's existence and coordinates. The value of this field has no global scale but may have relative significance when the <source> field indicates the prediction program used to create this annotation. It may be a floating point number or integer, and not necessary and may be replaced with a dot.</p>
+<p><strong><frame></strong></p>
+<p>0 indicates that the feature begins with a whole codon at the 5' most base.
+1 means that there is one extra base (the third base of a codon)
+before the first whole codon
+and 2 means that there are two extra bases (the second and third bases of the codon) before the first codon. Note that for reverse strand features, the 5' most base is the <end> coordinate.</p>
+<p>Here are the details excised from the  <a href="http://www.sanger.ac.uk/Software/formats/GFF/GFF_Spec.shtml">GFF\
+spec</a>. <strong>Important: Note comment on reverse strand.</strong></p>
+<blockquote>
+<p>'0' indicates that the specified region is in frame, i.e. that
+its first base corresponds to the first base of a codon. '1' indicates
+that there is one extra base, i.e. that the second base of the region corresponds
+to the first base of a codon, and '2' means that the third base of the
+region is the first base of a codon. <strong>If the strand is '-', then the</strong>
+<strong>first base of the region is value of <end></strong>, because the corresponding
+coding region will run from <end> to <start> on the reverse strand.</p>
+</blockquote>
+<p>Frame is calculated as (3 - ((length-frame) mod 3)) mod 3.</p>
+<ul>
+<li>
+<p>(length-frame) is the length of the previous feature starting at the first whole codon (and thus the frame subtracted out).</p>
+</li>
+<li>
+<p>(length-frame) mod 3 is the number of bases on the 3' end beyond the last whole codon of the previous feature.</p>
+</li>
+<li>
+<p>3-((length-frame) mod 3) is the number of bases left in the codon after removing those that are represented at the 3' end of the feature.</p>
+</li>
+<li>
+<p>(3-((length-frame) mod 3)) mod 3 changes a 3 to a 0, since three bases makes a whole codon, and 1 and 2 are left unchanged.</p>
+</li>
+</ul>
+<p><strong>[attributes]</strong></p>
+<p>All nine features have the same two mandatory attributes at the end
+of the record:</p>
+<ul>
+<li><em>gene_id value;</em>     A globally unique identifier
+  for the genomic locus of the transcript. If empty, no gene is associated with this feature.</li>
+<li><em>transcript_id value;</em>     A globally unique identifier
+  for the predicted transcript. If empty, no transcript is associated with this feature.</li>
+</ul>
+<p>These attributes are designed for handling multiple transcripts from the
+same genomic region. Any other attributes or comments must appear after
+these two and will be ignored.</p>
+<p>Attributes must end in a semicolon which must then be separated from
+the start of any subsequent attribute by exactly one space character (NOT
+a tab character).</p>
+<p>Textual attributes should be surrounded by doublequotes.</p>
+<p>These attributes are required even for non-mRNA transcribed regions such as "inter" and "inter_CNS" features.</p>
+<p><strong>[comments]</strong></p>
+<p>Comments begin with a hash ('#') and continue to the end of the line. Nothing beyond a hash will be parsed. These may occur anywhere in the file, including at the end of a feature line.</p>
+<p><a href="http://mblab.wustl.edu/GTF22.html#top">Top</a></p>
+<p><strong>Examples</strong>
+Here is an example of a gene on the negative strand including UTR regions. Larger coordinates are 5' of smaller coordinates. Thus, the start codon is 3 bp with largest coordinates among all those bp that fall within the CDS regions.
+Note that the stop codon lies between the 3UTR and the CDS</p>
+<p><code>140    Twinscan    inter         5141     8522     .    -    .    gene_id ""; transcript_id "";
+140    Twinscan    inter_CNS     8523     9711     .    -    .    gene_id ""; transcript_id "";
+140    Twinscan    inter         9712     13182    .    -    .    gene_id ""; transcript_id "";
+140    Twinscan    3UTR          65149    65487    .    -    .    gene_id "140.000"; transcript_id "140.000.1";
+140    Twinscan    3UTR          66823    66992    .    -    .    gene_id "140.000"; transcript_id "140.000.1";
+140    Twinscan    stop_codon    66993    66995    .    -    0    gene_id "140.000"; transcript_id "140.000.1";
+140    Twinscan    CDS           66996    66999    .    -    1    gene_id "140.000"; transcript_id "140.000.1";
+140    Twinscan    intron_CNS    70103    70151    .    -    .    gene_id "140.000"; transcript_id "140.000.1";
+140    Twinscan    CDS           70207    70294    .    -    2    gene_id "140.000"; transcript_id "140.000.1";
+140    Twinscan    CDS           71696    71807    .    -    0    gene_id "140.000"; transcript_id "140.000.1";
+140    Twinscan    start_codon   71805    71806    .    -    0    gene_id "140.000"; transcript_id "140.000.1";
+140    Twinscan    start_codon   73222    73222    .    -    2    gene_id "140.000"; transcript_id "140.000.1";
+140    Twinscan    CDS           73222    73222    .    -    0    gene_id "140.000"; transcript_id "140.000.1";
+140    Twinscan    5UTR          73223    73504    .    -    .    gene_id "140.000"; transcript_id "140.000.1";</code></p>
+<p>Note the frames of the coding exons. For example:</p>
+<ol>
+<li>The first CDS (from 71807 to 71696) always has frame zero.</li>
+<li>Frame of the 1st CDS =0, length =112.  (3-((length - frame) mod 3)) mod 3  =
+   2, the frame of the 2nd CDS.</li>
+<li>Frame of the 2nd CDS=2, length=88. (3-((length - frame) mod 3)) mod 3  = 1, the
+   frame of the terminal CDS.</li>
+<li>Alternatively, the frame of terminal CDS can be calculated without the
+   rest of the gene. Length of the terminal CDS=4. length mod 3 =1, the frame
+   of the terminal CDS.</li>
+</ol>
+<p>Note the split start codon. The second start codon region has a frame of 2, since it is the second base, and has an accompanying CDS feature, since CDS always includes the start codon.</p>
+<p>Here is an example in which the "exon" feature is used. It is a 5 exon
+gene with 3 translated exons.</p>
+<p><code>381 Twinscan  exon
+150   200   .   +   .  gene_id
+"381.000"; transcript_id "381.000.1";
+381 Twinscan  exon
+300   401   .   +   .  gene_id
+"381.000"; transcript_id "381.000.1";
+381 Twinscan  CDS          380   401   .   +   0  gene_id
+"381.000"; transcript_id "381.000.1";
+381 Twinscan  exon
+501   650   .   +   .  gene_id
+"381.000"; transcript_id "381.000.1";
+381 Twinscan  CDS
+501   650   .   +   2  gene_id
+"381.000"; transcript_id "381.000.1";
+381 Twinscan  exon
+700   800   .   +   .  gene_id
+"381.000"; transcript_id "381.000.1";
+381 Twinscan  CDS
+700   707   .   +   2  gene_id
+"381.000"; transcript_id "381.000.1";
+381 Twinscan  exon
+900  1000   .   +   .  gene_id
+"381.000"; transcript_id "381.000.1";
+381 Twinscan  start_codon  380   382
+.   +   0  gene_id "381.000"; transcript_id
+"381.000.1";
+381 Twinscan  stop_codon   708
+710   .   +   0  gene_id "381.000";
+transcript_id "381.000.1";</code></p>
+<p><a href="http://mblab.wustl.edu/GTF22.html#top">Top</a></p>
+<p><strong>Scripts and Resources</strong>
+Several Perl scripts have been written for checking, parsing, correcting, and comparing GTF-formatted annotations. Most of the important ones are included the Eval package, which comes equipped with a GTF parsing Perl package GTF.pm.</p>
+<ul>
+<li><a href="http://mblab.wustl.edu/software.html#evalLink">Eval Software</a></li>
+<li><a href="http://mblab.wustl.edu/media/software/eval-documentation.pdf">Eval Documentation</a></li>
+</ul>
+<p>The Eval documentation contains a complete code-level documentation of GTF.pm, suitable for able Perl programmers to create and parse GTF files.</p>
+<p>The script <code>validate_gtf.pl</code> included in the Eval package is particularly useful for checking that your GTF annotation is consistent and well-formed.</p>
+<p>Here are some more useful links:</p>
+<ul>
+<li><a href="http://www.sanger.ac.uk/Software/formats/GFF/GFF_Spec.shtml">GFF Specification at Sanger</a></li>
+<li><a href="http://mblab.wustl.edu/">Brent Lab Homepage</a></li>
+</ul>
+<p><a href="http://mblab.wustl.edu/GTF22.html#top">Top</a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.top", "search.highlight", "search.share", "content.code.copy"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>

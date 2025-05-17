@@ -1,0 +1,1346 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Python library for genome annotations">
+      
+      
+      
+        <link rel="canonical" href="https://pcingola.github.io/pygnome/format_specifications/fastq/">
+      
+      
+      
+      
+      <link rel="icon" href="../../pygnome.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>FASTQ format - PyGnome</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#fastq-format" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="PyGnome" class="md-header__button md-logo" aria-label="PyGnome" data-md-component="logo">
+      
+  <img src="../../pygnome.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PyGnome
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              FASTQ format
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pcingola/pygnome" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pcingola/pygnome
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="PyGnome" class="md-nav__button md-logo" aria-label="PyGnome" data-md-component="logo">
+      
+  <img src="../../pygnome.png" alt="logo">
+
+    </a>
+    PyGnome
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pcingola/pygnome" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pcingola/pygnome
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    User Guide
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/installation.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/basic-usage.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Basic Usage
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/advanced-usage.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Advanced Usage
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Format Specifications
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Format Specifications
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../format-specifications/fasta.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FASTA
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../format-specifications/fastq.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FASTQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../format-specifications/gff3.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    GFF3
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../format-specifications/gtf.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    GTF
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../format-specifications/vcf.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    VCF
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/index.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/genomics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Genomics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/parsers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Parsers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/sequences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sequences
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/feature-store.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Feature Store
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Development
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/contributing.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/changelog.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Format
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#illumina-sequence-identifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Illumina sequence identifiers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ncbi-sequence-read-archive" class="md-nav__link">
+    <span class="md-ellipsis">
+      NCBI Sequence Read Archive
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Variations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quality
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#encoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      Encoding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#color-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color space
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fast5-and-hdf5-evolutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      FAST5 and HDF5 evolutions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simulation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compression" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compression
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Compression">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general-compressors" class="md-nav__link">
+    <span class="md-ellipsis">
+      General compressors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reads
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quality-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quality values
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      File extension
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#format-converters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Format converters
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      See also
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="fastq-format">FASTQ format</h1>
+<p><strong>FASTQ format</strong> is a text-based <a href="https://en.wikipedia.org/wiki/File_format" title="File format">format</a> for storing both a biological sequence (usually <a href="https://en.wikipedia.org/wiki/Nucleotide_sequence" title="Nucleotide sequence">nucleotide sequence</a>) and its corresponding quality scores. Both the sequence letter and quality score are each encoded with a single <a href="https://en.wikipedia.org/wiki/ASCII" title="ASCII">ASCII</a> character for brevity.</p>
+<p>It was originally developed at the <a href="https://en.wikipedia.org/wiki/Wellcome_Trust_Sanger_Institute" title="Wellcome Trust Sanger Institute">Wellcome Trust Sanger Institute</a> to bundle a <a href="https://en.wikipedia.org/wiki/FASTA_format" title="FASTA format">FASTA formatted</a> sequence and its quality data, but has become the <em><a href="https://en.wikipedia.org/wiki/De_facto" title="De facto">de facto</a></em> standard for storing the output of high-throughput sequencing instruments such as the <a href="https://en.wikipedia.org/wiki/Illumina_(company)" title="Illumina (company)">Illumina</a> Genome Analyzer.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-Cock2009-1">[1]</a></p>
+<h2 id="format">Format</h2>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=1" title="Edit section: Format">edit</a>]</p>
+<p>A FASTQ file has four line-separated fields per sequence:</p>
+<ul>
+<li>Field 1 begins with a '@' character and is followed by a sequence identifier and an <em>optional</em> description (like a <a href="https://en.wikipedia.org/wiki/FASTA_format" title="FASTA format">FASTA</a> title line).</li>
+<li>Field 2 is the raw sequence letters.</li>
+<li>Field 3 begins with a '+' character and is <em>optionally</em> followed by the same sequence identifier (and any description) again.</li>
+<li>Field 4 encodes the quality values for the sequence in Field 2, and must contain the same number of symbols as letters in the sequence.</li>
+</ul>
+<p>A FASTQ file containing a single sequence might look like this:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>@SEQ_ID
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAATCCATTTGTTCAACTCACAGTTT
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>+
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>!&#39;&#39;*((((***+))%%%++)(%%%%).1***-+*&#39;&#39;))**55CCF&gt;&gt;&gt;&gt;&gt;&gt;CCCCCCC65
+</code></pre></div>
+<p>The byte representing quality runs from 0x21 (lowest quality; '!' in ASCII) to 0x7e (highest quality; '~' in ASCII).
+Here are the quality value characters in left-to-right increasing order of quality ( <a href="https://en.wikipedia.org/wiki/ASCII" title="ASCII">ASCII</a>):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>!&quot;#$%&amp;&#39;()*+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+</code></pre></div>
+<p>The original Sanger FASTQ files split long sequences and quality strings over multiple lines, as is typically done for <a href="https://en.wikipedia.org/wiki/FASTA_format" title="FASTA format">FASTA</a> files. Accounting for this makes parsing more complicated due to the choice of "@" and "+" as markers (as these characters can also occur in the quality string). Multi-line FASTQ files (and consequently multi-line FASTQ parsers) are less common now that the majority of sequencing carried out is short-read <a href="https://en.wikipedia.org/wiki/Illumina_dye_sequencing" title="Illumina dye sequencing">Illumina sequencing</a>, with typical sequence lengths of around 100bp.</p>
+<h3 id="illumina-sequence-identifiers">Illumina sequence identifiers</h3>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=2" title="Edit section: Illumina sequence identifiers">edit</a>]</p>
+<p>Sequences from the <a href="https://en.wikipedia.org/wiki/Solexa" title="Solexa">Illumina</a> software use a systematic identifier:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>@HWUSI-EAS100R:6:73:941:1973#0/1
+</code></pre></div>
+<p>| HWUSI-EAS100R | the unique instrument name |
+| 6 | flowcell lane |
+| 73 | tile number within the flowcell lane |
+| 941 | 'x'-coordinate of the cluster within the tile |
+| 1973 | 'y'-coordinate of the cluster within the tile |
+| #0 | index number for a multiplexed sample (0 for no indexing) |
+| /1 | the member of a pair, /1 or /2 <em>(paired-end or mate-pair reads only)</em> |</p>
+<p>Versions of the Illumina pipeline since 1.4 appear to use <strong>#NNNNNN</strong> instead of <strong>#0</strong> for the multiplex ID, where <strong>NNNNNN</strong> is the sequence of the multiplex tag.</p>
+<p>With Casava 1.8 the format of the '@' line has changed:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>@EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG
+</code></pre></div>
+<p>| EAS139 | the unique instrument name |
+| 136 | the run id |
+| FC706VJ | the flowcell id |
+| 2 | flowcell lane |
+| 2104 | tile number within the flowcell lane |
+| 15343 | 'x'-coordinate of the cluster within the tile |
+| 197393 | 'y'-coordinate of the cluster within the tile |
+| 1 | the member of a pair, 1 or 2 <em>(paired-end or mate-pair reads only)</em> |
+| Y | Y if the read is filtered (did not pass), N otherwise |
+| 18 | 0 when none of the control bits are on, otherwise it is an even number |
+| ATCACG | index sequence |</p>
+<p>Note that more recent versions of Illumina software output a sample number (defined by the order of the samples in the sample sheet) in place of an index sequence when an index sequence is not explicitly specified for a sample in the sample sheet. For example, the following header might appear in a FASTQ file belonging to the first sample of a batch of samples:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>@EAS139:136:FC706VJ:2:2104:15343:197393 1:N:18:1
+</code></pre></div>
+<h3 id="ncbi-sequence-read-archive">NCBI Sequence Read Archive</h3>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=3" title="Edit section: NCBI Sequence Read Archive">edit</a>]</p>
+<p>FASTQ files from the <a href="https://en.wikipedia.org/wiki/International_Nucleotide_Sequence_Database_Collaboration" title="International Nucleotide Sequence Database Collaboration">INSDC</a> <a href="https://en.wikipedia.org/wiki/Sequence_Read_Archive" title="Sequence Read Archive">Sequence Read Archive</a> often include a description, e.g.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>@SRR001666.1 071112_SLXA-EAS1_s_7:5:1:817:345 length=36
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>GGGTGATGGCCGCTGCCGATGGCGTCAAATCCCACC
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>+SRR001666.1 071112_SLXA-EAS1_s_7:5:1:817:345 length=36
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>IIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IG9IC
+</code></pre></div>
+<p>In this example there is an NCBI-assigned identifier, and the description holds the original identifier from <a href="https://en.wikipedia.org/wiki/Solexa" title="Solexa">Solexa/Illumina</a> (as described above) plus the read length. Sequencing was performed in paired-end mode (~500bp insert size), see <a href="https://www.ncbi.nlm.nih.gov/sra/SRR001666">SRR001666</a>. The default output format of fastq-dump produces entire spots, containing any technical reads and typically single or paired-end biological reads.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>$ fastq-dump.2.9.0 -Z -X 2 SRR001666
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>Read 2 spots for SRR001666
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>Written 2 spots for SRR001666
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>@SRR001666.1 071112_SLXA-EAS1_s_7:5:1:817:345 length=72
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>GGGTGATGGCCGCTGCCGATGGCGTCAAATCCCACCAAGTTACCCTTAACAACTTAAGGGTTTTCAAATAGA
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>+SRR001666.1 071112_SLXA-EAS1_s_7:5:1:817:345 length=72
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>IIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IG9ICIIIIIIIIIIIIIIIIIIIIDIIIIIII&gt;IIIIII/
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>@SRR001666.2 071112_SLXA-EAS1_s_7:5:1:801:338 length=72
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>GTTCAGGGATACGACGTTTGTATTTTAAGAATCTGAAGCAGAAGTCGATGATAATACGCGTCGTTTTATCAT
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>+SRR001666.2 071112_SLXA-EAS1_s_7:5:1:801:338 length=72
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII6IBIIIIIIIIIIIIIIIIIIIIIIIGII&gt;IIIII-I)8I
+</code></pre></div>
+<p>Modern usage of FASTQ almost always involves splitting the spot into its biological reads, as described in submitter-provided metadata:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>$ fastq-dump -X 2 SRR001666 --split-3
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>Read 2 spots for SRR001666
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>Written 2 spots for SRR001666
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>$ head SRR001666_1.fastq  SRR001666_2.fastq
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>==&gt; SRR001666_1.fastq &lt;==
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>@SRR001666.1 071112_SLXA-EAS1_s_7:5:1:817:345 length=36
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>GGGTGATGGCCGCTGCCGATGGCGTCAAATCCCACC
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>+SRR001666.1 071112_SLXA-EAS1_s_7:5:1:817:345 length=36
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>IIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IG9IC
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>@SRR001666.2 071112_SLXA-EAS1_s_7:5:1:801:338 length=36
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>GTTCAGGGATACGACGTTTGTATTTTAAGAATCTGA
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>+SRR001666.2 071112_SLXA-EAS1_s_7:5:1:801:338 length=36
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII6IBI
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>==&gt; SRR001666_2.fastq &lt;==
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>@SRR001666.1 071112_SLXA-EAS1_s_7:5:1:817:345 length=36
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>AAGTTACCCTTAACAACTTAAGGGTTTTCAAATAGA
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>+SRR001666.1 071112_SLXA-EAS1_s_7:5:1:817:345 length=36
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>IIIIIIIIIIIIIIIIIIIIDIIIIIII&gt;IIIIII/
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>@SRR001666.2 071112_SLXA-EAS1_s_7:5:1:801:338 length=36
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>AGCAGAAGTCGATGATAATACGCGTCGTTTTATCAT
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>+SRR001666.2 071112_SLXA-EAS1_s_7:5:1:801:338 length=36
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>IIIIIIIIIIIIIIIIIIIIIIGII&gt;IIIII-I)8I
+</code></pre></div>
+<p>When present in the archive, fastq-dump can attempt to restore read names to original format. NCBI does not store original read names by default:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>$ fastq-dump -X 2 SRR001666 --split-3 --origfmt
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>Read 2 spots for SRR001666
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>Written 2 spots for SRR001666
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>$ head SRR001666_1.fastq  SRR001666_2.fastq
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>==&gt; SRR001666_1.fastq &lt;==
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>@071112_SLXA-EAS1_s_7:5:1:817:345
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>GGGTGATGGCCGCTGCCGATGGCGTCAAATCCCACC
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>+071112_SLXA-EAS1_s_7:5:1:817:345
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>IIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IG9IC
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>@071112_SLXA-EAS1_s_7:5:1:801:338
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>GTTCAGGGATACGACGTTTGTATTTTAAGAATCTGA
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>+071112_SLXA-EAS1_s_7:5:1:801:338
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII6IBI
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>==&gt; SRR001666_2.fastq &lt;==
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>@071112_SLXA-EAS1_s_7:5:1:817:345
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>AAGTTACCCTTAACAACTTAAGGGTTTTCAAATAGA
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>+071112_SLXA-EAS1_s_7:5:1:817:345
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>IIIIIIIIIIIIIIIIIIIIDIIIIIII&gt;IIIIII/
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>@071112_SLXA-EAS1_s_7:5:1:801:338
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>AGCAGAAGTCGATGATAATACGCGTCGTTTTATCAT
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>+071112_SLXA-EAS1_s_7:5:1:801:338
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>IIIIIIIIIIIIIIIIIIIIIIGII&gt;IIIII-I)8I
+</code></pre></div>
+<p>In the example above, the original read names were used rather than the accessioned read name. NCBI accessions runs and the reads they contain. Original read names, assigned by sequencers, are able to function as locally unique identifiers of a read, and convey exactly as much information as a serial number. The ids above were algorithmically assigned based upon run information and geometric coordinates. Early SRA loaders parsed these ids and stored their decomposed components internally. NCBI stopped recording read names because they are frequently modified from the vendors' original format in order to associate some additional information meaningful to a particular processing pipeline, and this caused name format violations that resulted in a high number of rejected submissions. Without a clear schema for read names, their function remains that of a unique read id, conveying the same amount of information as a read serial number. See various <a href="https://github.com/ncbi/sra-tools/issues?q=is%3Aissue+original+read+names">SRA Toolkit issues</a> for details and discussions.</p>
+<p>Also note that <a href="https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc&amp;f=fastq-dump">fastq-dump</a> converts this FASTQ data from the original Solexa/Illumina encoding to the Sanger standard (see encodings below). This is because <a href="https://github.com/ncbi/sra-tools/issues/130#issuecomment-409995254">the SRA serves as a repository for NGS information, rather than format</a>. The various *-dump tools are capable of producing data in several formats from the same source. The requirements for doing so have been dictated by users over several years, with the majority of early demand coming from the <a href="https://en.wikipedia.org/wiki/1000_Genomes_Project" title="1000 Genomes Project">1000 Genomes Project</a>.</p>
+<h2 id="variations">Variations</h2>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=4" title="Edit section: Variations">edit</a>]</p>
+<h3 id="quality">Quality</h3>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=5" title="Edit section: Quality">edit</a>]</p>
+<p>A quality value <em>Q</em> is an integer mapping of <em>p</em> (i.e., the probability that the corresponding base call is incorrect). Two different equations have been in use. The first is the standard Sanger variant to assess reliability of a base call, otherwise known as <a href="https://en.wikipedia.org/wiki/Phred_quality_score" title="Phred quality score">Phred quality score</a>:</p>
+<p>Qsanger=−10log10⁡p{\displaystyle Q_{\text{sanger}}=-10\,\log _{10}p}<img alt="{\displaystyle Q_{\text{sanger}}=-10\,\log _{10}p}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/d35e9473c8fb52974f7f37c6bd66852e2e276da3" /></p>
+<p>The Solexa pipeline (i.e., the software delivered with the Illumina Genome Analyzer) earlier used a different mapping, encoding the <a href="https://en.wikipedia.org/wiki/Odds" title="Odds">odds</a> <em>p</em>/(1- <em>p</em>) instead of the probability <em>p</em>:</p>
+<p>Qsolexa-prior to v.1.3=−10log10⁡p1−p{\displaystyle Q_{\text{solexa-prior to v.1.3}}=-10\,\log _{10}{\frac {p}{1-p}}}<img alt="{\displaystyle Q_{\text{solexa-prior to v.1.3}}=-10\,\log _{10}{\frac {p}{1-p}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/ca73445cc28b13f2bde5997fe4499011de514bcc" /></p>
+<p>Although both mappings are asymptotically identical at higher quality values, they differ at lower quality levels (i.e., approximately <em>p</em> &gt; 0.05, or equivalently, <em>Q</em> &lt; 13).</p>
+<p><a href="https://en.wikipedia.org/wiki/File:Probability_metrics.svg"><img alt="Relationship between Q and p" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Probability_metrics.svg/1200px-Probability_metrics.svg.png" /></a> Relationship between <em>Q</em> and <em>p</em> using the Sanger (red) and Solexa (black) equations (described above). The vertical dotted line indicates <em>p</em> = 0.05, or equivalently, <em>Q</em> ≈ 13.</p>
+<p>At times there has been disagreement about which mapping Illumina actually uses. The user guide (Appendix B, page 122) for version 1.4 of the Illumina pipeline states that: "The scores are defined as ⁠Q=10⋅log10⁡p1−p{\displaystyle Q=10\cdot \log _{10}{\tfrac {p}{1-p}}}<img alt="{\displaystyle Q=10\cdot \log _{10}{\tfrac {p}{1-p}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/20fd051f508556b6e1d72adfd03903c8aa7a566d" />⁠ [ <em><a href="https://en.wikipedia.org/wiki/Sic" title="Sic">sic</a></em>], where p is the probability of a base call corresponding to the base in question".<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-Illumina_User_Guide_1.4-2">[2]</a> In retrospect, this entry in the manual appears to have been an error. The user guide (What's New, page 5) for version 1.5 of the Illumina pipeline lists this description instead: "Important Changes in Pipeline v1.3 [ <em><a href="https://en.wikipedia.org/wiki/Sic" title="Sic">sic</a></em>]. The quality scoring scheme has changed to the Phred [i.e., Sanger] scoring scheme, encoded as an ASCII character by adding 64 to the Phred value. A Phred score of a base is: Qphred=−10log10⁡e{\displaystyle Q_{\text{phred}}=-10\log _{10}e}<img alt="{\displaystyle Q_{\text{phred}}=-10\log _{10}e}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/52711c8f2bbf23f584d917e086aaef72fde6d01c" />, where <em>e</em> is the estimated probability of a base being wrong.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-Illumina_User_Guide_1.5-3">[3]</a></p>
+<h3 id="encoding">Encoding</h3>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=6" title="Edit section: Encoding">edit</a>]</p>
+<ul>
+<li>Sanger format can encode a <a href="https://en.wikipedia.org/wiki/Phred_quality_score" title="Phred quality score">Phred quality score</a> from 0 to 93 using ASCII 33 to 126 (although in raw read data the Phred quality score rarely exceeds 60, higher scores are possible in assemblies or read maps). Also used in SAM format.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-Sequence/Alignment_Map_format-4">[4]</a> Coming to the end of February 2011, Illumina's newest version (1.8) of their pipeline CASAVA will directly produce fastq in Sanger format, according to the announcement on seqanswers.com forum.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-Upcoming_changes_in_CASAVA_topic-5">[5]</a></li>
+<li>Element Biosciences AVITI reads are encoded following the Sanger convention: Phred quality scores from 0 to 93 are encoded using ASCII 33 to 126. Raw reads typically exhibit base quality scores in the range of [0, 55]. <a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-Elembio_AVITI_FASTQ_format_specification-6">[6]</a></li>
+<li>PacBio HiFi reads, which are typically stored in SAM/BAM format, use the Sanger convention: Phred quality scores from 0 to 93 are encoded using ASCII 33 to 126. Raw PacBio subreads use the same convention but typically assign a placeholder base quality (Q0) to all bases in the read.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-PacBio_BAM_format_specification-7">[7]</a></li>
+<li>Oxford Nanopore Duplex reads, called using the dorado basecaller are typically stored in SAM/BAM format. After changing to a 16-bit internal quality representation, the reported base quality limit is q50 (S).<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-Duplex-dorado-8">[8]</a></li>
+<li>Solexa/Illumina 1.0 format can encode a Solexa/Illumina quality score from -5 to 62 using <a href="https://en.wikipedia.org/wiki/ASCII" title="ASCII">ASCII</a> 59 to 126 (although in raw read data Solexa scores from -5 to 40 only are expected)</li>
+<li>Starting with Illumina 1.3 and before Illumina 1.8, the format encoded a <a href="https://en.wikipedia.org/wiki/Phred_quality_score" title="Phred quality score">Phred quality score</a> from 0 to 62 using <a href="https://en.wikipedia.org/wiki/ASCII" title="ASCII">ASCII</a> 64 to 126 (although in raw read data Phred scores from 0 to 40 only are expected).</li>
+<li>Starting in Illumina 1.5 and before Illumina 1.8, the Phred scores 0 to 2 have a slightly different meaning. The values 0 and 1 are no longer used and the value 2, encoded by ASCII 66 "B", is used also at the end of reads as a <em>Read Segment Quality Control Indicator</em>.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-9">[9]</a> The Illumina manual<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-10">[10]</a> (page 30) states the following: <em>If a read ends with a segment of mostly low quality (Q15 or below), then all of the quality values in the segment are replaced with a value of 2 (encoded as the letter B in Illumina's text-based encoding of quality scores)... This Q2 indicator does not predict a specific error rate, but rather indicates that a specific final portion of the read should not be used in further analyses.</em> Also, the quality score encoded as "B" letter may occur internally within reads at least as late as pipeline version 1.6, as shown in the following example:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>@HWI-EAS209_0006_FC706VJ:5:58:5894:21141#ATCACG/1
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>TTAATTGGTAAATAAATCTCCTAATAGCTTAGATNTTACCTTNNNNNNNNNNTAGTTTCTTGAGATTTGTTGGGGGAGACATTTTTGTGATTGCCTTGAT
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>+HWI-EAS209_0006_FC706VJ:5:58:5894:21141#ATCACG/1
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>efcfffffcfeefffcffffffddf`feed]`]_Ba_^__[YBBBBBBBBBBRTT\]][]dddd`ddd^dddadd^BBBBBBBBBBBBBBBBBBBBBBBB
+</code></pre></div>
+<p>An alternative interpretation of this ASCII encoding has been proposed.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-11">[11]</a> Also, in Illumina runs using PhiX controls, the character 'B' was observed to represent an "unknown quality score". The error rate of 'B' reads was roughly 3 phred scores lower the mean observed score of a given run.</p>
+<ul>
+<li>Starting in Illumina 1.8, the quality scores have basically returned to the use of the Sanger format (Phred+33).</li>
+</ul>
+<p>For raw reads, the range of scores will depend on the technology and the base caller used, but will typically be up to 41 for recent Illumina chemistry. Since the maximum observed quality score was previously only 40, various scripts and tools break when they encounter data with quality values larger than 40. For processed reads, scores may be even higher. For example, quality values of 45 are observed in reads from Illumina's Long Read Sequencing Service (previously Moleculo).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>  SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.....................................................
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>  ..........................XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX......................
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>  ...............................IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII......................
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>  .................................JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ.....................
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>  LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL....................................................
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>  NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN...........................................
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>  EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>  PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>  !&quot;#$%&amp;&#39;()*+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>  |                         |    |        |              |               |                     |
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a> 33                        59   64       73             88             104                   126
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>  0........................26...31.......40
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>                           -5....0........9.............................40
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>                                 0........9.............................40
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>                                    3.....9..............................41
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>  0.2......................26...31........41
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>  0..................20........30........40........50
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>  0..................20........30........40........50...55
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>  0..................20........30........40........50..........................................93
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a> S - Sanger        Phred+33,  raw reads typically (0, 40)
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a> X - Solexa        Solexa+64, raw reads typically (-5, 40)
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a> I - Illumina 1.3+ Phred+64,  raw reads typically (0, 40)
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a> J - Illumina 1.5+ Phred+64,  raw reads typically (3, 41)
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>     with 0=unused, 1=unused, 2=Read Segment Quality Control Indicator (bold)
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>     (Note: See discussion above).
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a> L - Illumina 1.8+ Phred+33,  raw reads typically (0, 41)
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a> N - Nanopore      Phred+33,  Duplex reads typically (0, 50)
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a> E - ElemBio AVITI Phred+33,  raw reads typically (0, 55)
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a> P - PacBio        Phred+33,  HiFi reads typically (0, 93)
+</code></pre></div>
+<h3 id="color-space">Color space</h3>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=7" title="Edit section: Color space">edit</a>]</p>
+<p>For SOLiD data, the format is modified to a color space FASTQ sequence (CSFASTQ), where bases in the sequence are combined with the numbers 0, 1, 2, and 3, indicating how bases are modified relative to the previous base in the sequence (0: no change; 1: transition; 2: non-complementary transversion; 3: complementary transversion).<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-Cock2009-1">[1]</a> This format matched the different sequencing chemistry used by SOLiD sequencers. Initial representations only used nucleotide bases at the start of the sequence, but later versions included bases embedded at periodic intervals to improve basecalling and mapping accuracy.</p>
+<p>The quality values for CSFASTQ are identical to those of the Sanger format. Alignment tools differ in their preferred version of the quality values: some include a quality score (set to 0, i.e. '!') for the leading nucleotide, others do not. The sequence read archive includes this quality score.</p>
+<h3 id="fast5-and-hdf5-evolutions">FAST5 and HDF5 evolutions</h3>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=8" title="Edit section: FAST5 and HDF5 evolutions">edit</a>]</p>
+<p>The FAST4 format was invented as a derivative of the FASTQ format where each of the 4 bases (A,C,G,T) had separate probabilities stored. It was part of the <a href="https://sourceforge.net/p/swiftng" title="sourceforge:p/swiftng">Swift</a> basecaller, an open source package for primary data analysis on next-gen sequence data "from images to basecalls".</p>
+<p>The FAST5 format was invented as an extension of the FAST4 format. The FAST5 files are <a href="https://en.wikipedia.org/wiki/Hierarchical_Data_Format" title="Hierarchical Data Format">Hierarchical Data Format 5</a> (HDF5) files with a specific schema defined by <a href="https://en.wikipedia.org/wiki/Oxford_Nanopore_Technologies" title="Oxford Nanopore Technologies">Oxford Nanopore Technologies</a> (ONT).<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-12">[12]</a></p>
+<h3 id="simulation">Simulation</h3>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=9" title="Edit section: Simulation">edit</a>]</p>
+<p>FASTQ read simulation has been approached by several tools.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-13">[13]</a><a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-14">[14]</a>
+A comparison of those tools can be seen here.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-15">[15]</a></p>
+<h3 id="compression">Compression</h3>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=10" title="Edit section: Compression">edit</a>]</p>
+<h4 id="general-compressors">General compressors</h4>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=11" title="Edit section: General compressors">edit</a>]</p>
+<p>General-purpose tools such as Gzip and bzip2 regard FASTQ as a plain text file and result in suboptimal compression ratios. NCBI's <a href="https://en.wikipedia.org/wiki/Sequence_Read_Archive" title="Sequence Read Archive">Sequence Read Archive</a> encodes metadata using the LZ-77 scheme.
+General FASTQ compressors typically compress distinct fields (read names, sequences, comments, and quality scores) in a FASTQ file separately; these include DSRC and DSRC2, FQC, LFQC, Fqzcomp, and Slimfastq.</p>
+<h4 id="reads">Reads</h4>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=12" title="Edit section: Reads">edit</a>]</p>
+<p>Having a reference genome around is convenient because then instead of storing the nucleotide sequences themselves, one can just align the reads to the reference genome and store the positions (pointers) and mismatches; the pointers can then be sorted according to their order in the reference sequence and encoded, e.g., with run-length encoding. When the <a href="https://en.wikipedia.org/wiki/Coverage_(genetics)" title="Coverage (genetics)">coverage</a> or the repeat content of the sequenced genome is high, this leads to a high compression ratio.
+Unlike the <a href="https://en.wikipedia.org/wiki/SAM_(file_format)" title="SAM (file format)">SAM</a>/BAM formats, FASTQ files do not specify a reference genome. <strong>Alignment-based FASTQ compressors</strong> supports the use of either user-provided or <em>de novo</em> assembled reference: LW-FQZip uses a provided reference genome and Quip, Leon, k-Path and KIC perform <em><strong>de novo</strong></em> assembly using a <a href="https://en.wikipedia.org/wiki/De_Bruijn_graph" title="De Bruijn graph">de Bruijn graph</a>-based approach.</p>
+<p>Explicit read mapping and <em>de novo</em> assembly are typically slow. <strong>Reordering-based FASTQ compressors</strong> first cluster reads that share long substrings and then independently compress reads in each cluster after reordering them or assembling them into longer <a href="https://en.wikipedia.org/wiki/Contig" title="Contig">contigs</a>, achieving perhaps the best trade-off between the running time and compression rate. SCALCE is the first such tool, followed by Orcom and Mince. BEETL uses a generalized <a href="https://en.wikipedia.org/wiki/Burrows%E2%80%93Wheeler_transform" title="Burrows–Wheeler transform">Burrows–Wheeler transform</a> for reordering reads, and HARC achieves better performance with hash-based reordering. AssemblTrie instead assembles reads into reference trees with as few total number of symbols as possible in the reference.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-pmid29422526-16">[16]</a><a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-Zhu_Numanagi%C4%87_Sahinalp_2018_pp._779-783-17">[17]</a></p>
+<p>Benchmarks for these tools are available.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-Numanagi%C4%87_Bonfield_Hach_Voges_pp._1005%E2%80%931008-18">[18]</a></p>
+<h4 id="quality-values">Quality values</h4>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=13" title="Edit section: Quality values">edit</a>]</p>
+<p>Quality values account for about half of the required disk space in the FASTQ format (before compression), and therefore the compression of the quality values can significantly reduce storage requirements and speed up analysis and transmission of sequencing data. Both lossless and lossy compression are recently being considered in the literature. For example, the algorithm QualComp<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-19">[19]</a> performs lossy compression with a rate (number of bits per quality value) specified by the user. Based on rate-distortion theory results, it allocates the number of bits so as to minimize the MSE (mean squared error) between the original (uncompressed) and the reconstructed (after compression) quality values. Other algorithms for compression of quality values include SCALCE<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-20">[20]</a> and Fastqz.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-21">[21]</a> Both are lossless compression algorithms that provide an optional controlled lossy transformation approach. For example, SCALCE reduces the alphabet size based on the observation that “neighboring” quality values are similar in general. For a benchmark, see.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-Morteza-22">[22]</a></p>
+<p>As of the HiSeq 2500 Illumina gives the option to output qualities that have been coarse grained into quality bins. The binned scores are computed directly from the empirical quality score table, which is itself tied to the hardware, software and chemistry that were used during the sequencing experiment.<a href="https://en.wikipedia.org/wiki/FASTQ_format#cite_note-23">[23]</a></p>
+<h2 id="file-extension">File extension</h2>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=14" title="Edit section: File extension">edit</a>]</p>
+<p>There is no standard <a href="https://en.wikipedia.org/wiki/File_extension" title="File extension">file extension</a> for a FASTQ file, but .fq and .fastq are commonly used.</p>
+<h2 id="format-converters">Format converters</h2>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=15" title="Edit section: Format converters">edit</a>]</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Biopython" title="Biopython">Biopython</a> version 1.51 onwards (interconverts Sanger, Solexa and Illumina 1.3+)</li>
+<li><a href="https://en.wikipedia.org/wiki/EMBOSS" title="EMBOSS">EMBOSS</a> version 6.1.0 patch 1 onwards (interconverts Sanger, Solexa and Illumina 1.3+)</li>
+<li><a href="https://en.wikipedia.org/wiki/BioPerl" title="BioPerl">BioPerl</a> version 1.6.1 onwards (interconverts Sanger, Solexa and Illumina 1.3+)</li>
+<li><a href="https://en.wikipedia.org/wiki/BioRuby" title="BioRuby">BioRuby</a> version 1.4.0 onwards (interconverts Sanger, Solexa and Illumina 1.3+)</li>
+<li><a href="https://en.wikipedia.org/wiki/BioJava" title="BioJava">BioJava</a> version 1.7.1 onwards (interconverts Sanger, Solexa and Illumina 1.3+)</li>
+</ul>
+<h2 id="see-also">See also</h2>
+<p>[ <a href="https://en.wikipedia.org/w/index.php?title=FASTQ_format&amp;action=edit&amp;section=16" title="Edit section: See also">edit</a>]</p>
+<ul>
+<li>The <a href="https://en.wikipedia.org/wiki/FASTA_format" title="FASTA format">FASTA</a> format, used to represent genome sequences.</li>
+<li>The <a href="https://en.wikipedia.org/wiki/SAM_(file_format)" title="SAM (file format)">SAM</a> and <a href="https://en.wikipedia.org/wiki/CRAM_(file_format)" title="CRAM (file format)">CRAM</a> formats, used to represent genome sequencer reads that have been aligned to genome sequences.</li>
+<li>The <a href="https://en.wikipedia.org/w/index.php?title=GVF_format&amp;action=edit&amp;redlink=1" title="GVF format (page does not exist)">GVF</a> format (Genome Variation Format), an extension based on the <a href="https://en.wikipedia.org/wiki/GFF3" title="GFF3">GFF3</a> format.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.indexes", "navigation.top", "search.highlight", "search.share", "content.code.copy"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>
