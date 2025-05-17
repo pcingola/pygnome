@@ -4,9 +4,9 @@ This guide covers advanced usage patterns and optimization techniques for PyGnom
 
 ## Genomic Feature Stores
 
-### Genomic Feature Store Selection
-
 Genomic feature stores are one of the core solutions in PyGnome, providing specialized data structures for efficient storage, indexing, and querying of genomic features based on their genomic coordinates. They solve the fundamental bioinformatics challenge of quickly locating genomic elements within large genomes.
+
+### Genomic Feature Store Selection
 
 PyGnome offers multiple feature store implementations with different performance characteristics:
 
