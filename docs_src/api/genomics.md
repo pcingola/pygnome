@@ -356,3 +356,4 @@ if gene1.intersects_point(position):
 position = 6000
 distance = gene1.distance(position)
 print(f"Distance from position {position} to {gene1.id}: {distance}")
+```

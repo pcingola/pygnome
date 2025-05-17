@@ -80,4 +80,3 @@ PyGnome includes parsers for common genomic file formats:
 
 - Check out the [User Guide](user-guide/basic-usage.md) for more detailed usage examples
 - Explore the [API Reference](api/index.md) for detailed documentation of all classes and methods
-- Learn about the [Format Specifications](format_specifications/fasta.md) for supported file formats

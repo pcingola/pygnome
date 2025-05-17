@@ -12,7 +12,7 @@ PyGnome offers multiple feature store implementations with different performance
 |------------|--------------|-------------|----------|
 | `IntervalTreeStore` | Medium | Fast | General purpose, balanced performance |
 | `BinnedGenomicStore` | Low | Medium | Large genomes, memory-constrained environments |
-| `BruteForceFeatureStore` | Very Low | Slow | Testing, very small datasets |
+| `BruteForceFeatureStore` | High | Slow | Testing, very small datasets |
 | `MsiChromosomeStore` | Very Low | Fast | Specialized for microsatellite sites |
 
 Choose the appropriate store type based on your specific use case:

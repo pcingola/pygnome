@@ -306,3 +306,4 @@ chr1 = genome.chromosomes.get("chr1")
 if chr1:
     print(f"Chromosome: {chr1.name}, Length: {chr1.length}")
     print(f"Genes on chr1: {len(chr1.genes)}")
+```
