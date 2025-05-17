@@ -1,4 +1,14 @@
-# Exclude documentation directories from the package
+# Exclude non-essential directories from the package
 prune docs
 prune docs_src
 prune documents
+prune scripts
+prune data
+prune site
+prune tests
+prune *.egg-info
+
+# Exclude specific files
+exclude load_genome_example.py
+exclude mkdocs.yml
+exclude *.ipynb

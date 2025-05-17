@@ -39,9 +39,7 @@ docs = [
 "Bug Tracker" = "https://github.com/pcingola/pygnome/issues"
 
 [tool.setuptools]
-packages = ["pygnome"]
-exclude = ["docs*", "docs_src*", "documents*"]
-package-data = {pygnome = ["*"]}
+packages = {find = {include = ["pygnome", "pygnome.*"], exclude = ["pygnome.tests*"]}}
 
 [tool.ruff]
 line-length = 120
