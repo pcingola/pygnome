@@ -1243,36 +1243,41 @@
 <a id="__codelineno-6-36" name="__codelineno-6-36" href="#__codelineno-6-36"></a><span class="n">loaded_store</span> <span class="o">=</span> <span class="n">GenomicFeatureStore</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;path/to/store.pkl&quot;</span><span class="p">))</span>
 </code></pre></div>
 <h2 id="loading-a-complete-genome">Loading a Complete Genome</h2>
-<p>```python
-from pathlib import Path
-from pygnome.parsers.genome_loader import GenomeLoader</p>
-<h1 id="create-a-genome-loader">Create a genome loader</h1>
-<p>loader = GenomeLoader(
-    genome_name="GRCh38",
-    species="Homo sapiens",
-    verbose=True  # Print progress information
-)</p>
-<h1 id="load-genome-structure-and-sequence">Load genome structure and sequence</h1>
-<p>genome = loader.load(
-    annotation_file=Path("path/to/annotations.gtf"),
-    sequence_file=Path("path/to/genome.fa.gz")
-)</p>
-<h1 id="access-genome-components">Access genome components</h1>
-<p>print(f"Genome: {genome.name} ({genome.species})")
-print(f"Chromosomes: {len(genome.chromosomes)}")
-print(f"Genes: {len(genome.genes)}")</p>
-<h1 id="get-a-specific-chromosome">Get a specific chromosome</h1>
-<p>chr1 = genome.chromosomes.get("chr1")
-if chr1:
-    print(f"Chromosome: {chr1.name}, Length: {chr1.length}")
-    print(f"Genes on chr1: {len(chr1.genes)}")</p>
-<h1 id="get-a-specific-gene">Get a specific gene</h1>
-<p>tp53 = genome.genes.get("TP53")
-if tp53:
-    print(f"TP53: {tp53.chrom}:{tp53.start}-{tp53.end} ({tp53.strand})")</p>
-<div class="highlight"><pre><span></span><code># Get gene transcripts
-for transcript in tp53.transcripts:
-    print(f&quot;Transcript {transcript.id}: Exons: {len(transcript.exons)}&quot;)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pygnome.parsers.genome_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenomeLoader</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Create a genome loader</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">loader</span> <span class="o">=</span> <span class="n">GenomeLoader</span><span class="p">(</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">genome_name</span><span class="o">=</span><span class="s2">&quot;GRCh38&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="n">species</span><span class="o">=</span><span class="s2">&quot;Homo sapiens&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Print progress information</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="p">)</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="c1"># Load genome structure and sequence</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="n">genome</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="n">annotation_file</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;path/to/annotations.gtf&quot;</span><span class="p">),</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span class="n">sequence_file</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;path/to/genome.fa.gz&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="p">)</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="c1"># Access genome components</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Genome: </span><span class="si">{</span><span class="n">genome</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">genome</span><span class="o">.</span><span class="n">species</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Chromosomes: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">genome</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Genes: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">genome</span><span class="o">.</span><span class="n">genes</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="c1"># Get a specific chromosome</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="n">chr1</span> <span class="o">=</span> <span class="n">genome</span><span class="o">.</span><span class="n">chromosomes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chr1&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="k">if</span> <span class="n">chr1</span><span class="p">:</span>
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Chromosome: </span><span class="si">{</span><span class="n">chr1</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, Length: </span><span class="si">{</span><span class="n">chr1</span><span class="o">.</span><span class="n">length</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Genes on chr1: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chr1</span><span class="o">.</span><span class="n">genes</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a>
+<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a><span class="c1"># Get a specific gene</span>
+<a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="n">tp53</span> <span class="o">=</span> <span class="n">genome</span><span class="o">.</span><span class="n">genes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TP53&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a><span class="k">if</span> <span class="n">tp53</span><span class="p">:</span>
+<a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;TP53: </span><span class="si">{</span><span class="n">tp53</span><span class="o">.</span><span class="n">chrom</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">tp53</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">tp53</span><span class="o">.</span><span class="n">end</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">tp53</span><span class="o">.</span><span class="n">strand</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a>
+<a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a>    <span class="c1"># Get gene transcripts</span>
+<a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a>    <span class="k">for</span> <span class="n">transcript</span> <span class="ow">in</span> <span class="n">tp53</span><span class="o">.</span><span class="n">transcripts</span><span class="p">:</span>
+<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transcript </span><span class="si">{</span><span class="n">transcript</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">: Exons: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">transcript</span><span class="o">.</span><span class="n">exons</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 
 

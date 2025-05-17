@@ -298,3 +298,4 @@ if tp53:
     # Get gene transcripts
     for transcript in tp53.transcripts:
         print(f"Transcript {transcript.id}: Exons: {len(transcript.exons)}")
+```
