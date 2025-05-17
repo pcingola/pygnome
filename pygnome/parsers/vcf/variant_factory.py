@@ -1,7 +1,7 @@
 """
 Factory class for creating Variant objects from VCF records.
 """
-from typing import Any, Iterator
+from typing import Iterator
 
 from pygnome.genomics.strand import Strand
 from pygnome.genomics.variant import (
@@ -158,27 +158,26 @@ class VariantFactory:
         Yields:
             Variant objects for each alternate allele in the record
         """
-        for i in range(len(record.get_alt())):
-            variant_id = record.get_id() if record.get_id() != "." else f"variant_{record.get_chrom()}_{record.get_pos()}"
-            info = {k: record.get_info(k) for k in record.header.info_fields if record.has_info(k)}
-            alt = record.get_alt()[i]
+        for i in range(len(record.alts)):
+            variant_id = record.id if record.id else f"variant_{record.chrom}_{record.start}"
+            alt = record.alts[i]
             
             # Basic variant parameters
             variant_params = {
                 "id": variant_id,
-                "chrom": record.get_chrom(),
-                "start": record.get_pos(),
+                "chrom": record.chrom,
+                "start": record.start,
                 "end": record.get_end(i),
                 "strand": Strand.UNSTRANDED,
-                "ref": record.get_ref(),
+                "ref": record.ref,
                 "alt": alt
             }
             
-            if VariantFactory.is_snp(record.get_ref(), alt):
+            if VariantFactory.is_snp(record.ref, alt):
                 yield SNP(**variant_params)
-            elif VariantFactory.is_insertion(record.get_ref(), alt):
+            elif VariantFactory.is_insertion(record.ref, alt):
                 yield Insertion(**variant_params)
-            elif VariantFactory.is_deletion(record.get_ref(), alt):
+            elif VariantFactory.is_deletion(record.ref, alt):
                 yield Deletion(**variant_params)
             elif VariantFactory.is_structural_variant(alt):
                 # Handle specific structural variant types
@@ -236,4 +235,4 @@ class VariantFactory:
                     yield ComplexVariant(**variant_params, description=f"Breakend variant")
             else:
                 # Fallback for truly complex variants that don't fit other categories
-                yield ComplexVariant(**variant_params, description=f"Complex variant ({VariantFactory.get_variant_type(record.get_ref(), alt)})")
+                yield ComplexVariant(**variant_params, description=f"Complex variant ({VariantFactory.get_variant_type(record.ref, alt)})")

@@ -41,14 +41,14 @@ class TestVcfRecord(unittest.TestCase):
     
     def test_fixed_fields(self):
         """Test that fixed fields are correctly parsed."""
-        self.assertEqual(self.record.get_chrom(), '20')
-        self.assertEqual(self.record.get_pos(), 14369)  # 0-based
-        self.assertEqual(self.record.get_vcf_pos(), 14370)  # 1-based
-        self.assertEqual(self.record.get_id(), 'rs6054257')
-        self.assertEqual(self.record.get_ref(), 'G')
-        self.assertEqual(self.record.get_alt(), ['A'])
-        self.assertEqual(self.record.get_qual(), 29.0)
-        self.assertEqual(self.record.get_filter(), [])  # PASS means no filters
+        self.assertEqual(self.record._parse_chrom(), '20')
+        self.assertEqual(self.record._parse_start(), 14369)  # 0-based
+        self.assertEqual(self.record.pos, 14370)  # 1-based
+        self.assertEqual(self.record._parse_id(), 'rs6054257')
+        self.assertEqual(self.record._parse_ref(), 'G')
+        self.assertEqual(self.record._parse_alt(), ['A'])
+        self.assertEqual(self.record._parse_qual(), 29.0)
+        self.assertEqual(self.record._parse_filter(), [])  # PASS means no filters
     
     def test_info_fields(self):
         """Test that INFO fields are correctly parsed."""
@@ -110,8 +110,8 @@ class TestVcfRecord(unittest.TestCase):
     
     def test_multi_allelic(self):
         """Test parsing of multi-allelic records."""
-        self.assertEqual(self.multi_record.get_ref(), 'A')
-        self.assertEqual(self.multi_record.get_alt(), ['G', 'T'])
+        self.assertEqual(self.multi_record._parse_ref(), 'A')
+        self.assertEqual(self.multi_record._parse_alt(), ['G', 'T'])
         
         # Check INFO fields with multiple values
         self.assertTrue(self.multi_record.has_info('AF'))
@@ -224,10 +224,10 @@ class TestVcfRecord(unittest.TestCase):
         record = VcfRecord(line, header)
         
         # Verify that the record has genotypes
-        self.assertTrue(record.has_genotypes)
+        self.assertTrue(record.genotypes.has_genotypes)
         
         # Verify that the fields haven't been parsed yet in the genotypes object
-        self.assertIsNone(record._genotypes._fields)
+        self.assertIsNone(record.genotypes._fields)
         
         # Access a specific genotype value - this should trigger parsing only for that sample
         gq_value = record.get_genotype_value("GQ", 50)
@@ -236,14 +236,14 @@ class TestVcfRecord(unittest.TestCase):
         self.assertEqual(gq_value, 50)
         
         # Verify that only one sample was parsed
-        self.assertEqual(len(record._genotypes._sample_data_cache), 1)
+        self.assertEqual(len(record.genotypes._sample_data_cache), 1)
         
         # Access another sample
         gq_value = record.get_genotype_value("GQ", 75)
         self.assertEqual(gq_value, 75)
         
         # Verify that only two samples were parsed
-        self.assertEqual(len(record._genotypes._sample_data_cache), 2)
+        self.assertEqual(len(record.genotypes._sample_data_cache), 2)
         
         # Get all genotypes - this should parse all samples
         all_genotypes = record.get_genotypes()
@@ -252,7 +252,7 @@ class TestVcfRecord(unittest.TestCase):
         self.assertEqual(len(all_genotypes), 100)
         
         # Verify that all samples have been parsed
-        self.assertEqual(len(record._genotypes._sample_data_cache), 100)
+        self.assertEqual(len(record.genotypes._sample_data_cache), 100)
         
     def test_lazy_string_conversion(self):
         """Test that string conversion is lazy and uses the cached raw line if no changes."""

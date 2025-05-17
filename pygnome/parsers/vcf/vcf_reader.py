@@ -150,7 +150,7 @@ class VcfReader:
             VcfRecord objects for records in the specified region
         """
         for record in self:
-            if record.get_chrom() == chrom and record.get_pos() >= start and record.get_pos() < end:
+            if record._parse_chrom() == chrom and record._parse_start() >= start and record._parse_start() < end:
                 yield record
     
     def get_samples(self) -> list[str]:

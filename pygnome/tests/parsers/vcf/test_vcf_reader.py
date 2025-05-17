@@ -68,19 +68,19 @@ class TestVcfReader(unittest.TestCase):
             
             # Check the first record
             first_record = records[0]
-            self.assertEqual(first_record.get_chrom(), "20")
-            self.assertEqual(first_record.get_pos(), 14369)  # 0-based
-            self.assertEqual(first_record.get_id(), "rs6054257")
-            self.assertEqual(first_record.get_ref(), "G")
-            self.assertEqual(first_record.get_alt(), ["A"])
+            self.assertEqual(first_record._parse_chrom(), "20")
+            self.assertEqual(first_record._parse_start(), 14369)  # 0-based
+            self.assertEqual(first_record._parse_id(), "rs6054257")
+            self.assertEqual(first_record._parse_ref(), "G")
+            self.assertEqual(first_record._parse_alt(), ["A"])
             
             # Check the last record
             last_record = records[-1]
-            self.assertEqual(last_record.get_chrom(), "20")
-            self.assertEqual(last_record.get_pos(), 1234566)  # 0-based
-            self.assertEqual(last_record.get_id(), "microsat1")
-            self.assertEqual(last_record.get_ref(), "GTC")
-            self.assertEqual(last_record.get_alt(), ["G", "GTCT"])
+            self.assertEqual(last_record._parse_chrom(), "20")
+            self.assertEqual(last_record._parse_start(), 1234566)  # 0-based
+            self.assertEqual(last_record._parse_id(), "microsat1")
+            self.assertEqual(last_record._parse_ref(), "GTC")
+            self.assertEqual(last_record._parse_alt(), ["G", "GTCT"])
     
     def test_fetch(self):
         """Test fetching records by region."""
@@ -93,9 +93,9 @@ class TestVcfReader(unittest.TestCase):
             
             # Check the record
             record = records[0]
-            self.assertEqual(record.get_chrom(), "20")
-            self.assertEqual(record.get_pos(), 14369)  # 0-based
-            self.assertEqual(record.get_id(), "rs6054257")
+            self.assertEqual(record._parse_chrom(), "20")
+            self.assertEqual(record._parse_start(), 14369)  # 0-based
+            self.assertEqual(record._parse_id(), "rs6054257")
             
             # Fetch records in another region
             records = list(reader.fetch("20", 1000000, 2000000))
@@ -104,9 +104,9 @@ class TestVcfReader(unittest.TestCase):
             self.assertEqual(len(records), 3)
             
             # Check the records
-            self.assertEqual(records[0].get_pos(), 1110695)  # 0-based
-            self.assertEqual(records[1].get_pos(), 1230236)  # 0-based
-            self.assertEqual(records[2].get_pos(), 1234566)  # 0-based
+            self.assertEqual(records[0]._parse_start(), 1110695)  # 0-based
+            self.assertEqual(records[1]._parse_start(), 1230236)  # 0-based
+            self.assertEqual(records[2]._parse_start(), 1234566)  # 0-based
     
 
     def test_context_manager(self):

@@ -160,7 +160,8 @@ class VcfFieldParser:
             header: The VCF header containing field definitions
         """
         self.header = header
-        self._raw_str = raw_str
+        self._raw_str = raw_str # Raw string representation of the fields (it is set to None if the fields are modified)
+        self.was_modified: bool = False  # Flag to indicate if the field has been modified
         self._field_cache: dict[str, Any] | None = None  # Cache for parsed fields
         self._field_raw_cache: dict[str, str | None] | None = None  # Cache for raw string values
         self._field_modified: set[str] | None = None  # Set of modified fields
@@ -244,6 +245,7 @@ class VcfFieldParser:
         
         self._ensure_parsed()
         
+        # If it's not parsed, check the raw cache and then parse it
         if self._field_raw_cache is None:
             return None
             
@@ -252,8 +254,8 @@ class VcfFieldParser:
             # Field not present
             self._field_cache[field_id] = None
             return None
-                
-        # Get the field definition
+
+        # Make sure the field has a definition
         field_def = self._get_field_definition(field_id)
         if field_def is None:
             # Return None for unknown fields
@@ -280,12 +282,6 @@ class VcfFieldParser:
     def has(self, field_id: str) -> bool:
         """
         Check if a field is present.
-        
-        Args:
-            field_id: The ID of the field
-            
-        Returns:
-            True if the field is present, False otherwise
         """
         return self.get(field_id) is not None
     
@@ -294,11 +290,39 @@ class VcfFieldParser:
         Delete a field.
         """
         self._ensure_parsed()
-        # Mark the field as deleted
-        if self._field_removed is None:
-            self._field_removed = set()
-        self._field_removed.add(field_id)
-    
+        self._invalidate_cache(field_id, deleted=True)
+
+    def _invalidate_cache(self, field_id: str, deleted: bool = False) -> None:
+        """ Invalidate the raw string and mark as modified """
+        self._raw_str = None    # Raw string representation of the fields (it is set to None if the fields are modified)
+        self.was_modified = True  # Flag to indicate something was modified
+        # Mark the field as deleted or modified
+        if deleted:
+            # Mark the field as deleted
+            if self._field_removed is None:
+                self._field_removed = set()
+            self._field_removed.add(field_id)
+        else:
+            # Mark the field as modified
+            if self._field_modified is None:
+                self._field_modified = set()
+            self._field_modified.add(field_id)
+        # Invalidate the raw cache entry
+        if self._field_raw_cache is not None:
+            self._field_raw_cache[field_id] = None
+
+    def is_removed(self, field_id: str) -> bool:
+        """
+        Check if a field has been removed.
+        """
+        return self._field_removed is not None and field_id in self._field_removed
+
+    def is_modified(self, field_id: str) -> bool:
+        """
+        Check if a field has been modified.
+        """
+        return self._field_modified is not None and field_id in self._field_modified
+
     def set(self, field_id: str, value: Any) -> None:
         """
         Set the value of a field. If the field already exists, it will be updated.
@@ -315,26 +339,15 @@ class VcfFieldParser:
 
         self._ensure_parsed()
         
-        # Mark the field as modified
-        if self._field_modified is None:
-            self._field_modified = set()
-        self._field_modified.add(field_id)
-        
-        # Get the field definition
+        # Make sure the field has a definition
         field_def = self._get_field_definition(field_id)
         if field_def is None:
             raise ValueError(f"Unknown field: {field_id}. Add it to the header first.")
         
-        # Initialize field cache if needed
+        # Update the field cache
         if self._field_cache is None:
-            self._field_cache = {}
-            
-        # Update the cache
+            self._field_cache = {}    
         self._field_cache[field_id] = value
         
-        # Invalidate the raw string
-        self._raw_str = None
-
-        # Invalidate the raw cache entry
-        if self._field_raw_cache is not None:
-            self._field_raw_cache[field_id] = None
+        # Invalidate caches
+        self._invalidate_cache(field_id)

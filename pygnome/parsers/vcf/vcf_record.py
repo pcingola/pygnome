@@ -44,75 +44,70 @@ class VcfRecord(GenomicFeature):
         # Store the first 8 fields
         self._fields = parts[:8]
         
-        # Initialize VcfInfo for handling INFO fields
-        self._info = VcfInfo(self._fields[7], header)
-        
-        # Check if we have genotype data
-        self.has_genotypes = len(parts) > 8
-        
-        # Initialize VcfGenotypes for handling FORMAT and genotype fields
-        if self.has_genotypes:
-            # Pass the format and genotypes portion of the line (everything after INFO)
-            format_and_genotypes_str = parts[8]
-            self._genotypes = VcfGenotypes(format_and_genotypes_str, header)
-        else:
-            self._genotypes = VcfGenotypes("", header)
-        
         # Initialize GenomicFeature fields
-        chrom = self.get_chrom()
-        start = self.get_pos()  # Already 0-based in get_pos()
-        end = start + len(self.get_ref())  # End is exclusive
-        id_value = self.get_id() if self.get_id() != "." else f"variant_{chrom}_{start}"
+        chrom = self._parse_chrom()
+        start = self._parse_start()  # Already 0-based in get_pos()
+        self.pos = start + 1  # Original VCF positions are 1-based
+        end = start + len(self._parse_ref())  # End is exclusive
+        id_value = self._parse_id()
         
         # Call the parent class's __init__
-        GenomicFeature.__init__(
-            self,
-            id=id_value,
-            chrom=chrom,
-            start=start,
-            end=end,
-            strand=Strand.UNSTRANDED
-        )
-    
-    def get_chrom(self) -> str:
+        GenomicFeature.__init__(self, id=id_value, chrom=chrom, start=start, end=end, strand=Strand.UNSTRANDED)
+
+        self.ref = self._parse_ref()
+        self.alts = self._parse_alt()
+        self.qual = self._parse_qual()
+        self.filter = self._parse_filter()
+
+        # Initialize VcfInfo for handling INFO fields
+        self.info = VcfInfo(self._fields[7], header)
+        
+        # Initialize VcfGenotypes for handling FORMAT and genotype fields
+        if len(parts) > 8:
+            # Pass the format and genotypes portion of the line (everything after INFO)
+            format_and_genotypes_str = parts[8]
+            self.genotypes = VcfGenotypes(format_and_genotypes_str, header)
+        else:
+            self.genotypes = VcfGenotypes("", header)
+        
+
+    def _parse_chrom(self) -> str:
         """Get the chromosome name."""
         return self._fields[0]
     
-    def get_pos(self) -> int:
+    def _parse_start(self) -> int:
         """
-        Get the position (0-based).
-        
+        Get the position (0-based).        
         VCF positions are 1-based, but we convert to 0-based internally.
         """
         return int(self._fields[1]) - 1
     
-    def get_vcf_pos(self) -> int:
-        """Get the original VCF position (1-based)."""
-        return int(self._fields[1])
-    
-    def get_id(self) -> str:
+    def _parse_id(self) -> str:
         """Get the ID field."""
-        return self._fields[2]
-    
-    def get_ref(self) -> str:
+        _id = self._fields[2]
+        if _id == ".":
+            return ""
+        return _id
+
+    def _parse_ref(self) -> str:
         """Get the reference allele."""
         return self._fields[3]
     
-    def get_alt(self) -> list[str]:
+    def _parse_alt(self) -> list[str]:
         """Get the list of alternate alleles."""
         alt = self._fields[4]
         if alt == ".":
             return []
         return alt.split(",")
     
-    def get_qual(self) -> float | None:
+    def _parse_qual(self) -> float | None:
         """Get the quality score."""
         qual = self._fields[5]
         if qual == ".":
             return None
         return float(qual)
     
-    def get_filter(self) -> list[str]:
+    def _parse_filter(self) -> list[str]:
         """Get the list of filters."""
         filter_field = self._fields[6]
         if filter_field == "." or filter_field == "PASS":
@@ -124,58 +119,37 @@ class VcfRecord(GenomicFeature):
         """
         Get the value of an INFO field.
         """
-        return self._info.get(field_id)
+        return self.info.get(field_id)
     
     def has_info(self, field_id: str) -> bool:
         """
         Check if an INFO field is present.
         """
-        return self._info.has(field_id)
+        return self.info.has(field_id)
 
-    def get_infos(self) -> VcfInfo:
-        return self._info
-    
     def get_format(self) -> VcfFormat | None:
         """
         Get the FORMAT field object.
-        
-        Returns:
-            The VcfFormat object, or None if there is no genotype data
         """
-        return self._genotypes.get_format()
+        return self.genotypes.get_format()
 
     def has_format(self, field_id: str) -> bool:
         """
         Check if a FORMAT field is present.
-        
-        Args:
-            field_id: The ID of the FORMAT field
-            
-        Returns:
-            True if the field is present, False otherwise
         """
-        if not self.has_genotypes:
-            return False
-            
-        return self._genotypes.has_format_key(field_id)
+        return self.genotypes.has_format_key(field_id)
     
     def get_genotypes(self) -> list[Genotype]:
         """
         Get the genotypes for all samples.
-        
-        Returns:
-            A list of Genotype objects, one for each sample
         """
-        return self._genotypes.get_genotypes()
+        return self.genotypes.get_genotypes()
     
     def get_sample_names(self) -> list[str]:
         """
         Get the names of the samples in this record.
-        
-        Returns:
-            A list of sample names
         """
-        return self._genotypes.get_sample_names()
+        return self.genotypes.get_sample_names()
     
     def get_genotype_value(self, field_id: str, sample_idx: int = 0) -> Any:
         """
@@ -188,7 +162,7 @@ class VcfRecord(GenomicFeature):
         Returns:
             The value of the field, or None if not present
         """
-        return self._genotypes.get_value(field_id, sample_idx)
+        return self.genotypes.get_value(field_id, sample_idx)
     
     def set_genotype_value(self, field_id: str, value: Any, sample_idx: int = 0) -> None:
         """
@@ -199,7 +173,7 @@ class VcfRecord(GenomicFeature):
             value: The value to set
             sample_idx: The index of the sample (0-based)
         """
-        self._genotypes.set_value(field_id, value, sample_idx)
+        self.genotypes.set_value(field_id, value, sample_idx)
     
     def set_genotype(self, genotype: Genotype, sample_idx: int = 0) -> None:
         """
@@ -209,7 +183,7 @@ class VcfRecord(GenomicFeature):
             genotype: The Genotype object
             sample_idx: The index of the sample (0-based)
         """
-        self._genotypes.set_genotype(genotype, sample_idx)
+        self.genotypes.set_genotype(genotype, sample_idx)
     
     def get_alleles(self) -> list[str]:
         """
@@ -218,8 +192,8 @@ class VcfRecord(GenomicFeature):
         Returns:
             A list of alleles, with the reference allele first
         """
-        alleles = [self.get_ref()]
-        alleles.extend(self.get_alt())
+        alleles = [self._parse_ref()]
+        alleles.extend(self._parse_alt())
         return alleles
         
     def set_info(self, field_id: str, value: Any) -> None:
@@ -231,7 +205,7 @@ class VcfRecord(GenomicFeature):
             field_id: The ID of the INFO field
             value: The value to set
         """
-        self._info.set(field_id, value)
+        self.info.set(field_id, value)
         
         # Invalidate the raw line
         self.raw_line = None
@@ -255,7 +229,7 @@ class VcfRecord(GenomicFeature):
         """
         Remove an INFO field.
         """
-        self._info.remove(field_id)
+        self.info.remove(field_id)
     
     def _update_raw_line(self) -> None:
         """Update the raw line to reflect changes to the fields."""
@@ -263,9 +237,9 @@ class VcfRecord(GenomicFeature):
         result = "\t".join(self._fields)
         
         # If we have genotype data, append the format and genotypes
-        if self.has_genotypes:
+        if self.genotypes.has_genotypes:
             # Get the updated format and genotypes string
-            format_and_genotypes_str = self._genotypes.get_updated_format_and_genotypes()
+            format_and_genotypes_str = self.genotypes.get_updated_format_and_genotypes()
             
             # If we have a format and genotypes string, append it to the result
             if format_and_genotypes_str:
@@ -281,7 +255,7 @@ class VcfRecord(GenomicFeature):
         Returns:
             True if the variant has multiple alternate alleles, False otherwise
         """
-        return len(self.get_alt()) > 1
+        return len(self._parse_alt()) > 1
     
     def get_end(self, alt_idx: int = 0) -> int:
         """
@@ -296,7 +270,7 @@ class VcfRecord(GenomicFeature):
         Returns:
             The end position (0-based, exclusive)
         """
-        alt_alleles = self.get_alt()
+        alt_alleles = self._parse_alt()
         if alt_idx < len(alt_alleles) and VariantFactory.is_structural_variant(alt_alleles[alt_idx]):
             # Check for END info field
             if self.has_info("END"):
@@ -313,31 +287,15 @@ class VcfRecord(GenomicFeature):
                     if isinstance(svlen, list):
                         # Use the SVLEN value for this alt allele if available
                         if alt_idx < len(svlen):
-                            return self.get_pos() + abs(svlen[alt_idx])
+                            return self._parse_start() + abs(svlen[alt_idx])
                         # Otherwise use the first SVLEN value
-                        return self.get_pos() + abs(svlen[0])
+                        return self._parse_start() + abs(svlen[0])
                     else:
-                        return self.get_pos() + abs(svlen)
+                        return self._parse_start() + abs(svlen)
         
         # Default: pos + len(ref)
-        return self.get_pos() + len(self.get_ref())
-    
-    def get_variant_str(self, alt_idx: int = 0) -> str:
-        """
-        Return a string representation of a specific variant.
+        return self._parse_start() + len(self._parse_ref())
         
-        Args:
-            alt_idx: Index of the alternate allele (default: 0)
-            
-        Returns:
-            A string in the format "chrom:pos:ref>alt"
-        """
-        alt_alleles = self.get_alt()
-        if alt_idx >= len(alt_alleles):
-            raise IndexError(f"Alt index {alt_idx} out of range (0-{len(alt_alleles)-1})")
-            
-        return f"{self.get_chrom()}:{self.get_vcf_pos()}:{self.get_ref()}>{alt_alleles[alt_idx]}"
-    
     def __iter__(self) -> Iterator[Variant]:
         """
         Iterate over the variants represented in this VCF record.
@@ -356,19 +314,19 @@ class VcfRecord(GenomicFeature):
     def __str__(self) -> str:
         """Return the string representation of the VCF record."""
         # If no modifications have been made, return the original raw line
-        if self.raw_line is not None and not self._info._field_modified and not self._genotypes._modified_samples:
+        if self.raw_line is not None and not self.info._field_modified and not self.genotypes._modified_samples:
             return self.raw_line
             
         # Update the INFO field
-        self._fields[7] = self._info.to_string()
+        self._fields[7] = self.info.to_string()
         
         # Join the first 8 fields
         result = "\t".join(self._fields)
         
         # If we have genotype data, append the format and genotypes
-        if self.has_genotypes:
+        if self.genotypes.has_genotypes:
             # Get the updated format and genotypes string
-            format_and_genotypes_str = self._genotypes.get_updated_format_and_genotypes()
+            format_and_genotypes_str = self.genotypes.get_updated_format_and_genotypes()
             
             # If we have a format and genotypes string, append it to the result
             if format_and_genotypes_str:

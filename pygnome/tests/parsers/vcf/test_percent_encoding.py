@@ -41,24 +41,24 @@ class TestPercentEncoding(unittest.TestCase):
         self.assertEqual(len(records), 3)
         
         # Check the first record
-        self.assertEqual(records[0].get_pos(), 99)  # 0-based
-        self.assertEqual(records[0].get_ref(), 'A')
-        self.assertEqual(records[0].get_alt(), ['G'])
+        self.assertEqual(records[0]._parse_start(), 99)  # 0-based
+        self.assertEqual(records[0]._parse_ref(), 'A')
+        self.assertEqual(records[0]._parse_alt(), ['G'])
         self.assertEqual(records[0].get_info('DESC'), 'Value with spaces; semicolons: colons, commas')
         
         # Check the second record
-        self.assertEqual(records[1].get_pos(), 199)  # 0-based
-        self.assertEqual(records[1].get_ref(), 'C')
-        self.assertEqual(records[1].get_alt(), ['T'])
+        self.assertEqual(records[1]._parse_start(), 199)  # 0-based
+        self.assertEqual(records[1]._parse_ref(), 'C')
+        self.assertEqual(records[1]._parse_alt(), ['T'])
         tags = records[1].get_info('TAGS')
         self.assertEqual(len(tags), 2)
         self.assertEqual(tags[0], 'tag1,tag2')  # This should be treated as a single value due to the escaped comma
         self.assertEqual(tags[1], 'tag3;with;semicolons')
         
         # Check the third record
-        self.assertEqual(records[2].get_pos(), 299)  # 0-based
-        self.assertEqual(records[2].get_ref(), 'G')
-        self.assertEqual(records[2].get_alt(), ['A'])
+        self.assertEqual(records[2]._parse_start(), 299)  # 0-based
+        self.assertEqual(records[2]._parse_ref(), 'G')
+        self.assertEqual(records[2]._parse_alt(), ['A'])
         self.assertEqual(records[2].get_info('DESC'), 'Value%with%percent\nand\rnewlines')
     
     def test_decode_percent_encoded(self):
