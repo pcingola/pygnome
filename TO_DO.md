@@ -1,3 +1,3 @@
 # To do
-- Add INFO field
-- Change INFO value
+- VCF Fomat class
+- VcfGenotypes: do not split unless needed

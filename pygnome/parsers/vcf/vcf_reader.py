@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import Iterator, TextIO
 
 from pygnome.parsers.vcf.vcf_header import VcfHeader
-from pygnome.parsers.vcf.vcf_record import VcfRecord, decode_percent_encoded
+from pygnome.parsers.vcf.vcf_record import VcfRecord
+from pygnome.parsers.vcf.vcf_field_parser import decode_percent_encoded
 
 
 class VcfReader:

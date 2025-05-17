@@ -4,7 +4,8 @@ Tests for adding and modifying INFO fields in VCF records.
 import unittest
 
 from pygnome.parsers.vcf.vcf_header import VcfHeader, FieldType
-from pygnome.parsers.vcf.vcf_record import VcfRecord, encode_percent_encoded
+from pygnome.parsers.vcf.vcf_record import VcfRecord
+from pygnome.parsers.vcf.vcf_field_parser import encode_percent_encoded
 
 
 class TestInfoModification(unittest.TestCase):
@@ -71,8 +72,11 @@ class TestInfoModification(unittest.TestCase):
         self.assertTrue(self.record.has_info('TEST'))
         self.assertEqual(self.record.get_info('TEST'), 42)
         
+        # Convert to string to update the raw line
+        record_str = str(self.record)
+        
         # Check that the raw line was updated
-        self.assertIn('TEST=42', self.record.raw_line)
+        self.assertIn('TEST=42', record_str)
         
         # Check that existing fields are preserved
         self.assertEqual(self.record.get_info('NS'), 3)
@@ -89,9 +93,17 @@ class TestInfoModification(unittest.TestCase):
         self.assertTrue(self.empty_record.has_info('NS'))
         self.assertEqual(self.empty_record.get_info('NS'), 3)
         
-        # Check that the raw line was updated
+        # Convert to string to update the fields
+        str(self.empty_record)
+        
+        # Check that the fields were updated
         self.assertEqual(self.empty_record._fields[7], 'NS=3')
-        self.assertIn('NS=3', self.empty_record.raw_line)
+        
+        # Convert to string to update the raw line
+        record_str = str(self.empty_record)
+        
+        # Check that the raw line was updated
+        self.assertIn('NS=3', record_str)
     
     def test_add_flag_info(self):
         """Test adding a flag INFO field."""
@@ -102,8 +114,11 @@ class TestInfoModification(unittest.TestCase):
         self.assertTrue(self.record.has_info('TEST_FLAG'))
         self.assertTrue(self.record.get_info('TEST_FLAG'))
         
+        # Convert to string to update the raw line
+        record_str = str(self.record)
+        
         # Check that the raw line was updated
-        self.assertIn('TEST_FLAG', self.record.raw_line)
+        self.assertIn('TEST_FLAG', record_str)
         
         # Add a flag field with False value (should not be added)
         self.record.add_info('TEST_FLAG_FALSE', False)
@@ -119,8 +134,11 @@ class TestInfoModification(unittest.TestCase):
         # Check that the field was updated
         self.assertEqual(self.record.get_info('NS'), 5)
         
+        # Convert to string to update the raw line
+        record_str = str(self.record)
+        
         # Check that the raw line was updated
-        self.assertIn('NS=5', self.record.raw_line)
+        self.assertIn('NS=5', record_str)
         
         # Check that other fields are preserved
         self.assertEqual(self.record.get_info('DP'), 14)
@@ -139,7 +157,12 @@ class TestInfoModification(unittest.TestCase):
         
         # Check that the raw line contains the encoded string
         encoded_string = encode_percent_encoded(special_string)
-        self.assertIn(f'DESC={encoded_string}', self.record.raw_line)
+        
+        # Convert to string to update the raw line
+        record_str = str(self.record)
+        
+        # Check that the raw line contains the encoded string
+        self.assertIn(f'DESC={encoded_string}', record_str)
     
     def test_add_list_of_values(self):
         """Test adding a list of values."""
@@ -149,8 +172,11 @@ class TestInfoModification(unittest.TestCase):
         # Check that the field was updated
         self.assertEqual(self.record.get_info('AF'), [0.1, 0.2, 0.3])
         
+        # Convert to string to update the raw line
+        record_str = str(self.record)
+        
         # Check that the raw line was updated
-        self.assertIn('AF=0.1,0.2,0.3', self.record.raw_line)
+        self.assertIn('AF=0.1,0.2,0.3', record_str)
     
     def test_add_list_with_special_chars(self):
         """Test adding a list of strings with special characters."""
@@ -164,7 +190,8 @@ class TestInfoModification(unittest.TestCase):
         
         # Check that the raw line contains the encoded strings
         encoded_tags = f"TAGS={encode_percent_encoded(tags[0])},{encode_percent_encoded(tags[1])}"
-        self.assertIn(encoded_tags, self.record.raw_line)
+        record_str = str(self.record)
+        self.assertIn(encoded_tags, record_str)
 
 
 if __name__ == '__main__':

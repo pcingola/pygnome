@@ -4,7 +4,8 @@ Tests for the VcfRecord class.
 import unittest
 
 from pygnome.parsers.vcf.vcf_header import VcfHeader
-from pygnome.parsers.vcf.vcf_record import VcfRecord, Genotype, decode_percent_encoded
+from pygnome.parsers.vcf.vcf_record import VcfRecord, Genotype
+from pygnome.parsers.vcf.vcf_field_parser import decode_percent_encoded
 from pygnome.genomics.variant import SNP, Insertion, Deletion, ComplexVariant
 
 
@@ -74,19 +75,19 @@ class TestVcfRecord(unittest.TestCase):
         self.assertTrue(self.record.has_format('HQ'))
         
         # Check values for the first sample
-        self.assertEqual(self.record.get_format('GQ', 0), 48)
-        self.assertEqual(self.record.get_format('DP', 0), 1)
-        self.assertEqual(self.record.get_format('HQ', 0), [51, 51])
+        self.assertEqual(self.record.get_genotype_value('GQ', 0), 48)
+        self.assertEqual(self.record.get_genotype_value('DP', 0), 1)
+        self.assertEqual(self.record.get_genotype_value('HQ', 0), [51, 51])
         
         # Check values for the second sample
-        self.assertEqual(self.record.get_format('GQ', 1), 48)
-        self.assertEqual(self.record.get_format('DP', 1), 8)
-        self.assertEqual(self.record.get_format('HQ', 1), [51, 51])
+        self.assertEqual(self.record.get_genotype_value('GQ', 1), 48)
+        self.assertEqual(self.record.get_genotype_value('DP', 1), 8)
+        self.assertEqual(self.record.get_genotype_value('HQ', 1), [51, 51])
         
         # Check values for the third sample
-        self.assertEqual(self.record.get_format('GQ', 2), 43)
-        self.assertEqual(self.record.get_format('DP', 2), 5)
-        self.assertEqual(self.record.get_format('HQ', 2), [None, None])  # .,.
+        self.assertEqual(self.record.get_genotype_value('GQ', 2), 43)
+        self.assertEqual(self.record.get_genotype_value('DP', 2), 5)
+        self.assertEqual(self.record.get_genotype_value('HQ', 2), [None, None])  # .,.
     
     def test_genotypes(self):
         """Test that genotypes are correctly parsed."""
