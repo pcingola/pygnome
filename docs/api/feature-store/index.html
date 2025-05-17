@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#feature-store" class="md-skip">
+        <a href="#genomic-feature-store" class="md-skip">
           Skip to content
         </a>
       
@@ -619,6 +619,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-a-genomic-feature-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is a Genomic Feature Store?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -947,6 +962,15 @@
   <a href="#best-practices" class="md-nav__link">
     <span class="md-ellipsis">
       Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-time-vs-load-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build Time vs. Load Time
     </span>
   </a>
   
@@ -1080,6 +1104,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-a-genomic-feature-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is a Genomic Feature Store?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1413,6 +1452,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#build-time-vs-load-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build Time vs. Load Time
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1437,14 +1485,23 @@
   
 
 
-<h1 id="feature-store">Feature Store</h1>
+<h1 id="genomic-feature-store">Genomic Feature Store</h1>
 <p>The <code>feature_store</code> module provides efficient storage and retrieval of genomic features. It offers multiple implementations with different performance characteristics to suit various use cases.</p>
 <h2 id="overview">Overview</h2>
+<p><em>Genomic feature stores</em> are one of the core solutions in PyGnome, providing specialized data structures for efficient storage, indexing, and querying of genomic features based on their genomic coordinates. They solve the fundamental bioinformatics challenge of quickly locating genomic elements within large genomes.</p>
+<h3 id="what-is-a-genomic-feature-store">What is a Genomic Feature Store?</h3>
+<p>A genomic feature store is a data structure that:</p>
+<ol>
+<li><strong>Stores genomic features</strong> (genes, transcripts, exons, variants, etc.) organized by their chromosomal locations</li>
+<li><strong>Indexes these features</strong> using efficient spatial data structures (interval trees, binning, etc.)</li>
+<li><strong>Provides fast query operations</strong> to find features based on genomic coordinates</li>
+<li><strong>Optimizes memory usage</strong> through various implementation strategies</li>
+</ol>
 <p>The feature store is designed to efficiently store and query genomic features based on their genomic coordinates. It supports several types of queries:</p>
 <ul>
-<li>Position queries: Find all features at a specific position</li>
-<li>Interval queries: Find all features that overlap with a given range</li>
-<li>Nearest feature queries: Find the nearest feature to a specific position</li>
+<li><strong>Position queries</strong>: Find all features at a specific position</li>
+<li><strong>Interval queries</strong>: Find all features that overlap with a given range</li>
+<li><strong>Nearest feature queries</strong>: Find the nearest feature to a specific position</li>
 </ul>
 <h2 id="core-components">Core Components</h2>
 <h3 id="genomicfeaturestoreprotocol">GenomicFeatureStoreProtocol</h3>
@@ -1780,10 +1837,36 @@
 <h3 id="best-practices">Best Practices</h3>
 <ol>
 <li>Use the context manager pattern when adding features to ensure proper indexing</li>
-<li>Call <code>trim()</code> to reduce memory usage before serialization</li>
 <li>Choose the appropriate store type based on your specific use case</li>
 <li>For large genomes, consider saving the populated store to disk with <code>store.save()</code> for faster loading in future sessions</li>
 </ol>
+<h3 id="build-time-vs-load-time">Build Time vs. Load Time</h3>
+<p>Building genomic feature stores with large datasets can be time-consuming, especially when creating indexes for efficient querying. The build time depends on:</p>
+<ul>
+<li>The number of features being added</li>
+<li>The complexity of the indexing structure (interval trees, binning, etc.)</li>
+<li>The performance characteristics of the chosen store implementation</li>
+</ul>
+<p>However, once built, these stores can be serialized to disk using Python's pickle format. This allows you to quickly load pre-built stores in future sessions, avoiding the need to rebuild them each time:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Building a store can be time-consuming</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">store</span> <span class="o">=</span> <span class="n">GenomicFeatureStore</span><span class="p">()</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="k">with</span> <span class="n">store</span><span class="p">:</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="c1"># Adding thousands or millions of features...</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>    <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">genome</span><span class="o">.</span><span class="n">genes</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>        <span class="n">store</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">gene</span><span class="p">)</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>        <span class="k">for</span> <span class="n">transcript</span> <span class="ow">in</span> <span class="n">gene</span><span class="o">.</span><span class="n">transcripts</span><span class="p">:</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>            <span class="n">store</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">transcript</span><span class="p">)</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>            <span class="c1"># ...and so on</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="c1"># Save the built store to avoid rebuilding it next time</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="c1"># Note: trimming is done automatically during save</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="n">store</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;path/to/store.pkl&quot;</span><span class="p">))</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="c1"># In future sessions, quickly load the pre-built store</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="n">loaded_store</span> <span class="o">=</span> <span class="n">GenomicFeatureStore</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;path/to/store.pkl&quot;</span><span class="p">))</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a><span class="c1"># Ready to use immediately without rebuilding indexes</span>
+</code></pre></div>
+<p>This approach is particularly valuable in production environments or when working with large reference genomes where the feature set doesn't change frequently.</p>
 
 
 

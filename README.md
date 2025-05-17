@@ -4,7 +4,9 @@
 <img src="./docs_src/images/pygnome_alpha.png" width="200">
 
 
-PyGnome is a Python library for working with genomic annotations and sequences. It provides efficient data structures and parsers for common genomic file formats, making it easy to work with genomic data in Python.
+PyGnome is a Python library for working with genomic annotations and sequences. It provides efficient data structures and parsers for common genomic file formats, making it easy to work with genomic data in Python. 
+
+At its core, PyGnome offers *"Genomic feature stores"*, which are specialized data structures for efficient storage, indexing, and querying of genomic features based on their coordinates, solving the fundamental bioinformatics challenge of quickly locating genomic elements within large genomes.
 
 Full documentation is available at [https://pcingola.github.io/pygnome](https://pcingola.github.io/pygnome)
 
@@ -121,7 +123,20 @@ with VcfReader(Path("path/to/variants.vcf")) as reader:
             print(f"Region variant: {variant}")
 ```
 
-### Using Feature Stores
+### Using Genomic Feature Stores
+
+Genomic feature stores are one of the core solutions in PyGnome, providing specialized data structures for efficient storage and retrieval of genomic features based on their genomic coordinates. They solve the fundamental bioinformatics challenge of quickly locating genomic elements within large genomes, allowing you to:
+
+- Find all features at a specific position
+- Find all features that overlap with a given range
+- Find the nearest feature to a specific position
+
+PyGnome offers multiple implementations with different performance characteristics to suit various use cases:
+
+- **IntervalTreeStore** (default): Uses interval trees for efficient range queries
+- **BinnedGenomicStore**: Uses binning for memory-efficient storage
+- **BruteForceFeatureStore**: Simple implementation for testing
+- **MsiChromosomeStore**: Specialized for microsatellite instability sites
 
 ```python
 from pygnome.feature_store.genomic_feature_store import GenomicFeatureStore, StoreType
@@ -273,8 +288,17 @@ PyGnome offers multiple feature store implementations with different performance
 For large genomes, consider:
 
 1. Using the context manager pattern when adding features to ensure proper indexing
-2. Calling `store.trim()` to reduce memory usage before serialization
-3. Saving the populated store to disk with `store.save()` for faster loading in future sessions
+2. Saving the populated store to disk with `store.save()` for faster loading in future sessions
+
+Building genomic feature stores with large datasets can be time-consuming, especially when creating indexes for efficient querying. However, once built, these stores can be serialized to disk using Python's pickle format. This allows you to quickly load pre-built stores in future sessions, avoiding the need to rebuild them each time:
+
+```python
+# Save a populated store to disk (trimming is done automatically)
+store.save(Path("path/to/store.pkl"))
+
+# Later, quickly load the pre-built store
+loaded_store = GenomicFeatureStore.load(Path("path/to/store.pkl"))
+```
 
 ## Contributing
 

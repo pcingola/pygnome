@@ -2,17 +2,19 @@
 
 This guide covers advanced usage patterns and optimization techniques for PyGnome.
 
-## Performance Optimization
+## Genomic Feature Stores
 
-### Feature Store Selection
+### Genomic Feature Store Selection
+
+Genomic feature stores are one of the core solutions in PyGnome, providing specialized data structures for efficient storage, indexing, and querying of genomic features based on their genomic coordinates. They solve the fundamental bioinformatics challenge of quickly locating genomic elements within large genomes.
 
 PyGnome offers multiple feature store implementations with different performance characteristics:
 
 | Store Type | Memory Usage | Query Speed | Best For |
 |------------|--------------|-------------|----------|
 | `IntervalTreeStore` | Medium | Fast | General purpose, balanced performance |
-| `BinnedGenomicStore` | Low | Medium | Large genomes, memory-constrained environments |
-| `BruteForceFeatureStore` | High | Slow | Testing, very small datasets |
+| `BinnedGenomicStore` | Medium | Medium | Large genomes, memory-constrained environments |
+| `BruteForceFeatureStore` | Medium | Slow | Testing, very small datasets |
 | `MsiChromosomeStore` | Very Low | Fast | Specialized for microsatellite sites |
 
 Choose the appropriate store type based on your specific use case:
@@ -33,9 +35,9 @@ brute_force_store = GenomicFeatureStore(store_type=StoreType.BRUTE_FORCE)
 msi_store = GenomicFeatureStore(store_type=StoreType.MSI)
 ```
 
-### Memory Optimization
+### Memory and Performance Optimization
 
-When working with large genomes, use these techniques to reduce memory usage:
+When working with large genomes, use these techniques to optimize performance:
 
 #### 1. Use the Context Manager Pattern
 
@@ -47,35 +49,28 @@ with feature_store:
         feature_store.add(feature)
 ```
 
-#### 2. Trim Feature Stores Before Serialization
+#### 2. Save and Load Feature Stores to Avoid Rebuilding
 
-Call `trim()` to reduce memory usage before saving:
-
-```python
-# Trim the store to reduce memory usage
-feature_store.trim()
-
-# Save the trimmed store
-feature_store.save(Path("path/to/store.pkl"))
-```
-
-#### 3. Use DnaStringArray for Multiple Sequences
-
-When working with many small sequences, use `DnaStringArray` instead of multiple `DnaString` objects:
+Building genomic feature stores with large datasets can be time-consuming, especially when creating indexes for efficient querying. Once built, save them to disk to avoid rebuilding them in future sessions:
 
 ```python
-from pygnome.sequences.dna_string_array import DnaStringArray
+# Building a store with millions of features can take time
+store = GenomicFeatureStore()
+with store:
+    # Adding features from a large genome...
+    for gene in genome.genes.values():
+        store.add(gene)
+        # Add transcripts, exons, etc.
 
-# Create a DNA string array
-array = DnaStringArray()
+# Save the built store (trimming is done automatically)
+store.save(Path("path/to/store.pkl"))
 
-# Add sequences
-for seq in sequences:
-    array.add(seq)
-
-# Trim to reduce memory usage
-array.trim()
+# In future sessions, quickly load the pre-built store
+loaded_store = GenomicFeatureStore.load(Path("path/to/store.pkl"))
+# Ready to use immediately without rebuilding indexes
 ```
+
+Note: The `save()` method automatically calls `trim()` to reduce memory usage before serialization, so you don't need to call it manually.
 
 ## Working with Large Genomes
 
@@ -96,68 +91,25 @@ for record in parser:
     process_sequence(record.identifier, record.sequence)
 ```
 
-### Parallel Processing
-
-Use Python's multiprocessing to process chromosomes in parallel:
-
-```python
-import multiprocessing as mp
-from pathlib import Path
-from pygnome.parsers.genome_loader import GenomeLoader
-
-def process_chromosome(chrom_name, genome):
-    # Get the chromosome
-    chrom = genome.chromosomes.get(chrom_name)
-    if not chrom:
-        return None
-    
-    # Process the chromosome
-    # ...
-    
-    return result
-
-# Load the genome
-loader = GenomeLoader(genome_name="GRCh38", species="Homo sapiens")
-genome = loader.load(
-    annotation_file=Path("path/to/annotations.gtf"),
-    sequence_file=Path("path/to/genome.fa.gz")
-)
-
-# Process chromosomes in parallel
-with mp.Pool(processes=mp.cpu_count()) as pool:
-    results = pool.starmap(
-        process_chromosome,
-        [(chrom_name, genome) for chrom_name in genome.chromosomes.keys()]
-    )
-```
-
 ## Advanced Feature Store Usage
-
-### Custom Feature Filtering
-
-Combine feature store queries with custom filtering:
-
-```python
-from pygnome.feature_store.genomic_feature_store import GenomicFeatureStore
-from pygnome.genomics.gene import Gene
-
-# Create and populate a feature store
-store = GenomicFeatureStore()
-# ... add features ...
-
-# Get all features in a range
-features = store.get_by_interval("chr1", 1000000, 2000000)
-
-# Filter for specific feature types
-genes = [f for f in features if isinstance(f, Gene)]
-
-# Filter by additional criteria
-protein_coding_genes = [g for g in genes if g.biotype == "protein_coding"]
-```
 
 ## Working with Genomic Variants
 
-### Annotating Variants with Genomic Features
+### Reading Variants from VCF Files
+
+```python
+from pathlib import Path
+from pygnome.parsers.vcf.vcf_reader import VcfReader
+
+# Open a VCF file
+with VcfReader(Path("path/to/variants.vcf")) as reader:
+    for vcf_record in reader:
+        # A single VCF record (i.e. vcf line) can have multiple variants
+        for variant in vcf_record:
+            print(f"Variant: {variant}")
+```
+
+### Annotating Variants with Genomic Feature stores
 
 ```python
 from pathlib import Path
@@ -185,16 +137,40 @@ with store:
 # Open a VCF file
 with VcfReader(Path("path/to/variants.vcf")) as reader:
     for record in reader:
-        # Get the variant position
-        chrom = record.get_chrom()
-        pos = record.get_pos()
-        
-        # Find features at this position
-        features = store.get_by_position(chrom, pos)
-        
-        # Annotate the variant
-        for feature in features:
-            print(f"Variant at {chrom}:{pos} overlaps {feature.id} ({feature.__class__.__name__})")
+        # A single VCF record (i.e. vcf line) can have multiple variants
+        for variant in vcf_record:
+            # Get the variant position
+            chrom = variant.get_chrom()
+            pos = variant.get_pos()
+
+            # Find features at this position
+            features = store.get_by_position(chrom, pos)
+            
+            # Show matches
+            for feature in features:
+                print(f"Variant at {chrom}:{pos} overlaps {feature.id} ({feature.__class__.__name__})")
+```
+
+## Custom Feature Filtering
+
+Combine feature store queries with custom filtering:
+
+```python
+from pygnome.feature_store.genomic_feature_store import GenomicFeatureStore
+from pygnome.genomics.gene import Gene
+
+# Create and populate a feature store
+store = GenomicFeatureStore()
+# ... add features ...
+
+# Get all features in a range
+features = store.get_by_interval("chr1", 1000000, 2000000)
+
+# Filter for specific feature types
+genes = [f for f in features if isinstance(f, Gene)]
+
+# Filter by additional criteria
+protein_coding_genes = [g for g in genes if g.biotype == "protein_coding"]
 ```
 
 ## Custom Genomic Feature Types
@@ -241,3 +217,4 @@ with store:
 enhancers = [f for f in store.get_by_interval("chr1", 900000, 1100000) 
              if isinstance(f, EnhancerRegion)]
 active_enhancers = [e for e in enhancers if e.is_active()]
+```

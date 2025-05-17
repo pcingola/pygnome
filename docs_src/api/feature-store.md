@@ -1,14 +1,25 @@
-# Feature Store
+# Genomic Feature Store
 
 The `feature_store` module provides efficient storage and retrieval of genomic features. It offers multiple implementations with different performance characteristics to suit various use cases.
 
 ## Overview
 
+*Genomic feature stores* are one of the core solutions in PyGnome, providing specialized data structures for efficient storage, indexing, and querying of genomic features based on their genomic coordinates. They solve the fundamental bioinformatics challenge of quickly locating genomic elements within large genomes.
+
+### What is a Genomic Feature Store?
+
+A genomic feature store is a data structure that:
+
+1. **Stores genomic features** (genes, transcripts, exons, variants, etc.) organized by their chromosomal locations
+2. **Indexes these features** using efficient spatial data structures (interval trees, binning, etc.)
+3. **Provides fast query operations** to find features based on genomic coordinates
+4. **Optimizes memory usage** through various implementation strategies
+
 The feature store is designed to efficiently store and query genomic features based on their genomic coordinates. It supports several types of queries:
 
-- Position queries: Find all features at a specific position
-- Interval queries: Find all features that overlap with a given range
-- Nearest feature queries: Find the nearest feature to a specific position
+- **Position queries**: Find all features at a specific position
+- **Interval queries**: Find all features that overlap with a given range
+- **Nearest feature queries**: Find the nearest feature to a specific position
 
 ## Core Components
 
@@ -291,6 +302,37 @@ The query speed depends on the implementation and the number of features:
 ### Best Practices
 
 1. Use the context manager pattern when adding features to ensure proper indexing
-2. Call `trim()` to reduce memory usage before serialization
-3. Choose the appropriate store type based on your specific use case
-4. For large genomes, consider saving the populated store to disk with `store.save()` for faster loading in future sessions
+2. Choose the appropriate store type based on your specific use case
+3. For large genomes, consider saving the populated store to disk with `store.save()` for faster loading in future sessions
+
+### Build Time vs. Load Time
+
+Building genomic feature stores with large datasets can be time-consuming, especially when creating indexes for efficient querying. The build time depends on:
+
+- The number of features being added
+- The complexity of the indexing structure (interval trees, binning, etc.)
+- The performance characteristics of the chosen store implementation
+
+However, once built, these stores can be serialized to disk using Python's pickle format. This allows you to quickly load pre-built stores in future sessions, avoiding the need to rebuild them each time:
+
+```python
+# Building a store can be time-consuming
+store = GenomicFeatureStore()
+with store:
+    # Adding thousands or millions of features...
+    for gene in genome.genes.values():
+        store.add(gene)
+        for transcript in gene.transcripts:
+            store.add(transcript)
+            # ...and so on
+
+# Save the built store to avoid rebuilding it next time
+# Note: trimming is done automatically during save
+store.save(Path("path/to/store.pkl"))
+
+# In future sessions, quickly load the pre-built store
+loaded_store = GenomicFeatureStore.load(Path("path/to/store.pkl"))
+# Ready to use immediately without rebuilding indexes
+```
+
+This approach is particularly valuable in production environments or when working with large reference genomes where the feature set doesn't change frequently.
