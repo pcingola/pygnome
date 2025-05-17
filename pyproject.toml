@@ -40,6 +40,8 @@ docs = [
 
 [tool.setuptools]
 packages = ["pygnome"]
+exclude = ["docs*", "docs_src*", "documents*"]
+package-data = {pygnome = ["*"]}
 
 [tool.ruff]
 line-length = 120

@@ -1,0 +1,4 @@
+# Exclude documentation directories from the package
+prune docs
+prune docs_src
+prune documents
