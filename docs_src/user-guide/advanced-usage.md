@@ -93,8 +93,6 @@ for record in parser:
 
 ## VCF files and Variants
 
-## Working with Genomic Variants
-
 ### Reading Variants from VCF Files
 
 ```python
