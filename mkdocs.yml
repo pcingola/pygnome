@@ -1,0 +1,35 @@
+site_name: PyGnome
+site_description: Python library for genomics
+repo_url: https://github.com/pcingola/pygnome
+
+theme:
+  name: material
+  palette:
+    primary: indigo
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - navigation.indexes
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          selection:
+            docstring_style: google
+          rendering:
+            show_source: true
+
+nav:
+  - Home: index.md
+  - API Reference:
+    - Genomics: api/genomics.md
+    - Parsers: api/parsers.md
+    - Sequences: api/sequences.md
+  - Format Specifications:
+    - FASTA: format_specifications/fasta.md
+    - FASTQ: format_specifications/fastq.md
+    - GFF3: format_specifications/gff3.md
+    - VCF: format_specifications/vcf.md
