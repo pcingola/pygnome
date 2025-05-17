@@ -5,11 +5,19 @@
          <lastmod>2025-05-17</lastmod>
     </url>
     <url>
+         <loc>https://pcingola.github.io/pygnome/getting-started/</loc>
+         <lastmod>2025-05-17</lastmod>
+    </url>
+    <url>
+         <loc>https://pcingola.github.io/pygnome/api/</loc>
+         <lastmod>2025-05-17</lastmod>
+    </url>
+    <url>
          <loc>https://pcingola.github.io/pygnome/api/SUMMARY/</loc>
          <lastmod>2025-05-17</lastmod>
     </url>
     <url>
-         <loc>https://pcingola.github.io/pygnome/api/feature_store/</loc>
+         <loc>https://pcingola.github.io/pygnome/api/feature-store/</loc>
          <lastmod>2025-05-17</lastmod>
     </url>
     <url>
@@ -22,6 +30,10 @@
     </url>
     <url>
          <loc>https://pcingola.github.io/pygnome/api/sequences/</loc>
+         <lastmod>2025-05-17</lastmod>
+    </url>
+    <url>
+         <loc>https://pcingola.github.io/pygnome/development/contributing/</loc>
          <lastmod>2025-05-17</lastmod>
     </url>
     <url>
@@ -54,6 +66,18 @@
     </url>
     <url>
          <loc>https://pcingola.github.io/pygnome/format_specifications/vcf_design/</loc>
+         <lastmod>2025-05-17</lastmod>
+    </url>
+    <url>
+         <loc>https://pcingola.github.io/pygnome/user-guide/advanced-usage/</loc>
+         <lastmod>2025-05-17</lastmod>
+    </url>
+    <url>
+         <loc>https://pcingola.github.io/pygnome/user-guide/basic-usage/</loc>
+         <lastmod>2025-05-17</lastmod>
+    </url>
+    <url>
+         <loc>https://pcingola.github.io/pygnome/user-guide/installation/</loc>
          <lastmod>2025-05-17</lastmod>
     </url>
 </urlset>

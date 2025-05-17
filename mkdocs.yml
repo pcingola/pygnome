@@ -11,8 +11,22 @@ site_dir: docs
 theme:
   name: material
   palette:
-    primary: indigo
-    accent: indigo
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   logo: pygnome.png
   favicon: pygnome.png
   features:
@@ -60,11 +74,11 @@ nav:
     - Basic Usage: user-guide/basic-usage.md
     - Advanced Usage: user-guide/advanced-usage.md
   - Format Specifications:
-    - FASTA: format-specifications/fasta.md
-    - FASTQ: format-specifications/fastq.md
-    - GFF3: format-specifications/gff3.md
-    - GTF: format-specifications/gtf.md
-    - VCF: format-specifications/vcf.md
+    - FASTA: format_specifications/fasta.md
+    - FASTQ: format_specifications/fastq.md
+    - GFF3: format_specifications/gff3.md
+    - GTF: format_specifications/gtf_2.2.md
+    - VCF: format_specifications/vcf.md
   - API Reference:
     - Overview: api/index.md
     - Genomics: api/genomics.md
@@ -73,4 +87,3 @@ nav:
     - Feature Store: api/feature-store.md
   - Development:
     - Contributing: development/contributing.md
-    - Changelog: development/changelog.md

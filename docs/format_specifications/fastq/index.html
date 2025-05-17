@@ -13,6 +13,10 @@
         <link rel="canonical" href="https://pcingola.github.io/pygnome/format_specifications/fastq/">
       
       
+        <link rel="prev" href="../fasta/">
+      
+      
+        <link rel="next" href="../gff3/">
       
       
       <link rel="icon" href="../../pygnome.png">
@@ -20,7 +24,7 @@
     
     
       
-        <title>FASTQ format - PyGnome</title>
+        <title>FASTQ - PyGnome</title>
       
     
     
@@ -59,6 +63,8 @@
   
   
     
+    
+      
     
     
     
@@ -107,7 +113,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              FASTQ format
+              FASTQ
             
           </span>
         </div>
@@ -115,7 +121,33 @@
     </div>
     
       
+        <form class="md-header__option" data-md-component="palette">
+  
     
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
@@ -253,7 +285,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started.md" class="md-nav__link">
+      <a href="../../getting-started/" class="md-nav__link">
         
   
   
@@ -323,7 +355,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/installation.md" class="md-nav__link">
+      <a href="../../user-guide/installation/" class="md-nav__link">
         
   
   
@@ -346,7 +378,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/basic-usage.md" class="md-nav__link">
+      <a href="../../user-guide/basic-usage/" class="md-nav__link">
         
   
   
@@ -369,7 +401,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/advanced-usage.md" class="md-nav__link">
+      <a href="../../user-guide/advanced-usage/" class="md-nav__link">
         
   
   
@@ -396,8 +428,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -415,13 +449,11 @@
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -437,7 +469,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Format Specifications
@@ -451,7 +483,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../format-specifications/fasta.md" class="md-nav__link">
+      <a href="../fasta/" class="md-nav__link">
         
   
   
@@ -471,10 +503,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../format-specifications/fastq.md" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    FASTQ
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -485,6 +539,188 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Format
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#illumina-sequence-identifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Illumina sequence identifiers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ncbi-sequence-read-archive" class="md-nav__link">
+    <span class="md-ellipsis">
+      NCBI Sequence Read Archive
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Variations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quality
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#encoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      Encoding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#color-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color space
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fast5-and-hdf5-evolutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      FAST5 and HDF5 evolutions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simulation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compression" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compression
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Compression">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general-compressors" class="md-nav__link">
+    <span class="md-ellipsis">
+      General compressors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reads
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quality-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quality values
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      File extension
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#format-converters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Format converters
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      See also
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -497,7 +733,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../format-specifications/gff3.md" class="md-nav__link">
+      <a href="../gff3/" class="md-nav__link">
         
   
   
@@ -520,7 +756,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../format-specifications/gtf.md" class="md-nav__link">
+      <a href="../gtf_2.2/" class="md-nav__link">
         
   
   
@@ -543,7 +779,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../format-specifications/vcf.md" class="md-nav__link">
+      <a href="../vcf/" class="md-nav__link">
         
   
   
@@ -576,6 +812,8 @@
     
       
         
+          
+        
       
         
       
@@ -598,8 +836,9 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -608,8 +847,14 @@
   </span>
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
@@ -618,27 +863,6 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/index.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Overview
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
               
             
               
@@ -717,7 +941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/feature-store.md" class="md-nav__link">
+      <a href="../../api/feature-store/" class="md-nav__link">
         
   
   
@@ -748,8 +972,6 @@
   
     
     
-      
-        
       
         
       
@@ -793,35 +1015,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../development/contributing.md" class="md-nav__link">
+      <a href="../../development/contributing/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Contributing
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../development/changelog.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Changelog
     
   </span>
   
