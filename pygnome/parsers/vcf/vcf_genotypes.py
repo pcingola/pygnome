@@ -39,27 +39,24 @@ class VcfGenotypes:
     with millions of samples.
     """
     
-    def __init__(self, fields: list[str], header: VcfHeader):
+    def __init__(self, format_and_genotypes_str: str, header: VcfHeader):
         """
-        Initialize a VcfGenotypes object from VCF record fields.
+        Initialize a VcfGenotypes object from a format and genotypes string.
         
         Args:
-            fields: The tab-delimited fields from a VCF record
+            format_and_genotypes_str: The tab-delimited string containing FORMAT and genotype fields
             header: The VCF header containing field definitions
         """
         self.header = header
-        self._fields = fields
+        self._raw_str = format_and_genotypes_str
+        self._fields: list[str] | None = None  # Will be populated on demand
         self._genotypes: list[Genotype] | None = None
         self._format: VcfFormat | None = None
         self._sample_data_cache: dict[int, dict[str, Any]] = {}  # Cache for parsed sample data
         self._modified_samples: dict[int, bool] = {}  # Track which samples have been modified
         
-        # Check if we have genotype data
-        self.has_genotypes = len(fields) > 9
-        
-        # Initialize the format field if we have genotype data
-        if self.has_genotypes:
-            self._format = VcfFormat(self._fields[8], header)
+        # Check if we have genotype data (at least FORMAT field)
+        self.has_genotypes = bool(format_and_genotypes_str.strip())
     
     def get_format(self) -> VcfFormat | None:
         """
@@ -71,6 +68,12 @@ class VcfGenotypes:
         if not self.has_genotypes:
             return None
         
+        # Initialize format field if needed
+        if self._format is None and self.has_genotypes:
+            self._ensure_fields_parsed()
+            format_str = self._fields[0] if self._fields else ""
+            self._format = VcfFormat(format_str, self.header)
+            
         return self._format
 
     def get_format_keys(self) -> list[str]:
@@ -80,10 +83,15 @@ class VcfGenotypes:
         Returns:
             A list of keys in the FORMAT field
         """
-        if not self.has_genotypes or self._format is None:
+        if not self.has_genotypes:
             return []
-        
-        return self._format.get_keys()
+            
+        # Ensure format is initialized
+        format_obj = self.get_format()
+        if format_obj is None:
+            return []
+            
+        return format_obj.get_keys()
     
     def has_format_key(self, key: str) -> bool:
         """
@@ -95,10 +103,30 @@ class VcfGenotypes:
         Returns:
             True if the key is present, False otherwise
         """
-        if not self.has_genotypes or self._format is None:
+        if not self.has_genotypes:
             return False
-        
-        return self._format.has_key(key)
+            
+        # Ensure format is initialized
+        format_obj = self.get_format()
+        if format_obj is None:
+            return False
+            
+        return format_obj.has_key(key)
+    
+    def _ensure_fields_parsed(self) -> None:
+        """
+        Ensure the format and genotypes string has been parsed into fields.
+        This implements lazy parsing - only parse when needed.
+        """
+        if self._fields is not None:
+            return
+            
+        if not self._raw_str:
+            self._fields = []
+            return
+            
+        # Split the raw string into fields
+        self._fields = self._raw_str.split("\t")
     
     def _parse_sample_data(self, sample_idx: int) -> dict[str, Any]:
         """
@@ -119,13 +147,18 @@ class VcfGenotypes:
         if not format_keys:
             return {}
         
-        # Get the sample field
-        sample_field_idx = sample_idx + 9  # 9 is the index of the first sample field
-        if sample_field_idx >= len(self._fields):
+        # Ensure fields are parsed
+        self._ensure_fields_parsed()
+        
+        # Check if we have enough fields for this sample
+        if self._fields is None or sample_idx + 1 >= len(self._fields):
             return {}
         
+        # Get the sample field (index 0 is FORMAT, so sample starts at index 1)
+        sample_field = self._fields[sample_idx + 1]
+        
         # Split the sample field into values
-        sample_values = self._fields[sample_field_idx].split(":")
+        sample_values = sample_field.split(":")
         
         # Create a dictionary mapping keys to values
         sample_data = {}
@@ -192,8 +225,11 @@ class VcfGenotypes:
         if not self.has_genotypes:
             raise ValueError("Record has no genotype data")
         
+        # Ensure fields are parsed
+        self._ensure_fields_parsed()
+        
         # Check if we have enough fields for the sample
-        if sample_idx >= len(self._fields) - 9:
+        if self._fields is None or sample_idx + 1 >= len(self._fields):
             raise ValueError(f"Sample index out of range: {sample_idx}")
         
         # Check if the key is defined in the header
@@ -217,6 +253,9 @@ class VcfGenotypes:
         
         # Mark the sample as modified
         self._modified_samples[sample_idx] = True
+        
+        # Invalidate the raw string since we've made a modification
+        self._raw_str = None
     
     def get_genotypes(self) -> list[Genotype]:
         """
@@ -298,8 +337,11 @@ class VcfGenotypes:
         if not self.has_genotypes:
             raise ValueError("Record has no genotype data")
         
+        # Ensure fields are parsed
+        self._ensure_fields_parsed()
+        
         # Check if we have enough fields for the sample
-        if sample_idx >= len(self._fields) - 9:
+        if self._fields is None or sample_idx + 1 >= len(self._fields):
             raise ValueError(f"Sample index out of range: {sample_idx}")
         
         # Update the genotype cache
@@ -316,19 +358,38 @@ class VcfGenotypes:
         
         # Update the GT field in the sample data cache
         self.set_value("GT", str(genotype), sample_idx)
+        
+        # Note: set_value will invalidate the raw string
     
-    def update_fields(self) -> None:
+    def get_updated_format_and_genotypes(self) -> str:
         """
-        Update the fields array with the current data.
+        Get the updated format and genotypes string.
         
         This method should be called before converting the record to a string.
+        If no modifications have been made, returns the original raw string.
+        
+        Returns:
+            The updated tab-delimited string containing FORMAT and genotype fields
         """
         if not self.has_genotypes:
-            return
+            return ""
+            
+        # If no modifications have been made, return the original raw string
+        if self._raw_str is not None:
+            return self._raw_str
+        
+        # Ensure fields are parsed
+        self._ensure_fields_parsed()
+        
+        if self._fields is None or not self._fields:
+            return ""
+        
+        # Create a copy of the original fields
+        updated_fields = self._fields.copy()
         
         # Update the FORMAT field
-        if self._format is not None:
-            self._fields[8] = self._format.to_string()
+        if self._format is not None and self._format._modified:
+            updated_fields[0] = self._format.to_string()
         
         # Update the sample fields
         for sample_idx, modified in self._modified_samples.items():
@@ -367,11 +428,20 @@ class VcfGenotypes:
                     sample_values.append(str(value))
             
             # Update the field
-            sample_field_idx = sample_idx + 9  # 9 is the index of the first sample field
-            if sample_field_idx < len(self._fields):
-                self._fields[sample_field_idx] = ":".join(sample_values)
+            field_idx = sample_idx + 1  # Index 0 is FORMAT, so samples start at index 1
+            if field_idx < len(updated_fields):
+                updated_fields[field_idx] = ":".join(sample_values)
             else:
                 # Extend the fields array if needed
-                while len(self._fields) <= sample_field_idx:
-                    self._fields.append(".")
-                self._fields[sample_field_idx] = ":".join(sample_values)
+                while len(updated_fields) <= field_idx:
+                    updated_fields.append(".")
+                updated_fields[field_idx] = ":".join(sample_values)
+        
+        # Join the fields with tabs
+        return "\t".join(updated_fields)
+    
+    def __str__(self) -> str:
+        return self.get_updated_format_and_genotypes()
+    
+    def __repr__(self) -> str:
+        return self.get_updated_format_and_genotypes()

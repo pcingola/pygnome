@@ -200,5 +200,82 @@ class TestVcfRecord(unittest.TestCase):
         self.assertEqual(tags[1], "tag3;with;semicolons")
 
 
+    def test_lazy_genotype_parsing(self):
+        """Test that genotype parsing is lazy and only happens when needed."""
+        # Create a VCF record with many samples
+        header = VcfHeader()
+        header.add_meta_line('##fileformat=VCFv4.5')
+        header.add_meta_line('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">')
+        header.add_meta_line('##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">')
+        header.add_meta_line('##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">')
+        
+        # Add sample names
+        sample_names = []
+        for i in range(100):
+            sample_names.append(f"SAMPLE{i}")
+        header.add_samples(sample_names)
+        
+        # Create a VCF line with many samples
+        line = "chr1\t100\t.\tA\tG\t50\tPASS\t.\tGT:GQ:DP"
+        for i in range(100):
+            line += f"\t0/1:{i}:10"
+        
+        # Create a VCF record
+        record = VcfRecord(line, header)
+        
+        # Verify that the record has genotypes
+        self.assertTrue(record.has_genotypes)
+        
+        # Verify that the fields haven't been parsed yet in the genotypes object
+        self.assertIsNone(record._genotypes._fields)
+        
+        # Access a specific genotype value - this should trigger parsing only for that sample
+        gq_value = record.get_genotype_value("GQ", 50)
+        
+        # Verify the value
+        self.assertEqual(gq_value, 50)
+        
+        # Verify that only one sample was parsed
+        self.assertEqual(len(record._genotypes._sample_data_cache), 1)
+        
+        # Access another sample
+        gq_value = record.get_genotype_value("GQ", 75)
+        self.assertEqual(gq_value, 75)
+        
+        # Verify that only two samples were parsed
+        self.assertEqual(len(record._genotypes._sample_data_cache), 2)
+        
+        # Get all genotypes - this should parse all samples
+        all_genotypes = record.get_genotypes()
+        
+        # Verify that we have the expected number of genotypes
+        self.assertEqual(len(all_genotypes), 100)
+        
+        # Verify that all samples have been parsed
+        self.assertEqual(len(record._genotypes._sample_data_cache), 100)
+        
+    def test_lazy_string_conversion(self):
+        """Test that string conversion is lazy and uses the cached raw line if no changes."""
+        # Create a VCF record
+        line = "chr1\t100\t.\tA\tG\t50\tPASS\t.\tGT:GQ:DP\t0/1:50:10\t1/1:60:20"
+        record = VcfRecord(line, self.header)
+        
+        # Convert to string without making any changes
+        record_str = str(record)
+        
+        # Verify that the original line is returned
+        self.assertEqual(record_str, line)
+        
+        # Make a change to the genotype
+        record.set_genotype_value("GQ", 55, 0)
+        
+        # Convert to string again
+        record_str = str(record)
+        
+        # Verify that the string has been updated
+        self.assertNotEqual(record_str, line)
+        self.assertIn("0/1:55:10", record_str)
+
+
 if __name__ == '__main__':
     unittest.main()

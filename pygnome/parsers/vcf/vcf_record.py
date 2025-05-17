@@ -33,20 +33,30 @@ class VcfRecord(GenomicFeature):
         """
         self.raw_line = line
         self.header = header
-        self._fields = line.strip().split("\t")
+        
+        # Split only the first 8 fields (fixed fields)
+        parts = line.strip().split("\t", 8)  # Split into at most 9 parts
+        
+        # Validate the number of fields
+        if len(parts) < 8:
+            raise ValueError(f"VCF record must have at least 8 fields: {line}")
+            
+        # Store the first 8 fields
+        self._fields = parts[:8]
         
         # Initialize VcfInfo for handling INFO fields
         self._info = VcfInfo(self._fields[7], header)
         
-        # Initialize VcfGenotypes for handling FORMAT and genotype fields
-        self._genotypes = VcfGenotypes(self._fields, header)
-        
-        # Validate the number of fields
-        if len(self._fields) < 8:
-            raise ValueError(f"VCF record must have at least 8 fields: {line}")
-        
         # Check if we have genotype data
-        self.has_genotypes = len(self._fields) > 9
+        self.has_genotypes = len(parts) > 8
+        
+        # Initialize VcfGenotypes for handling FORMAT and genotype fields
+        if self.has_genotypes:
+            # Pass the format and genotypes portion of the line (everything after INFO)
+            format_and_genotypes_str = parts[8]
+            self._genotypes = VcfGenotypes(format_and_genotypes_str, header)
+        else:
+            self._genotypes = VcfGenotypes("", header)
         
         # Initialize GenomicFeature fields
         chrom = self.get_chrom()
@@ -249,7 +259,19 @@ class VcfRecord(GenomicFeature):
     
     def _update_raw_line(self) -> None:
         """Update the raw line to reflect changes to the fields."""
-        self.raw_line = "\t".join(self._fields)
+        # Join the first 8 fields
+        result = "\t".join(self._fields)
+        
+        # If we have genotype data, append the format and genotypes
+        if self.has_genotypes:
+            # Get the updated format and genotypes string
+            format_and_genotypes_str = self._genotypes.get_updated_format_and_genotypes()
+            
+            # If we have a format and genotypes string, append it to the result
+            if format_and_genotypes_str:
+                result += "\t" + format_and_genotypes_str
+        
+        self.raw_line = result
     
     # Methods for variant type detection
     def is_multi_allelic(self) -> bool:
@@ -333,17 +355,28 @@ class VcfRecord(GenomicFeature):
 
     def __str__(self) -> str:
         """Return the string representation of the VCF record."""
-        # Update the INFO field in the record
+        # If no modifications have been made, return the original raw line
+        if self.raw_line is not None and not self._info._field_modified and not self._genotypes._modified_samples:
+            return self.raw_line
+            
+        # Update the INFO field
         self._fields[7] = self._info.to_string()
         
-        # Update FORMAT and sample fields
+        # Join the first 8 fields
+        result = "\t".join(self._fields)
+        
+        # If we have genotype data, append the format and genotypes
         if self.has_genotypes:
-            self._genotypes.update_fields()
+            # Get the updated format and genotypes string
+            format_and_genotypes_str = self._genotypes.get_updated_format_and_genotypes()
+            
+            # If we have a format and genotypes string, append it to the result
+            if format_and_genotypes_str:
+                result += "\t" + format_and_genotypes_str
         
-        # raw_line should never be None at this point, but just in case
-        if self.raw_line is None:
-            self._update_raw_line()
+        # Update the raw line
+        self.raw_line = result
         
-        return self.raw_line if self.raw_line is not None else ""
+        return self.raw_line
 
         
