@@ -27,8 +27,8 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
-  logo: pygnome.png
-  favicon: pygnome.png
+  logo: pygnome_alpha.png
+  favicon: pygnome_alpha.png
   features:
     - navigation.instant
     - navigation.tracking
