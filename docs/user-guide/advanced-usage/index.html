@@ -470,13 +470,13 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#memory-and-performance-optimization" class="md-nav__link">
+  <a href="#best-practices-for-genomic-feature-stores" class="md-nav__link">
     <span class="md-ellipsis">
-      Memory and Performance Optimization
+      Best practices for Genomic Feature Stores
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Memory and Performance Optimization">
+    <nav class="md-nav" aria-label="Best practices for Genomic Feature Stores">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -532,9 +532,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#advanced-feature-store-usage" class="md-nav__link">
+  <a href="#vcf-files-and-variants" class="md-nav__link">
     <span class="md-ellipsis">
-      Advanced Feature Store Usage
+      VCF files and Variants
     </span>
   </a>
   
@@ -889,13 +889,13 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#memory-and-performance-optimization" class="md-nav__link">
+  <a href="#best-practices-for-genomic-feature-stores" class="md-nav__link">
     <span class="md-ellipsis">
-      Memory and Performance Optimization
+      Best practices for Genomic Feature Stores
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Memory and Performance Optimization">
+    <nav class="md-nav" aria-label="Best practices for Genomic Feature Stores">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -951,9 +951,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#advanced-feature-store-usage" class="md-nav__link">
+  <a href="#vcf-files-and-variants" class="md-nav__link">
     <span class="md-ellipsis">
-      Advanced Feature Store Usage
+      VCF files and Variants
     </span>
   </a>
   
@@ -1086,7 +1086,7 @@
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="c1"># For microsatellite sites</span>
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">msi_store</span> <span class="o">=</span> <span class="n">GenomicFeatureStore</span><span class="p">(</span><span class="n">store_type</span><span class="o">=</span><span class="n">StoreType</span><span class="o">.</span><span class="n">MSI</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="memory-and-performance-optimization">Memory and Performance Optimization</h3>
+<h3 id="best-practices-for-genomic-feature-stores">Best practices for Genomic Feature Stores</h3>
 <p>When working with large genomes, use these techniques to optimize performance:</p>
 <h4 id="1-use-the-context-manager-pattern">1. Use the Context Manager Pattern</h4>
 <p>Always use the context manager pattern when adding features to ensure proper indexing:</p>
@@ -1125,7 +1125,7 @@
 <a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="c1"># Process one sequence at a time</span>
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">process_sequence</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="advanced-feature-store-usage">Advanced Feature Store Usage</h2>
+<h2 id="vcf-files-and-variants">VCF files and Variants</h2>
 <h2 id="working-with-genomic-variants">Working with Genomic Variants</h2>
 <h3 id="reading-variants-from-vcf-files">Reading Variants from VCF Files</h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>

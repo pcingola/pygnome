@@ -35,7 +35,7 @@ brute_force_store = GenomicFeatureStore(store_type=StoreType.BRUTE_FORCE)
 msi_store = GenomicFeatureStore(store_type=StoreType.MSI)
 ```
 
-### Memory and Performance Optimization
+### Best practices for Genomic Feature Stores
 
 When working with large genomes, use these techniques to optimize performance:
 
@@ -91,7 +91,7 @@ for record in parser:
     process_sequence(record.identifier, record.sequence)
 ```
 
-## Advanced Feature Store Usage
+## VCF files and Variants
 
 ## Working with Genomic Variants
 
