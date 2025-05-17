@@ -1,16 +1,29 @@
 site_name: PyGnome
-site_description: Python library for genomics
+site_description: Python library for genome annotations
+site_url: https://pcingola.github.io/pygnome
 repo_url: https://github.com/pcingola/pygnome
+repo_name: pcingola/pygnome
+
+# Important: Configure MkDocs to build directly to the docs directory
+docs_dir: docs_src
+site_dir: docs
 
 theme:
   name: material
   palette:
     primary: indigo
+    accent: indigo
+  logo: pygnome.png
+  favicon: pygnome.png
   features:
     - navigation.instant
     - navigation.tracking
     - navigation.expand
     - navigation.indexes
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.copy
 
 plugins:
   - search
@@ -21,15 +34,43 @@ plugins:
             docstring_style: google
           rendering:
             show_source: true
+            show_category_heading: true
+            show_root_heading: true
+  - gen-files:
+      scripts:
+        - docs_src/gen_ref_pages.py
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - tables
+  - footnotes
 
 nav:
   - Home: index.md
+  - Getting Started: getting-started.md
+  - User Guide:
+    - Installation: user-guide/installation.md
+    - Basic Usage: user-guide/basic-usage.md
+    - Advanced Usage: user-guide/advanced-usage.md
+  - Format Specifications:
+    - FASTA: format-specifications/fasta.md
+    - FASTQ: format-specifications/fastq.md
+    - GFF3: format-specifications/gff3.md
+    - GTF: format-specifications/gtf.md
+    - VCF: format-specifications/vcf.md
   - API Reference:
+    - Overview: api/index.md
     - Genomics: api/genomics.md
     - Parsers: api/parsers.md
     - Sequences: api/sequences.md
-  - Format Specifications:
-    - FASTA: format_specifications/fasta.md
-    - FASTQ: format_specifications/fastq.md
-    - GFF3: format_specifications/gff3.md
-    - VCF: format_specifications/vcf.md
+    - Feature Store: api/feature-store.md
+  - Development:
+    - Contributing: development/contributing.md
+    - Changelog: development/changelog.md
