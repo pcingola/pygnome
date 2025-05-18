@@ -146,6 +146,72 @@ def __init__(self, filepath: Path):
 | `get_header() -> VcfHeader` | Get the header from the VCF file |
 | `fetch(chrom: str, start: int, end: int) -> Iterator[VcfRecord]` | Fetch records in a specific region |
 
+### AnnParser
+
+```python
+class AnnParser:
+```
+
+Parser for the ANN field in VCF records. The ANN field contains variant annotation information according to the VCF annotation format specification.
+
+#### Constructor
+
+```python
+def __init__(self, record: VcfRecord):
+```
+
+- `record`: A VcfRecord object containing the ANN field
+
+#### Methods
+
+Method | Description |
+|--------|-------------|
+`__iter__() -> Iterator[VariantAnnotation]` | Iterate over annotations in the ANN field |
+`parse() -> None` | Parse the ANN field from the record |
+
+### VariantAnnotation
+
+```python
+class VariantAnnotation:
+```
+
+Represents a single annotation entry from the ANN field in a VCF record.
+
+#### Constructor
+
+```python
+def __init__(self, allele: str, annotation: str, putative_impact: AnnotationImpact):
+```
+
+- `allele`: The allele being annotated
+- `annotation`: The annotation (e.g., "missense_variant")
+- `putative_impact`: The putative impact of the variant (HIGH, MODERATE, LOW, MODIFIER)
+
+#### Properties
+
+Property | Type | Description |
+|----------|------|-------------|
+`allele` | str | The allele being annotated |
+`annotation` | str | The annotation (e.g., "missense_variant") |
+`putative_impact` | AnnotationImpact | The putative impact of the variant |
+`gene_name` | str | The gene name |
+`gene_id` | str | The gene ID |
+`feature_type` | FeatureType | The type of feature (e.g., transcript, motif) |
+`feature_id` | str | The ID of the feature |
+`transcript_biotype` | BiotypeCoding | The biotype of the transcript (Coding, Noncoding) |
+`rank` | int | The rank of the exon or intron |
+`total` | int | The total number of exons or introns |
+`hgvs_c` | str | The HGVS notation at the DNA level |
+`hgvs_p` | str | The HGVS notation at the protein level |
+`cdna_pos` | int | The position in the cDNA |
+`cdna_length` | int | The length of the cDNA |
+`cds_pos` | int | The position in the CDS |
+`cds_length` | int | The length of the CDS |
+`protein_pos` | int | The position in the protein |
+`protein_length` | int | The length of the protein |
+`distance` | int | The distance to the feature |
+`messages` | list[ErrorWarningType] | Error, warning, or information messages |
+
 ## MSI Parsers
 
 ### MsiSitesReader
@@ -275,6 +341,38 @@ with VcfReader(Path("path/to/variants.vcf")) as reader:
     for record in reader.fetch("chr1", 1000000, 2000000):
         for variant in record:
             print(f"Region variant: {variant}")
+```
+
+### Parsing VCF Annotations (ANN Field)
+
+```python
+from pathlib import Path
+from pygnome.parsers.vcf.vcf_reader import VcfReader
+from pygnome.parsers.vcf.ann import AnnParser
+
+# Open a VCF file
+with VcfReader(Path("path/to/variants.vcf")) as reader:
+    # Iterate through records
+    for record in reader:
+        # Parse ANN field if present
+        ann_parser = AnnParser(record)
+        
+        # Iterate through annotations
+        for annotation in ann_parser:
+            print(f"Variant annotation: {annotation.allele} - {annotation.annotation}")
+            print(f"  Impact: {annotation.putative_impact}")
+            
+            if annotation.gene_name:
+                print(f"  Gene: {annotation.gene_name}")
+                
+            if annotation.feature_type and annotation.feature_id:
+                print(f"  Feature: {annotation.feature_type.value} {annotation.feature_id}")
+                
+            if annotation.hgvs_c:
+                print(f"  HGVS.c: {annotation.hgvs_c}")
+                
+            if annotation.hgvs_p:
+                print(f"  HGVS.p: {annotation.hgvs_p}")
 ```
 
 ### Loading a Complete Genome

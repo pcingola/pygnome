@@ -64,6 +64,8 @@ Parsers for common genomic file formats:
   - `VcfHeader`: Parse and represent VCF headers
   - `VcfRecord`: Represent individual VCF records
   - `VariantFactory`: Create Variant objects from VCF records
+  - `AnnParser`: Parse the `ANN` field in VCF records for variant annotations
+  - `VariantAnnotation`: Represent variant annotations from the ANN field
 
 ### Sequence Handling
 Efficient representation of nucleotide sequences:

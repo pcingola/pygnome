@@ -123,6 +123,38 @@ with VcfReader(Path("path/to/variants.vcf")) as reader:
             print(f"Region variant: {variant}")
 ```
 
+### Parsing VCF Annotations (ANN Field)
+
+```python
+from pathlib import Path
+from pygnome.parsers.vcf.vcf_reader import VcfReader
+from pygnome.parsers.vcf.ann import AnnParser
+
+# Open a VCF file
+with VcfReader(Path("path/to/variants.vcf")) as reader:
+    # Iterate through records
+    for record in reader:
+        # Parse ANN field if present
+        ann_parser = AnnParser(record)
+        
+        # Iterate through annotations
+        for annotation in ann_parser:
+            print(f"Variant annotation: {annotation.allele} - {annotation.annotation}")
+            print(f"  Impact: {annotation.putative_impact}")
+            
+            if annotation.gene_name:
+                print(f"  Gene: {annotation.gene_name}")
+                
+            if annotation.feature_type and annotation.feature_id:
+                print(f"  Feature: {annotation.feature_type.value} {annotation.feature_id}")
+                
+            if annotation.hgvs_c:
+                print(f"  HGVS.c: {annotation.hgvs_c}")
+                
+            if annotation.hgvs_p:
+                print(f"  HGVS.p: {annotation.hgvs_p}")
+```
+
 ### Using Genomic Feature Stores
 
 Genomic feature stores are one of the core solutions in PyGnome, providing specialized data structures for efficient storage and retrieval of genomic features based on their genomic coordinates. They solve the fundamental bioinformatics challenge of quickly locating genomic elements within large genomes, allowing you to:
