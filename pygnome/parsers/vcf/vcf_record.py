@@ -31,7 +31,7 @@ class VcfRecord(GenomicFeature):
             line: A tab-delimited line from a VCF file
             header: The VCF header containing field definitions
         """
-        self.raw_line = line
+        self.raw_line = line.rstrip() # Remove trailing newline
         self.header = header
         
         # Split only the first 8 fields (fixed fields)
@@ -337,4 +337,9 @@ class VcfRecord(GenomicFeature):
         
         return self.raw_line
 
-        
+    def variant_annotations(self):
+        """
+        Get a variant annotations parser
+        """
+        from pygnome.parsers.vcf.ann import AnnParser
+        return AnnParser(self)

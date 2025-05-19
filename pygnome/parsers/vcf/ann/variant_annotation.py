@@ -4,9 +4,10 @@ VariantAnnotation class for representing parsed ANN field data.
 This module defines the VariantAnnotation class, which represents a single
 annotation entry from the ANN field in a VCF record.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from .enums import AnnotationImpact, FeatureType, ErrorWarningType, BiotypeCoding
+from .effect_type import EffectType
 
 
 @dataclass
@@ -19,7 +20,8 @@ class VariantAnnotation:
     """
     # Required fields
     allele: str
-    annotation: str
+    annotation: str # Original "SO term" from the VCF
+    effect: EffectType  # Parsed effect type from 'annotation'
     putative_impact: AnnotationImpact
     
     # Optional fields (may be None)
@@ -61,7 +63,8 @@ class VariantAnnotation:
         """Return a string representation of the annotation."""
         parts = [
             f"Allele: {self.allele}",
-            f"Effect: {self.annotation}",
+            f"Effect: {self.effect.value}",
+            f"SO Term: {self.annotation}",
             f"Impact: {self.putative_impact.value}"
         ]
         

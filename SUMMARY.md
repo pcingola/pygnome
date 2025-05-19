@@ -65,7 +65,8 @@ Parsers for common genomic file formats:
   - `VcfRecord`: Represent individual VCF records
   - `VariantFactory`: Create Variant objects from VCF records
   - `AnnParser`: Parse the `ANN` field in VCF records for variant annotations
-  - `VariantAnnotation`: Represent variant annotations from the ANN field
+  - `EffectType`: Enumeration of variant effect types with impact levels and Sequence Ontology mappings
+  - `VariantAnnotation`: Represent variant annotations from the ANN field with typed effect information
 
 ### Sequence Handling
 Efficient representation of nucleotide sequences:

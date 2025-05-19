@@ -4,13 +4,12 @@ ANN field parser for VCF files.
 This module provides the AnnParser class for parsing the ANN field in VCF records,
 which contains variant annotation information according to the VCF annotation format.
 """
-from typing import Iterator, cast
-
 from pygnome.parsers.vcf.vcf_record import VcfRecord
 from pygnome.parsers.vcf.vcf_field_parser import decode_percent_encoded
 
 from .variant_annotation import VariantAnnotation
 from .enums import AnnotationImpact, FeatureType, ErrorWarningType, BiotypeCoding
+from .effect_type import EffectType
 
 
 class AnnParser:
@@ -111,7 +110,7 @@ class AnnParser:
         try:
             # Required fields
             allele = fields[0]
-            annotation = fields[1]
+            annotation_str = fields[1]
             
             # Parse putative impact
             try:
@@ -120,10 +119,26 @@ class AnnParser:
                 # Default to MODIFIER if the impact is invalid
                 putative_impact = AnnotationImpact.MODIFIER
             
+            # Try to parse the annotation as a Sequence Ontology term first
+            effect = EffectType.from_sequence_ontology(annotation_str)
+            
+            # If not found, try to parse as an EffectType directly
+            if effect is None:
+                try:
+                    # Try to match the string to an EffectType value
+                    effect = next((e for e in EffectType if e.value.upper() == annotation_str.upper()), None)
+                except Exception:
+                    pass
+                    
+            # If still not found, use NONE as default
+            if effect is None:
+                effect = EffectType.NONE
+            
             # Create the annotation object with required fields
             result = VariantAnnotation(
                 allele=allele,
-                annotation=annotation,
+                annotation=annotation_str,
+                effect=effect,
                 putative_impact=putative_impact
             )
             

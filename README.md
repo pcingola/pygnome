@@ -128,31 +128,36 @@ with VcfReader(Path("path/to/variants.vcf")) as reader:
 ```python
 from pathlib import Path
 from pygnome.parsers.vcf.vcf_reader import VcfReader
-from pygnome.parsers.vcf.ann import AnnParser
 
 # Open a VCF file
 with VcfReader(Path("path/to/variants.vcf")) as reader:
     # Iterate through records
     for record in reader:
-        # Parse ANN field if present
-        ann_parser = AnnParser(record)
+        # Access INFO fields directly using dictionary-like syntax
+        if record.has_info("DP"):
+            depth = record.info["DP"]
+            print(f"Read depth: {depth}")
         
-        # Iterate through annotations
-        for annotation in ann_parser:
-            print(f"Variant annotation: {annotation.allele} - {annotation.annotation}")
-            print(f"  Impact: {annotation.putative_impact}")
+        # Iterate through INFO fields
+        for field_id, field_value in record.info:
+            print(f"{field_id} = {field_value}")
+        
+        # Get variant annotations directly from the record
+        for vann in record.variant_annotations():
+            print(f"Variant annotation: {vann.allele} - {vann.annotation}")
+            print(f"  Impact: {vann.putative_impact}")
             
-            if annotation.gene_name:
-                print(f"  Gene: {annotation.gene_name}")
+            if vann.gene_name:
+                print(f"  Gene: {vann.gene_name}")
                 
-            if annotation.feature_type and annotation.feature_id:
-                print(f"  Feature: {annotation.feature_type.value} {annotation.feature_id}")
+            if vann.feature_type and vann.feature_id:
+                print(f"  Feature: {vann.feature_type.value} {vann.feature_id}")
                 
-            if annotation.hgvs_c:
-                print(f"  HGVS.c: {annotation.hgvs_c}")
+            if vann.hgvs_c:
+                print(f"  HGVS.c: {vann.hgvs_c}")
                 
-            if annotation.hgvs_p:
-                print(f"  HGVS.p: {annotation.hgvs_p}")
+            if vann.hgvs_p:
+                print(f"  HGVS.p: {vann.hgvs_p}")
 ```
 
 ### Using Genomic Feature Stores

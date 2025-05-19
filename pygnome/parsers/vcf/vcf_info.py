@@ -51,7 +51,7 @@ class VcfInfo(VcfFieldParser):
                 # Flag field (presence means it's true)
                 self._field_raw_cache[field] = "True"
     
-    def _get_field_definition(self, field_id: str) -> Any:
+    def get_field_definition(self, field_id: str) -> Any:
         """
         Get the definition for an INFO field.
         """
@@ -117,6 +117,26 @@ class VcfInfo(VcfFieldParser):
         
         return ";".join(infos)
     
+    def field_ids(self) -> list[str]:
+        """
+        Get the names of all INFO fields.
+        
+        Returns:
+            A list of INFO field names
+        """
+        self._ensure_parsed()
+        return list(self._field_raw_cache.keys()) if self._field_raw_cache else []
+    
     def __str__(self) -> str:
         """Return the string representation of the INFO fields."""
         return self.to_string()
+    
+    def __iter__(self):
+        """Return an iterator over the INFO field names and values."""
+        return ((k, self.get(k)) for k in self.field_ids())
+
+    def __getitem__(self, key: str) -> Any:
+        """
+        Get the value of a specific INFO field.
+        """
+        return self.get(key)

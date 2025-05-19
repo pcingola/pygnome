@@ -6,6 +6,7 @@ import unittest
 from pygnome.parsers.vcf.vcf_header import VcfHeader
 from pygnome.parsers.vcf.vcf_record import VcfRecord
 from pygnome.parsers.vcf.ann import AnnParser, VariantAnnotation, AnnotationImpact, FeatureType
+from pygnome.parsers.vcf.ann.effect_type import EffectType
 
 
 class TestAnnParser(unittest.TestCase):
@@ -73,12 +74,14 @@ class TestAnnParser(unittest.TestCase):
         ann1 = annotations[0]
         self.assertEqual(ann1.allele, "G")
         self.assertEqual(ann1.annotation, "missense_variant")
+        self.assertEqual(ann1.effect, EffectType.NON_SYNONYMOUS_CODING)
         self.assertEqual(ann1.putative_impact, AnnotationImpact.MODERATE)
         
         # Check the second annotation
         ann2 = annotations[1]
         self.assertEqual(ann2.allele, "G")
         self.assertEqual(ann2.annotation, "upstream_gene_variant")
+        self.assertEqual(ann2.effect, EffectType.UPSTREAM)
         self.assertEqual(ann2.putative_impact, AnnotationImpact.MODIFIER)
         self.assertEqual(ann2.distance, 500)
     
@@ -120,6 +123,59 @@ class TestAnnParser(unittest.TestCase):
         
         # Check that we got no annotations
         self.assertEqual(len(annotations), 0)
+    
+    def test_effect_type_mapping(self):
+        """Test mapping between effect types and Sequence Ontology terms."""
+        # Test mapping from effect type to SO term
+        self.assertEqual(EffectType.NON_SYNONYMOUS_CODING.to_sequence_ontology(), "missense_variant")
+        self.assertEqual(EffectType.FRAME_SHIFT.to_sequence_ontology(), "frameshift_variant")
+        self.assertEqual(EffectType.STOP_GAINED.to_sequence_ontology(), "stop_gained")
+        
+        # Test mapping from SO term to effect type
+        self.assertEqual(EffectType.from_sequence_ontology("missense_variant"), EffectType.NON_SYNONYMOUS_CODING)
+        self.assertEqual(EffectType.from_sequence_ontology("frameshift_variant"), EffectType.FRAME_SHIFT)
+        self.assertEqual(EffectType.from_sequence_ontology("stop_gained"), EffectType.STOP_GAINED)
+    
+    def test_effect_type_impact(self):
+        """Test mapping between effect types and impact levels."""
+        # Test high impact effects
+        self.assertEqual(EffectType.FRAME_SHIFT.get_impact(), AnnotationImpact.HIGH)
+        self.assertEqual(EffectType.STOP_GAINED.get_impact(), AnnotationImpact.HIGH)
+        self.assertEqual(EffectType.SPLICE_SITE_ACCEPTOR.get_impact(), AnnotationImpact.HIGH)
+        
+        # Test moderate impact effects
+        self.assertEqual(EffectType.NON_SYNONYMOUS_CODING.get_impact(), AnnotationImpact.MODERATE)
+        self.assertEqual(EffectType.CODON_INSERTION.get_impact(), AnnotationImpact.MODERATE)
+        
+        # Test low impact effects
+        self.assertEqual(EffectType.SYNONYMOUS_CODING.get_impact(), AnnotationImpact.LOW)
+        self.assertEqual(EffectType.SPLICE_SITE_REGION.get_impact(), AnnotationImpact.LOW)
+        
+        # Test modifier impact effects
+        self.assertEqual(EffectType.INTRON.get_impact(), AnnotationImpact.MODIFIER)
+        self.assertEqual(EffectType.UPSTREAM.get_impact(), AnnotationImpact.MODIFIER)
+    
+    def test_effect_type_parsing(self):
+        """Test parsing different annotation formats."""
+        # Create a VCF record with an effect type instead of SO term
+        record_line = "chr1\t100\t.\tA\tG\t.\t.\tANN=G|NON_SYNONYMOUS_CODING|MODERATE|GENE1|ENSG00000123|transcript|ENST00000456|Coding|1/5|c.100A>G|p.Lys34Arg|100/1000|100/900|34/300||"
+        record = VcfRecord(record_line, self.header)
+        
+        # Create a parser with the record
+        parser = AnnParser(record)
+        
+        # Iterate over the annotations
+        annotations = list(parser)
+        
+        # Check that we got one annotation
+        self.assertEqual(len(annotations), 1)
+        
+        # Check the annotation fields
+        ann = annotations[0]
+        self.assertEqual(ann.allele, "G")
+        self.assertEqual(ann.annotation, "NON_SYNONYMOUS_CODING")
+        self.assertEqual(ann.effect, EffectType.NON_SYNONYMOUS_CODING)
+        self.assertEqual(ann.putative_impact, AnnotationImpact.MODERATE)
 
 
 if __name__ == "__main__":

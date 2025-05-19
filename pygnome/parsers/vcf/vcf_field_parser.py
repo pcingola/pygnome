@@ -177,7 +177,7 @@ class VcfFieldParser:
         """
         raise NotImplementedError("Derived classes must implement _ensure_parsed")
     
-    def _get_field_definition(self, field_id: str) -> Any:
+    def get_field_definition(self, field_id: str) -> Any:
         """
         Get the definition for a field.
         
@@ -256,7 +256,7 @@ class VcfFieldParser:
             return None
 
         # Make sure the field has a definition
-        field_def = self._get_field_definition(field_id)
+        field_def = self.get_field_definition(field_id)
         if field_def is None:
             # Return None for unknown fields
             self._field_cache[field_id] = None
@@ -340,7 +340,7 @@ class VcfFieldParser:
         self._ensure_parsed()
         
         # Make sure the field has a definition
-        field_def = self._get_field_definition(field_id)
+        field_def = self.get_field_definition(field_id)
         if field_def is None:
             raise ValueError(f"Unknown field: {field_id}. Add it to the header first.")
         

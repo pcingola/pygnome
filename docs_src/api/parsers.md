@@ -146,6 +146,86 @@ def __init__(self, filepath: Path):
 | `get_header() -> VcfHeader` | Get the header from the VCF file |
 | `fetch(chrom: str, start: int, end: int) -> Iterator[VcfRecord]` | Fetch records in a specific region |
 
+### VcfRecord
+
+```python
+class VcfRecord:
+```
+
+Represents a single record (line) in a VCF file. Provides methods for accessing and modifying VCF fields.
+
+#### Methods
+
+| Method | Description |
+|--------|-------------|
+| `get_info(field_id: str) -> Any` | Get the value of an INFO field |
+| `info[field_id]` | Dictionary-like access to INFO fields |
+| `has_info(field_id: str) -> bool` | Check if an INFO field is present |
+| `set_info(field_id: str, value: Any) -> None` | Set the value of an INFO field |
+| `get_genotypes() -> list[Genotype]` | Get the genotypes for all samples |
+| `get_genotype_value(field_id: str, sample_idx: int = 0) -> Any` | Get the value of a genotype field for a specific sample |
+| `variant_annotations()` | Get a variant annotations parser for this record |
+| `__iter__() -> Iterator[Variant]` | Iterate over the variants represented in this VCF record |
+
+#### INFO Field Access
+
+VcfRecord provides two ways to access INFO fields:
+
+```python
+# Method-based access
+depth = record.get_info("DP")
+
+# Dictionary-like access (more pythonic)
+depth = record.info["DP"]
+
+# Iterating through all INFO fields
+for field_id, field_value in record.info:
+    print(f"{field_id} = {field_value}")
+```
+
+#### Variant Annotations
+
+VcfRecord provides a convenient method to access variant annotations:
+
+```python
+# Get variant annotations directly from the record
+for vann in record.variant_annotations():
+    print(f"Variant annotation: {vann}")
+```
+
+### VcfInfo
+
+```python
+class VcfInfo:
+```
+
+Class for handling INFO fields in VCF records. Provides methods for parsing, accessing, and modifying INFO fields in VCF records.
+
+#### Methods
+
+| Method | Description |
+|--------|-------------|
+| `get(field_id: str) -> Any` | Get the value of an INFO field |
+| `__getitem__(field_id: str) -> Any` | Dictionary-like access to INFO fields |
+| `has(field_id: str) -> bool` | Check if an INFO field is present |
+| `set(field_id: str, value: Any) -> None` | Set the value of an INFO field |
+| `remove(field_id: str) -> None` | Remove an INFO field |
+| `field_ids() -> list[str]` | Get the names of all INFO fields |
+| `__iter__()` | Iterate over the INFO field names and values |
+
+#### Usage Examples
+
+```python
+# Access INFO fields using dictionary-like syntax
+depth = vcf_record.info["DP"]
+
+# Iterate through all INFO fields
+for field_id, field_value in vcf_record.info:
+    print(f"{field_id} = {field_value}")
+
+# Set an INFO field
+vcf_record.info["DP"] = 30
+```
 ### AnnParser
 
 ```python
@@ -169,6 +249,43 @@ Method | Description |
 `__iter__() -> Iterator[VariantAnnotation]` | Iterate over annotations in the ANN field |
 `parse() -> None` | Parse the ANN field from the record |
 
+### EffectType
+
+```python
+class EffectType(str, Enum):
+```
+
+Enumeration of effect types for variant annotations. These types represent the specific effects a variant can have on genomic features. Each effect type has an associated impact level and can be mapped to a Sequence Ontology term.
+
+#### Methods
+
+| Method | Description |
+|--------|-------------|
+| `get_impact() -> AnnotationImpact` | Get the impact level for the effect type |
+| `to_sequence_ontology() -> str` | Convert the effect type to a Sequence Ontology term |
+| `from_sequence_ontology(so_term: str) -> EffectType | None` | Convert a Sequence Ontology term to an EffectType |
+
+#### Impact Levels
+
+Effect types are categorized into four impact levels:
+
+- **HIGH**: Disruptive variants with high impact (e.g., frameshift, stop gained)
+- **MODERATE**: Variants that might change protein effectiveness (e.g., missense)
+- **LOW**: Variants unlikely to change protein behavior (e.g., synonymous)
+- **MODIFIER**: Non-coding variants or variants affecting non-coding genes (e.g., intron)
+
+#### Examples
+
+```python
+# Get the impact level of an effect type
+effect = EffectType.FRAME_SHIFT
+impact = effect.get_impact()  # Returns AnnotationImpact.HIGH
+
+# Convert between effect types and Sequence Ontology terms
+so_term = EffectType.NON_SYNONYMOUS_CODING.to_sequence_ontology()  # Returns "missense_variant"
+effect = EffectType.from_sequence_ontology("missense_variant")  # Returns EffectType.NON_SYNONYMOUS_CODING
+```
+
 ### VariantAnnotation
 
 ```python
@@ -180,11 +297,12 @@ Represents a single annotation entry from the ANN field in a VCF record.
 #### Constructor
 
 ```python
-def __init__(self, allele: str, annotation: str, putative_impact: AnnotationImpact):
+def __init__(self, allele: str, annotation: str, effect: EffectType, putative_impact: AnnotationImpact):
 ```
 
 - `allele`: The allele being annotated
-- `annotation`: The annotation (e.g., "missense_variant")
+- `annotation`: The original annotation string from the VCF (e.g., "missense_variant")
+- `effect`: The parsed effect type (e.g., EffectType.NON_SYNONYMOUS_CODING)
 - `putative_impact`: The putative impact of the variant (HIGH, MODERATE, LOW, MODIFIER)
 
 #### Properties
@@ -192,7 +310,8 @@ def __init__(self, allele: str, annotation: str, putative_impact: AnnotationImpa
 Property | Type | Description |
 |----------|------|-------------|
 `allele` | str | The allele being annotated |
-`annotation` | str | The annotation (e.g., "missense_variant") |
+`annotation` | str | The original annotation string from the VCF |
+`effect` | EffectType | The parsed effect type |
 `putative_impact` | AnnotationImpact | The putative impact of the variant |
 `gene_name` | str | The gene name |
 `gene_id` | str | The gene ID |
@@ -328,6 +447,15 @@ with VcfReader(Path("path/to/variants.vcf")) as reader:
     for record in reader:
         print(f"Record: {record.get_chrom()}:{record.get_pos()} {record.get_ref()}>{','.join(record.get_alt())}")
         
+        # Access INFO fields directly using dictionary-like syntax
+        if record.has_info("DP"):
+            depth = record.info["DP"]
+            print(f"Read depth: {depth}")
+        
+        # Iterate through INFO fields
+        for field_id, field_value in record.info:
+            print(f"{field_id} = {field_value}")
+        
         # Create variant objects from the record
         for variant in record:  # Uses VariantFactory internally
             print(f"Variant: {variant}")
@@ -348,31 +476,27 @@ with VcfReader(Path("path/to/variants.vcf")) as reader:
 ```python
 from pathlib import Path
 from pygnome.parsers.vcf.vcf_reader import VcfReader
-from pygnome.parsers.vcf.ann import AnnParser
 
 # Open a VCF file
 with VcfReader(Path("path/to/variants.vcf")) as reader:
     # Iterate through records
     for record in reader:
-        # Parse ANN field if present
-        ann_parser = AnnParser(record)
-        
-        # Iterate through annotations
-        for annotation in ann_parser:
-            print(f"Variant annotation: {annotation.allele} - {annotation.annotation}")
-            print(f"  Impact: {annotation.putative_impact}")
+        # Get variant annotations directly from the record
+        for vann in record.variant_annotations():
+            print(f"Variant annotation: {vann.allele} - {vann.annotation}")
+            print(f"  Impact: {vann.putative_impact}")
             
-            if annotation.gene_name:
-                print(f"  Gene: {annotation.gene_name}")
+            if vann.gene_name:
+                print(f"  Gene: {vann.gene_name}")
                 
-            if annotation.feature_type and annotation.feature_id:
-                print(f"  Feature: {annotation.feature_type.value} {annotation.feature_id}")
+            if vann.feature_type and vann.feature_id:
+                print(f"  Feature: {vann.feature_type.value} {vann.feature_id}")
                 
-            if annotation.hgvs_c:
-                print(f"  HGVS.c: {annotation.hgvs_c}")
+            if vann.hgvs_c:
+                print(f"  HGVS.c: {vann.hgvs_c}")
                 
-            if annotation.hgvs_p:
-                print(f"  HGVS.p: {annotation.hgvs_p}")
+            if vann.hgvs_p:
+                print(f"  HGVS.p: {vann.hgvs_p}")
 ```
 
 ### Loading a Complete Genome

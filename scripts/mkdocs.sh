@@ -7,7 +7,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 cd "${PROJECT_DIR}"
 
 # Parse command line arguments
-ACTION=${1:-"serve"}
+ACTION=${1:-"build"}
 
 # Install documentation dependencies if needed
 if ! python -c "import mkdocs" &>/dev/null; then
