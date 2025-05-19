@@ -36,7 +36,7 @@ class GffGenomeLoader:
         self.exons_by_transcript: dict[str, list[Exon]] = defaultdict(list)
         self.cds_by_transcript: dict[str, list[CDS]] = defaultdict(list)
     
-    def load(self, gff_file: Path, verbose: bool = None) -> dict[str, Gene]:
+    def load(self, gff_file: Path, verbose: bool = False) -> dict[str, Gene]:
         """Load genomic features from a GFF/GTF file."""
         # Use provided verbose parameter if given, otherwise use instance variable
         verbose = self.verbose if verbose is None else verbose
