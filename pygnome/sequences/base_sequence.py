@@ -92,8 +92,8 @@ class BaseSequence(ABC):
                 key += self.length
             
             if key < 0 or key >= self.length:
-                raise IndexError(f"{self._class_name} index out of range")
-            
+                raise IndexError(f"{self.__class__.__name__} index out of range")
+
             # Get the 2-bit value for this nucleotide
             value = self._get_nucleotide_value(key)
             
@@ -114,7 +114,7 @@ class BaseSequence(ABC):
                 return result
         
         else:
-            raise TypeError(f"{self._class_name} indices must be integers or slices")
+            raise TypeError(f"{self.__class__.__name__} indices must be integers or slices")
     
     def to_string(self) -> str:
         return self.substring(0, self.length)

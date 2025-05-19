@@ -369,19 +369,24 @@ Class for loading complete genomes from annotation and sequence files. This clas
 #### Constructor
 
 ```python
-def __init__(self, genome_name: str = "genome", species: str = None, verbose: bool = False):
+def __init__(self, annotation_file: Path, sequence_file: Path, genome_name: str = "genome", species: str = None, verbose: bool = False, error_handling: ErrorHandling = ErrorHandling.WARN):
 ```
 
+- `annotation_file`: Path to the GFF/GTF annotation file
+- `sequence_file`: Path to the FASTA sequence file
 - `genome_name`: Name of the genome
 - `species`: Species name
 - `verbose`: Whether to print progress information during loading
+- `error_handling`: How to handle consistency errors (throw, warn, or ignore)
 
 #### Methods
 
 | Method | Description |
 |--------|-------------|
-| `load(annotation_file: Path, sequence_file: Path) -> Genome` | Load a genome from annotation and sequence files |
+| `load() -> Genome` | Load a genome from the annotation and sequence files |
 | `load_sequences(sequence_file: Path) -> dict[str, Chromosome]` | Load chromosome sequences from a FASTA file |
+| `load_features(gff_file: Path) -> None` | Load genomic features from a GFF/GTF file |
+| `check_consistency() -> None` | Check for consistency errors in the loaded genome |
 
 ## Usage Examples
 
@@ -507,16 +512,15 @@ from pygnome.parsers.genome_loader import GenomeLoader
 
 # Create a genome loader
 loader = GenomeLoader(
+    annotation_file=Path("path/to/annotations.gtf"),
+    sequence_file=Path("path/to/genome.fa.gz"),
     genome_name="GRCh38",
     species="Homo sapiens",
     verbose=True  # Print progress information
 )
 
 # Load genome structure and sequence
-genome = loader.load(
-    annotation_file=Path("path/to/annotations.gtf"),
-    sequence_file=Path("path/to/genome.fa.gz")
-)
+genome = loader.load()
 
 # Access genome components
 print(f"Genome: {genome.name} ({genome.species})")

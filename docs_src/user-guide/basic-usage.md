@@ -268,16 +268,15 @@ from pygnome.parsers.genome_loader import GenomeLoader
 
 # Create a genome loader
 loader = GenomeLoader(
+    annotation_file=Path("path/to/annotations.gtf"),
+    sequence_file=Path("path/to/genome.fa.gz"),
     genome_name="GRCh38",
     species="Homo sapiens",
     verbose=True  # Print progress information
 )
 
 # Load genome structure and sequence
-genome = loader.load(
-    annotation_file=Path("path/to/annotations.gtf"),
-    sequence_file=Path("path/to/genome.fa.gz")
-)
+genome = loader.load()
 
 # Access genome components
 print(f"Genome: {genome.name} ({genome.species})")

@@ -37,9 +37,8 @@ class FastaRecord:
         """
         Create a FastaRecord instance.
         """
-        if use_dna_string:
-            sequence = DnaString(sequence)
-        return cls(identifier=identifier, sequence=sequence, description=description)
+        seq = DnaString(sequence) if use_dna_string else sequence
+        return cls(identifier=identifier, sequence=seq, description=description)
 
 
 class FastaParser:
