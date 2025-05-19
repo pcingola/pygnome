@@ -26,6 +26,12 @@ To upgrade PyGnome to the latest version:
 pip install --upgrade pygnome
 ```
 
+To install or update to the latest development version directly from GitHub:
+
+```bash
+pip install --upgrade git+https://github.com/pcingola/pygnome.git
+```
+
 ## For Contributors
 
 If you want to contribute to PyGnome development, you can install from the source code:
