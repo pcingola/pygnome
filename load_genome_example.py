@@ -15,10 +15,16 @@ def main():
     fasta_file = Path("data/genomes/chr21.fa.gz")
     
     # Create a genome loader with verbose mode enabled
-    loader = GenomeLoader(genome_name="GRCh38.mane.1.2", species="Homo sapiens", verbose=True)
+    loader = GenomeLoader(
+        annotation_file=gtf_file,
+        sequence_file=fasta_file,
+        genome_name="GRCh38.mane.1.2",
+        species="Homo sapiens",
+        verbose=True
+    )
     
     # Load the genome
-    genome = loader.load(gtf_file, fasta_file)
+    genome = loader.load()
     
     # Print information about the loaded genome
     print(f"Loaded genome: {genome}")
