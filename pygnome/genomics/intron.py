@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from .genomic_feature import GenomicFeature
-from .splice_site import SpliceSite
+from .splice import SpliceSite
 
 
 @dataclass

@@ -2,6 +2,9 @@
 
 PyGnome is a Python library for working with genomic annotations, similar to tools like SnpEff/SnpSift but as a Python library.
 
+This is a complement for tools like SnpEff / SnpSift that enables advanced genomic annotaiton pipelines after they'v been annotated with SnpEff / SnpSift.
+
+
 ## Project Structure
 
 ```
