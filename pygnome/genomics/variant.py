@@ -28,21 +28,53 @@ class Variant(GenomicFeature):
     Base class for all genomic variants.
     
     Extends GenomicFeature to represent a genomic variant with reference and
-    alternate alleles.
+    alternate alleles. Reference and alternate alleles are always stored in
+    uppercase, regardless of the case used during initialization or assignment.
     """
-    ref: str  # Reference allele
-    alt: str  # Alternate allele
+    ref: str = ""  # Reference allele
+    alt: str = ""  # Alternate allele
     
     def __post_init__(self):
         """Validate the variant after initialization."""
         super().__post_init__()
         
+        # Convert ref and alt to uppercase
+        self.ref = self.ref.upper() if self.ref else ""
+        self.alt = self.alt.upper() if self.alt else ""
+        
         # Validate that the alternate allele is not empty
         if not self.alt:
             raise ValueError("Alternate allele is required")
+    
+    def __setattr__(self, name: str, value: Any):
+        """
+        Override setattr to ensure ref and alt are always uppercase.
+        
+        This ensures that even if ref or alt are set after initialization,
+        they will always be converted to uppercase.
+        """
+        if name in ('ref', 'alt') and isinstance(value, str):
+            value = value.upper()
+        super().__setattr__(name, value)
+
     def __str__(self) -> str:
         """Return a string representation of the variant."""
         return f"{self.__class__.__name__}({self.id}, {self.chrom}:{self.start}-{self.end}, {self.ref}>{self.alt})"
+    
+    def __eq__(self, other: Any) -> bool:
+        """
+        Compare this variant with another variant.
+        
+        Comparison is based on chromosome, position, and alleles.
+        """
+        if not isinstance(other, Variant):
+            return False
+        
+        return (self.chrom == other.chrom and
+                self.start == other.start and
+                self.end == other.end and
+                self.ref == other.ref and
+                self.alt == other.alt)
 
 
 @dataclass

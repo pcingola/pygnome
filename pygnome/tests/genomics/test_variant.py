@@ -208,6 +208,85 @@ class TestVariant(unittest.TestCase):
         self.assertEqual(complex_var.ref, "ATGCATGCAT")
         self.assertEqual(complex_var.alt, "ACGTACGTAC")
         self.assertEqual(complex_var.description, "Complex rearrangement")
+    
+    def test_variant_equality(self):
+        """Test variant equality comparison."""
+        # Create two identical variants
+        variant1 = Variant(
+            id="test_variant1",
+            chrom="chr1",
+            start=1000,
+            end=1001,
+            strand=Strand.POSITIVE,
+            ref="A",
+            alt="T"
+        )
+        
+        variant2 = Variant(
+            id="test_variant2",  # Different ID shouldn't affect equality
+            chrom="chr1",
+            start=1000,
+            end=1001,
+            strand=Strand.POSITIVE,
+            ref="A",
+            alt="T"
+        )
+        
+        # Test equality
+        self.assertEqual(variant1, variant2)
+        
+        # Create a variant with different case for ref and alt
+        variant3 = Variant(
+            id="test_variant3",
+            chrom="chr1",
+            start=1000,
+            end=1001,
+            strand=Strand.POSITIVE,
+            ref="a",  # lowercase
+            alt="t"   # lowercase
+        )
+        
+        # Test equality with different case (should be equal because of case normalization in __post_init__)
+        self.assertEqual(variant1, variant3)
+        
+        # Verify that the ref and alt were converted to uppercase
+        self.assertEqual(variant3.ref, "A")
+        self.assertEqual(variant3.alt, "T")
+        
+        # Create a variant with different attributes
+        variant4 = Variant(
+            id="test_variant4",
+            chrom="chr1",
+            start=1000,
+            end=1001,
+            strand=Strand.POSITIVE,
+            ref="A",
+            alt="G"  # Different alt
+        )
+        
+        # Test inequality
+        self.assertNotEqual(variant1, variant4)
+    
+    def test_variant_attribute_setting(self):
+        """Test that setting ref and alt after initialization converts them to uppercase."""
+        # Create a variant
+        variant = Variant(
+            id="test_variant",
+            chrom="chr1",
+            start=1000,
+            end=1001,
+            strand=Strand.POSITIVE,
+            ref="A",
+            alt="T"
+        )
+        
+        # Set ref and alt to lowercase after initialization
+        variant.ref = "g"
+        variant.alt = "c"
+        
+        # Verify that they were converted to uppercase
+        self.assertEqual(variant.ref, "G")
+        self.assertEqual(variant.alt, "C")
 
 
 if __name__ == "__main__":

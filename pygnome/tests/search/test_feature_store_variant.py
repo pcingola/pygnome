@@ -156,6 +156,45 @@ class TestVariantSearch(unittest.TestCase):
         # Test get_by_variant with nonexistent chromosome
         results = store.get_by_variant("chr2", 0, "A", "T")
         self.assertEqual(0, len(results), "Should return empty list for nonexistent chromosome")
+    
+    def test_case_insensitive_variant_search(self):
+        """Test that variant search is case-insensitive for ref and alt alleles."""
+        # Create a store
+        store = GenomicFeatureStore()
+        
+        # Create a variant with lowercase ref and alt
+        lowercase_variant = SNP(
+            id="lowercase_snp",
+            chrom="chr1",
+            start=5000,
+            end=5001,
+            strand=Strand.POSITIVE,
+            ref="a",  # lowercase
+            alt="t"   # lowercase
+        )
+        
+        # Add the variant to the store
+        with store:
+            store.add(lowercase_variant)
+        
+        # Verify that the ref and alt were converted to uppercase during initialization
+        self.assertEqual(lowercase_variant.ref, "A")
+        self.assertEqual(lowercase_variant.alt, "T")
+        
+        # Search using uppercase ref and alt
+        results = store.get_by_variant("chr1", 5000, "A", "T")
+        self.assertEqual(1, len(results), "Should find variant when searching with uppercase")
+        self.assertEqual(results[0].id, "lowercase_snp")
+        
+        # Search using lowercase ref and alt
+        results = store.get_by_variant("chr1", 5000, "a", "t")
+        self.assertEqual(1, len(results), "Should find variant when searching with lowercase")
+        self.assertEqual(results[0].id, "lowercase_snp")
+        
+        # Search using mixed case ref and alt
+        results = store.get_by_variant("chr1", 5000, "a", "T")
+        self.assertEqual(1, len(results), "Should find variant when searching with mixed case")
+        self.assertEqual(results[0].id, "lowercase_snp")
 
 
 if __name__ == "__main__":

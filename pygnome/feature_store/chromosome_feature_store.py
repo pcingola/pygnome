@@ -74,9 +74,12 @@ class ChromosomeFeatureStore(ABC):
         features_at_pos = self.get_by_position(position)
         
         # Then filter for those that are Variant objects with matching ref and alt
+        # Convert ref and alt to uppercase for case-insensitive comparison
+        ref_upper = ref.upper()
+        alt_upper = alt.upper()
         return [
             f for f in features_at_pos
-            if isinstance(f, Variant) and f.ref == ref and f.alt == alt
+            if isinstance(f, Variant) and f.ref == ref_upper and f.alt == alt_upper
         ]
     
     def get_variant(self, variant: Variant) -> list[GenomicFeature]:
