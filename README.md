@@ -169,6 +169,7 @@ Genomic feature stores are one of the core solutions in PyGnome, providing speci
 - Find all features at a specific position
 - Find all features that overlap with a given range
 - Find the nearest feature to a specific position
+- Find features that match a specific genomic variant (chr, pos, ref, alt)
 
 PyGnome offers multiple implementations with different performance characteristics to suit various use cases:
 
@@ -204,6 +205,16 @@ with store:  # Use context manager to ensure proper indexing
 features_at_position = store.get_by_position("chr1", 1000000)
 features_in_range = store.get_by_interval("chr1", 1000000, 2000000)
 nearest_feature = store.get_nearest("chr1", 1500000)
+
+# Query by variant
+from pygnome.genomics.variant import Variant, SNP
+
+# Query by variant parameters
+variant_features = store.get_by_variant("chr1", 1000000, "A", "G")
+
+# Or query using a Variant object
+snp = SNP(id="rs123", chrom="chr1", start=1000000, end=1000001, strand=Strand.POSITIVE, ref="A", alt="G")
+variant_features = store.get_variant(snp)
 
 # Save and load the store
 store.save(Path("path/to/store.pkl"))

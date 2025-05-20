@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 
 from pygnome.feature_store.genomic_feature_store_protocol import MAX_DISTANCE
 from pygnome.genomics.genomic_feature import GenomicFeature
+from pygnome.genomics.variant import Variant
+from pygnome.genomics.variant import Variant
 
 # Maximum number of samples to show in string representations
 MAX_SAMPLES_TO_SHOW = 10
@@ -52,6 +54,43 @@ class ChromosomeFeatureStore(ABC):
     def get_by_interval(self, start: int, end: int) -> list[GenomicFeature]:
         """Get all features that overlap with the given range."""
         pass
+    
+    def get_by_variant(self, position: int, ref: str, alt: str) -> list[GenomicFeature]:
+        """
+        Get all features that match the specific variant (pos, ref, alt).
+        
+        Default implementation checks all features that contain the position
+        and have matching ref and alt attributes if they are Variant objects.
+        
+        Args:
+            position: Position of the variant (0-based)
+            ref: Reference allele
+            alt: Alternate allele
+            
+        Returns:
+            List of features that match the variant
+        """
+        # First get all features at this position
+        features_at_pos = self.get_by_position(position)
+        
+        # Then filter for those that are Variant objects with matching ref and alt
+        return [
+            f for f in features_at_pos
+            if isinstance(f, Variant) and f.ref == ref and f.alt == alt
+        ]
+    
+    def get_variant(self, variant: Variant) -> list[GenomicFeature]:
+        """
+        Get all features that match the given Variant object.
+        
+        Args:
+            variant: A Variant object with position, reference and alternate alleles
+            
+        Returns:
+            List of features that match the variant
+        """
+        # Default implementation delegates to get_by_variant
+        return self.get_by_variant(variant.start, variant.ref, variant.alt)
     
     def get_features(self) -> list[GenomicFeature]:
         """Get all features."""

@@ -45,7 +45,7 @@ The library models genomic features with a hierarchical structure:
   - `ComplexVariant`: Complex variants that don't fit other categories
 - `Strand`, `Phase`, `Biotype`, `UTRType`: Enumerations for genomic feature properties
 
-### Feature Storage
+### Genomic Feature Stores
 The library provides efficient data structures for querying genomic features:
 
 - `FeatureStore`: Interface for storing and querying genomic features

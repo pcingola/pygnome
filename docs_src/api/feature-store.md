@@ -20,6 +20,7 @@ The feature store is designed to efficiently store and query genomic features ba
 - **Position queries**: Find all features at a specific position
 - **Interval queries**: Find all features that overlap with a given range
 - **Nearest feature queries**: Find the nearest feature to a specific position
+- **Variant queries**: Find features that match a specific genomic variant (chr, pos, ref, alt)
 
 ## Core Components
 
@@ -39,6 +40,8 @@ This protocol defines the interface that all feature store implementations must 
 | `get_by_position(chrom: str, position: int) -> list[GenomicFeature]` | Get all features at a specific position |
 | `get_by_interval(chrom: str, start: int, end: int) -> list[GenomicFeature]` | Get all features that overlap with the given range |
 | `get_nearest(chrom: str, position: int, max_distance: int = MAX_DISTANCE) -> GenomicFeature \| None` | Get the nearest feature to the given position |
+| `get_by_variant(chrom: str, position: int, ref: str, alt: str) -> list[GenomicFeature]` | Get all features that match the specific variant (chr, pos, ref, alt) |
+| `get_variant(variant: Variant) -> list[GenomicFeature]` | Get all features that match the given Variant object |
 | `__getitem__(chrom: str) -> ChromosomeFeatureStore` | Get a chromosome store by name |
 | `__iterator__()` | Iterate over all chromosome stores |
 | `trim() -> None` | Trim internal data structures to reduce memory usage |
@@ -69,6 +72,8 @@ def __init__(self, store_type: StoreType | str = StoreType.INTERVAL_TREE, bin_si
 | `get_by_position(chrom: str, position: int) -> list[GenomicFeature]` | Get all features at a specific position |
 | `get_by_interval(chrom: str, start: int, end: int) -> list[GenomicFeature]` | Get all features that overlap with the given range |
 | `get_nearest(chrom: str, position: int, max_distance: int = MAX_DISTANCE) -> GenomicFeature \| None` | Get the nearest feature to the given position |
+| `get_by_variant(chrom: str, position: int, ref: str, alt: str) -> list[GenomicFeature]` | Get all features that match the specific variant (chr, pos, ref, alt) |
+| `get_variant(variant: Variant) -> list[GenomicFeature]` | Get all features that match the given Variant object |
 | `get_chromosomes() -> list[str]` | Get all chromosome names in the store |
 | `get_feature_count(chrom: str \| None = None) -> int` | Get the number of features in the store |
 | `trim() -> None` | Trim internal data structures to reduce memory usage |
@@ -125,6 +130,8 @@ def __init__(self, chromosome: str) -> None:
 | `get_by_interval(start: int, end: int) -> list[GenomicFeature]` | Get all features that overlap with the given range |
 | `get_features() -> list[GenomicFeature]` | Get all features |
 | `get_nearest(position: int, max_distance: int = MAX_DISTANCE) -> GenomicFeature \| None` | Get the nearest feature to the given position |
+| `get_by_variant(position: int, ref: str, alt: str) -> list[GenomicFeature]` | Get all features that match the specific variant (pos, ref, alt) |
+| `get_variant(variant: Variant) -> list[GenomicFeature]` | Get all features that match the given Variant object |
 | `index_build_start() -> None` | Start building the index |
 | `index_build_end() -> None` | Finish building the index |
 | `trim() -> None` | Trim internal data structures to reduce memory usage |
@@ -239,6 +246,18 @@ print(f"Features in range chr1:4000-8000: {features_in_range}")
 
 nearest_feature = store.get_nearest("chr1", 6000)
 print(f"Nearest feature to chr1:6000: {nearest_feature}")
+
+# Query by variant
+from pygnome.genomics.variant import Variant, SNP
+
+# Query by variant parameters
+variant_features = store.get_by_variant("chr1", 3000, "A", "G")
+print(f"Features matching variant chr1:3000 A>G: {variant_features}")
+
+# Or query using a Variant object
+snp = SNP(id="rs123", chrom="chr1", start=3000, end=3001, strand=Strand.POSITIVE, ref="A", alt="G")
+variant_features = store.get_variant(snp)
+print(f"Features matching variant object: {variant_features}")
 ```
 
 ### Choosing a Store Type

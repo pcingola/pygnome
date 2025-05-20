@@ -11,6 +11,7 @@ from pygnome.feature_store.genomic_feature_store_protocol import MAX_DISTANCE, G
 from pygnome.feature_store.interval_tree_store import IntervalTreeStore
 from pygnome.feature_store.msi_chromosome_store import MsiChromosomeStore
 from pygnome.genomics.genomic_feature import GenomicFeature
+from pygnome.genomics.variant import Variant
 
 
 
@@ -101,6 +102,29 @@ class GenomicFeatureStore(GenomicFeatureStoreProtocol):
         if chrom not in self.chromosomes:
             return None
         return self.chromosomes[chrom].get_nearest(position, max_distance)
+    
+    def get_by_variant(self, chrom: str, position: int, ref: str, alt: str) -> list[GenomicFeature]:
+        """
+        Get all features that match the specific variant (chr, pos, ref, alt).
+        
+        Args:
+            chrom: Chromosome name
+            position: Position of the variant (0-based)
+            ref: Reference allele
+            alt: Alternate allele
+            
+        Returns:
+            List of features that match the variant
+        """
+        if chrom not in self.chromosomes:
+            return []
+        return self.chromosomes[chrom].get_by_variant(position, ref, alt)
+    
+    def get_variant(self, variant: Variant) -> list[GenomicFeature]:
+        """
+        Get all features that match the given Variant object.
+        """
+        return self.get_by_variant(variant.chrom, variant.start, variant.ref, variant.alt)
     
     def get_chromosomes(self) -> list[str]:
         """Get all chromosome names in the store."""
