@@ -12,6 +12,9 @@ from .enums import AnnotationImpact, FeatureType, ErrorWarningType, BiotypeCodin
 from .effect_type import EffectType
 
 
+FIELD_NAME = "ANN"
+FIELD_NAME_OLD = "EFF"  # Deprecated, but still used in some VCF files
+
 class AnnParser:
     """
     Parser for the ANN field in VCF records.
@@ -26,7 +29,6 @@ class AnnParser:
     """
     
     # Field name in the VCF INFO field
-    FIELD_NAME = "ANN"  !!!!!! ADD 'EFF'
     
     def __init__(self, record: VcfRecord):
         """
@@ -39,22 +41,28 @@ class AnnParser:
         self._entries = []
         self._current_index = 0
         
+    def _get_annotation_field(self) -> str | None:
+        if self._record.has_info(FIELD_NAME):
+            return self._record.get_info(FIELD_NAME)
+        elif self._record.has_info(FIELD_NAME_OLD):
+            return self._record.get_info(FIELD_NAME_OLD)
+        else:  
+            return None
+
     def parse(self):
         # Check if the record has the ANN field
         if self._entries:
             # Already parsed
             return
-        if self._record and self._record.has_info(self.FIELD_NAME):
-            # Get the ANN field value
-            ann_value = self._record.get_info(self.FIELD_NAME)
-            if ann_value:
-                # The ANN field can contain multiple annotations
-                if isinstance(ann_value, list):
-                    # It's a list of entries
-                    self._entries = ann_value
-                else:
-                    # It's a single entry
-                    self._entries = [ann_value]
+        ann_value = self._get_annotation_field()
+        if ann_value:
+            # The ANN field can contain multiple annotations
+            if isinstance(ann_value, list):
+                # It's a list of entries
+                self._entries = ann_value
+            else:
+                # It's a single entry
+                self._entries = [ann_value]
         else:
             self._entries = []
     
