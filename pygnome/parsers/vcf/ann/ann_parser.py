@@ -26,7 +26,7 @@ class AnnParser:
     """
     
     # Field name in the VCF INFO field
-    FIELD_NAME = "ANN"
+    FIELD_NAME = "ANN"  !!!!!! ADD 'EFF'
     
     def __init__(self, record: VcfRecord):
         """
