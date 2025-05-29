@@ -23,6 +23,14 @@ Full documentation is available at [https://pcingola.github.io/pygnome](https://
 pip install pygnome
 ```
 
+### Development Version
+
+To install the latest development version from GitHub:
+
+```bash
+uv pip install git+https://github.com/pcingola/pygnome.git
+```
+
 ## Quick Start
 
 ```python
