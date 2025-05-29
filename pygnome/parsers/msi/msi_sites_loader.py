@@ -9,7 +9,7 @@ from pygnome.feature_store.msi_chromosome_store import MsiChromosomeStore, MsiSi
 from pygnome.parsers.msi.msi_sites_reader import MsiSitesReader
 
 
-def load_msi_sites(file_path: Path, verbose: bool, force: bool = False) -> GenomicFeatureStore:
+def load_msi_sites(file_path: Path, verbose: bool = False, force: bool = False) -> GenomicFeatureStore:
     """
     Load MSI sites from a file into a GenomicFeatureStore.
     
