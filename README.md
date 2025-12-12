@@ -185,6 +185,7 @@ PyGnome offers multiple implementations with different performance characteristi
 - **BinnedGenomicStore**: Uses binning for memory-efficient storage
 - **BruteForceFeatureStore**: Simple implementation for testing
 - **MsiChromosomeStore**: Specialized for microsatellite instability sites
+- **RegionChromosomeStore**: For genome region queries (start to end position)
 
 ```python
 from pygnome.feature_store.genomic_feature_store import GenomicFeatureStore, StoreType
