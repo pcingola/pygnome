@@ -185,7 +185,7 @@ PyGnome offers multiple implementations with different performance characteristi
 - **BinnedGenomicStore**: Uses binning for memory-efficient storage
 - **BruteForceFeatureStore**: Simple implementation for testing
 - **MsiChromosomeStore**: Specialized for microsatellite instability sites
-- **RegionChromosomeStore**: Field-customizable store for region-based chromosome lookups
+- **RegionChromosomeStore**: Chromosome genomic region store with arbitrary list of fields
 - 
 ```python
 from pygnome.feature_store.genomic_feature_store import GenomicFeatureStore, StoreType
@@ -235,7 +235,7 @@ RegionChromosomeStore can store an arbitrary number of fields per region. Field 
 from pygnome.feature_store.region_chromosome_store import FeatureField, RegionChromosomeStore, GenomicFeature
 import numpy as np  
 
-fields = [FeatureField("label", dtype=np.object_)]
+# extend GenomicFeature with a new field "label" 
 class DummyFeature(GenomicFeature):
     def __init__(self, chrom, start, end, label):
         super().__init__(id="", strand=None, chrom=chrom, start=start, end=end)
@@ -248,14 +248,14 @@ chr_store = RegionChromosomeStore(
     chrom='chr1',
     feature_count=2, # Number of features to be stored
     max_lengths_by_bin={5:10}, # Max length of features per bin
-    fields=fields,
+    fields=[FeatureField("label", dtype=np.object_)],
     feature_factory=region_label_record_factory,
     bin_size=1000
         )
 ```
-region_label_record_factory is a function that returns a genomic feature object given mandatary chrom/start/end and optional fields via arguments.
+region_label_record_factory is a function that is used while loading/saving store to pickle file. It creates GenomicFeature object given mandatory chrom/start/end + list of fields.
 ### Working with DNA/RNA Sequences
-
+ 
 ```python
 from pygnome.sequences.dna_string import DnaString
 from pygnome.sequences.rna_string import RnaString
