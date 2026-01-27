@@ -185,7 +185,8 @@ PyGnome offers multiple implementations with different performance characteristi
 - **BinnedGenomicStore**: Uses binning for memory-efficient storage
 - **BruteForceFeatureStore**: Simple implementation for testing
 - **MsiChromosomeStore**: Specialized for microsatellite instability sites
-
+- **RegionChromosomeStore**: Chromosome genomic region store with arbitrary list of fields
+- 
 ```python
 from pygnome.feature_store.genomic_feature_store import GenomicFeatureStore, StoreType
 from pygnome.genomics.gene import Gene
@@ -229,8 +230,32 @@ store.save(Path("path/to/store.pkl"))
 loaded_store = GenomicFeatureStore.load(Path("path/to/store.pkl"))
 ```
 
-### Working with DNA/RNA Sequences
+RegionChromosomeStore can store an arbitrary number of fields per region. Field type can be any supported by NumPy (ex. np.int32, np.float64, np.object_, etc.). Below is an example of creating a RegionChromosomeStore to store field "label" for genomic regions:
+```python
+from pygnome.feature_store.region_chromosome_store import FeatureField, RegionChromosomeStore, GenomicFeature
+import numpy as np  
 
+# extend GenomicFeature with a new field "label" 
+class DummyFeature(GenomicFeature):
+    def __init__(self, chrom, start, end, label):
+        super().__init__(id="", strand=None, chrom=chrom, start=start, end=end)
+        self.label = label
+        
+def region_label_record_factory(chrom, start, end, label):
+    return DummyFeature(chrom=chrom, start=start, end=end, label=label)
+
+chr_store = RegionChromosomeStore(
+    chrom='chr1',
+    feature_count=2, # Number of features to be stored
+    max_lengths_by_bin={5:10}, # Max length of features per bin
+    fields=[FeatureField("label", dtype=np.object_)],
+    feature_factory=region_label_record_factory,
+    bin_size=1000
+        )
+```
+region_label_record_factory is a function that is used while loading/saving store to pickle file. It creates GenomicFeature object given mandatory chrom/start/end + list of fields.
+### Working with DNA/RNA Sequences
+ 
 ```python
 from pygnome.sequences.dna_string import DnaString
 from pygnome.sequences.rna_string import RnaString
